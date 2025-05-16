@@ -1,6 +1,7 @@
 import { supabase } from '../utils/supabase'
 import type { DiscordServer, DiscordServerInsert, DiscordServerUpdate } from '../utils/supabase'
-import { logger } from 'robo.js'
+import { logger, client } from 'robo.js'
+import { ChannelType, type TextChannel } from 'discord.js'
 
 /**
  * Get a Discord server by its Discord ID
@@ -103,4 +104,28 @@ export const getOrCreateDiscordServer = async (
 		discord_id: discordId,
 		scheduling_channel_id: schedulingChannelId
 	})
+}
+
+/**
+ * Get the scheduling channel for a Discord server
+ */
+export const getSchedulingChannel = async (discordId: string): Promise<TextChannel | null> => {
+	try {
+		// Get the server record
+		const server = await getDiscordServerByDiscordId(discordId)
+		if (!server || !server.scheduling_channel_id) {
+			return null
+		}
+
+		// Get the channel from Discord
+		const channel = client.channels.cache.get(server.scheduling_channel_id)
+		if (!channel || channel.type !== ChannelType.GuildText) {
+			return null
+		}
+
+		return channel as TextChannel
+	} catch (error) {
+		logger.error('Error in getSchedulingChannel:', error)
+		return null
+	}
 }
