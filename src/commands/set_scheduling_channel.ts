@@ -1,21 +1,13 @@
 import { createCommandConfig, logger } from 'robo.js'
-import {
-	type ChatInputCommandInteraction,
-	ModalBuilder,
-	ActionRowBuilder,
-	TextInputBuilder,
-	TextInputStyle,
-	PermissionFlagsBits,
-	ChannelType
-} from 'discord.js'
+import { type ChatInputCommandInteraction, PermissionFlagsBits, ChannelType } from 'discord.js'
 import { getOrCreateDiscordServer, updateDiscordServer } from '../models/discordServer'
 
 export const config = createCommandConfig({
-	description: 'Setup the bot for your server',
-	defaultMemberPermissions: PermissionFlagsBits.ManageGuild, // Requires "Manage Server" permission
+	description: 'Set the channel for game day scheduling',
+	defaultMemberPermissions: PermissionFlagsBits.Administrator, // Requires Administrator permission
 	options: [
 		{
-			name: 'scheduling_channel',
+			name: 'channel',
 			description: 'The channel to use for game day scheduling',
 			type: 'channel',
 			required: true,
@@ -28,8 +20,13 @@ export default async (interaction: ChatInputCommandInteraction) => {
 	try {
 		await interaction.deferReply({ ephemeral: true })
 
+		// Check if the user is the server owner
+		if (interaction.guild?.ownerId !== interaction.user.id) {
+			return interaction.editReply('Only the server owner can use this command.')
+		}
+
 		// Get the scheduling channel from the command options
-		const schedulingChannel = interaction.options.getChannel('scheduling_channel', true)
+		const schedulingChannel = interaction.options.getChannel('channel', true)
 
 		// Validate the channel type
 		if (schedulingChannel.type !== ChannelType.GuildText) {
@@ -52,14 +49,16 @@ export default async (interaction: ChatInputCommandInteraction) => {
 		}
 
 		// Success message
-		return interaction.editReply(`Setup complete! <#${schedulingChannel.id}> will now be used for game day scheduling.`)
+		return interaction.editReply(
+			`Channel set successfully! <#${schedulingChannel.id}> will now be used for game day scheduling.`
+		)
 	} catch (error) {
-		logger.error('Error in setup command:', error)
+		logger.error('Error in set_scheduling_channel command:', error)
 		if (interaction.deferred || interaction.replied) {
-			await interaction.editReply('An error occurred while setting up the bot. Please try again later.')
+			await interaction.editReply('An error occurred while setting up the scheduling channel. Please try again later.')
 		} else {
 			await interaction.reply({
-				content: 'An error occurred while setting up the bot. Please try again later.',
+				content: 'An error occurred while setting up the scheduling channel. Please try again later.',
 				ephemeral: true
 			})
 		}
