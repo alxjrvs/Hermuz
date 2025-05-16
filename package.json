@@ -24,7 +24,7 @@
 		"doctor": "sage doctor",
 		"invite": "robox invite",
 		"lint": "bun lint:eslint && bun lint:style",
-		"lint:eslint": "eslint -c config/eslint.ts .",
+		"lint:eslint": "eslint -c config/eslint.js .",
 		"lint:style": "prettier --write .",
 		"start": "robox start",
 		"upgrade": "sage upgrade",
