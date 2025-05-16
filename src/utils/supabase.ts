@@ -7,18 +7,21 @@ export type User = Tables<'users'>
 export type Game = Tables<'games'>
 export type GameDay = Tables<'game_days'>
 export type Attendance = Tables<'attendances'>
+export type Server = Tables<'servers'>
 
 // Define insert types
 export type UserInsert = TablesInsert<'users'>
 export type GameInsert = TablesInsert<'games'>
 export type GameDayInsert = TablesInsert<'game_days'>
 export type AttendanceInsert = TablesInsert<'attendances'>
+export type ServerInsert = TablesInsert<'servers'>
 
 // Define update types
 export type UserUpdate = TablesUpdate<'users'>
 export type GameUpdate = TablesUpdate<'games'>
 export type GameDayUpdate = TablesUpdate<'game_days'>
 export type AttendanceUpdate = TablesUpdate<'attendances'>
+export type ServerUpdate = TablesUpdate<'servers'>
 
 // Get Supabase URL and key from environment variables
 const supabaseUrl = process.env.SUPABASE_URL
