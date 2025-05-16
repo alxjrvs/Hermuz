@@ -34,9 +34,16 @@ export const getGameByRoleId = async (discordRoleId: string): Promise<Game | nul
 	}
 }
 
-export const getAllGames = async (): Promise<Game[]> => {
+export const getAllGames = async (serverId?: string): Promise<Game[]> => {
 	try {
-		const { data, error } = await supabase.from('games').select('*').order('name')
+		let query = supabase.from('games').select('*').order('name')
+
+		// If serverId is provided, filter by server_id
+		if (serverId) {
+			query = query.eq('server_id', serverId)
+		}
+
+		const { data, error } = await query
 
 		if (error) {
 			logger.error('Error fetching all games:', error)

@@ -2,6 +2,7 @@ import { logger } from 'robo.js'
 import type { MiddlewareData } from 'robo.js'
 import { getDiscordServerByDiscordId } from '../models/discordServer'
 import type { ChatInputCommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
+import { MessageFlags } from 'discord.js'
 
 /**
  * Middleware that checks if a Discord server record exists for the guild where the interaction was triggered.
@@ -30,12 +31,12 @@ export default async function serverCheckMiddleware(data: MiddlewareData): Promi
 		// If no server record exists, reject the interaction
 		if (!server) {
 			logger.warn(`No server record found for guild ${interaction.guild.name} (${guildId})`)
-			
+
 			await interaction.reply({
 				content: 'This bot needs to be reinstalled. Please kick the bot and invite it again.',
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
-			
+
 			return { abort: true }
 		}
 

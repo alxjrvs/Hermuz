@@ -1,5 +1,5 @@
 import { createCommandConfig, logger } from 'robo.js'
-import { type ChatInputCommandInteraction, PermissionFlagsBits, ChannelType } from 'discord.js'
+import { type ChatInputCommandInteraction, PermissionFlagsBits, ChannelType, MessageFlags } from 'discord.js'
 import { getOrCreateDiscordServer, updateDiscordServer } from '../models/discordServer'
 
 export const config = createCommandConfig({
@@ -18,12 +18,7 @@ export const config = createCommandConfig({
 
 export default async (interaction: ChatInputCommandInteraction) => {
 	try {
-		await interaction.deferReply({ ephemeral: true })
-
-		// Check if the user is the server owner
-		if (interaction.guild?.ownerId !== interaction.user.id) {
-			return interaction.editReply('Only the server owner can use this command.')
-		}
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 		// Get the scheduling channel from the command options
 		const schedulingChannel = interaction.options.getChannel('channel', true)
@@ -49,7 +44,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 		}
 
 		// Success message
-		return interaction.editReply(
+		interaction.editReply(
 			`Channel set successfully! <#${schedulingChannel.id}> will now be used for game day scheduling.`
 		)
 	} catch (error) {
@@ -59,7 +54,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 		} else {
 			await interaction.reply({
 				content: 'An error occurred while setting up the scheduling channel. Please try again later.',
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			})
 		}
 	}
