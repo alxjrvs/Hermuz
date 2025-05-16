@@ -1,0 +1,65 @@
+# Hermuz Discord Bot Project Guidelines
+
+## Project Overview
+
+Hermuz is a Discord bot for managing board game scheduling and attendance in a Discord server. It allows users to create game days, RSVP to events, and track attendance.
+
+## Technology Stack
+
+- **Runtime & Package Manager**: Bun (instead of Node.js and npm)
+- **Framework**: Robo.js (built on top of Discord.js)
+- **Language**: TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **Code Quality**: ESLint and Prettier
+
+- ID (primary key)
+- Game Day ID (foreign key)
+- User ID (foreign key)
+- Status (interested, confirmed, declined, waitlisted)
+
+## Coding Standards
+
+### TypeScript
+
+- Use TypeScript for all code
+- Never use the `any` type - always define proper types
+- Use interfaces for complex data structures
+- Use type guards when necessary
+- Follow the TypeScript configuration recommended by Bun
+
+### File Structure
+
+- Follow Robo.js file-based structure for commands and events
+- Use descriptive file and folder names
+- Group related functionality in folders
+
+### Code Style
+
+- Use ESLint for code quality
+- Use Prettier for code formatting
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Keep functions small and focused
+
+### Discord Bot Best Practices
+
+- Use slash commands for all user interactions
+- Provide helpful error messages
+- Implement proper permission checks
+- Use embeds for rich content display
+- Implement command cooldowns when necessary
+
+### Database
+
+- Use Supabase for data storage
+- Implement Row Level Security (RLS) policies
+- Never expose service keys in client-side code
+- Use prepared statements for database queries
+- Implement proper error handling for database operations
+
+## Development Workflow
+
+- Use Git for version control
+- Write tests for critical functionality
+- Document code and features
+- Use feature branches for new development
