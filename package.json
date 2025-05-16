@@ -27,7 +27,8 @@
 		"lint:eslint": "eslint -c config/eslint.ts .",
 		"lint:style": "prettier --write .",
 		"start": "robox start",
-		"upgrade": "sage upgrade"
+		"upgrade": "sage upgrade",
+		"gen:types": "npx supabase gen types typescript --project-id 'fpajgdwfciwfxwnsfccr' --schema public > src/lib/supabase/database.types.ts"
 	},
 	"dependencies": {
 		"@robojs/server": "^0.6.4",

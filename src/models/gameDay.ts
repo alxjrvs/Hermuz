@@ -1,143 +1,130 @@
-import { supabase } from '../utils/supabase';
-import type { GameDay } from '../utils/supabase';
-import { logger } from 'robo.js';
+import { supabase } from '../utils/supabase'
+import type { GameDay, GameDayInsert, GameDayUpdate } from '../utils/supabase'
+import { logger } from 'robo.js'
 
 export const getGameDay = async (id: string): Promise<GameDay | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('game_days')
-      .select('*')
-      .eq('id', id)
-      .single();
+	try {
+		const { data, error } = await supabase.from('game_days').select('*').eq('id', id).single()
 
-    if (error) {
-      logger.error('Error fetching game day:', error);
-      return null;
-    }
+		if (error) {
+			logger.error('Error fetching game day:', error)
+			return null
+		}
 
-    return data;
-  } catch (error) {
-    logger.error('Error in getGameDay:', error);
-    return null;
-  }
-};
+		return data
+	} catch (error) {
+		logger.error('Error in getGameDay:', error)
+		return null
+	}
+}
 
 export const getUpcomingGameDays = async (): Promise<GameDay[]> => {
-  try {
-    const now = new Date().toISOString();
-    
-    const { data, error } = await supabase
-      .from('game_days')
-      .select('*')
-      .gte('date_time', now)
-      .eq('status', 'scheduled')
-      .order('date_time');
+	try {
+		const now = new Date().toISOString()
 
-    if (error) {
-      logger.error('Error fetching upcoming game days:', error);
-      return [];
-    }
+		const { data, error } = await supabase
+			.from('game_days')
+			.select('*')
+			.gte('date_time', now)
+			.eq('status', 'scheduled')
+			.order('date_time')
 
-    return data || [];
-  } catch (error) {
-    logger.error('Error in getUpcomingGameDays:', error);
-    return [];
-  }
-};
+		if (error) {
+			logger.error('Error fetching upcoming game days:', error)
+			return []
+		}
+
+		return data || []
+	} catch (error) {
+		logger.error('Error in getUpcomingGameDays:', error)
+		return []
+	}
+}
 
 export const getGameDaysByGame = async (gameId: string): Promise<GameDay[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('game_days')
-      .select('*')
-      .eq('game_id', gameId)
-      .order('date_time', { ascending: false });
+	try {
+		const { data, error } = await supabase
+			.from('game_days')
+			.select('*')
+			.eq('game_id', gameId)
+			.order('date_time', { ascending: false })
 
-    if (error) {
-      logger.error('Error fetching game days by game:', error);
-      return [];
-    }
+		if (error) {
+			logger.error('Error fetching game days by game:', error)
+			return []
+		}
 
-    return data || [];
-  } catch (error) {
-    logger.error('Error in getGameDaysByGame:', error);
-    return [];
-  }
-};
+		return data || []
+	} catch (error) {
+		logger.error('Error in getGameDaysByGame:', error)
+		return []
+	}
+}
 
 export const getGameDaysByHost = async (hostUserId: string): Promise<GameDay[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('game_days')
-      .select('*')
-      .eq('host_user_id', hostUserId)
-      .order('date_time', { ascending: false });
+	try {
+		const { data, error } = await supabase
+			.from('game_days')
+			.select('*')
+			.eq('host_user_id', hostUserId)
+			.order('date_time', { ascending: false })
 
-    if (error) {
-      logger.error('Error fetching game days by host:', error);
-      return [];
-    }
+		if (error) {
+			logger.error('Error fetching game days by host:', error)
+			return []
+		}
 
-    return data || [];
-  } catch (error) {
-    logger.error('Error in getGameDaysByHost:', error);
-    return [];
-  }
-};
+		return data || []
+	} catch (error) {
+		logger.error('Error in getGameDaysByHost:', error)
+		return []
+	}
+}
 
-export const createGameDay = async (
-  gameDay: Omit<GameDay, 'id' | 'created_at' | 'updated_at'>
-): Promise<GameDay | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('game_days')
-      .insert(gameDay)
-      .select()
-      .single();
+export const createGameDay = async (gameDay: GameDayInsert): Promise<GameDay | null> => {
+	try {
+		const { data, error } = await supabase.from('game_days').insert(gameDay).select().single()
 
-    if (error) {
-      logger.error('Error creating game day:', error);
-      return null;
-    }
+		if (error) {
+			logger.error('Error creating game day:', error)
+			return null
+		}
 
-    return data;
-  } catch (error) {
-    logger.error('Error in createGameDay:', error);
-    return null;
-  }
-};
+		return data
+	} catch (error) {
+		logger.error('Error in createGameDay:', error)
+		return null
+	}
+}
 
-export const updateGameDay = async (
-  id: string, 
-  updates: Partial<Omit<GameDay, 'id' | 'created_at' | 'updated_at'>>
-): Promise<GameDay | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('game_days')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
+export const updateGameDay = async (id: string, updates: GameDayUpdate): Promise<GameDay | null> => {
+	try {
+		const { data, error } = await supabase
+			.from('game_days')
+			.update({
+				...updates,
+				updated_at: new Date().toISOString()
+			})
+			.eq('id', id)
+			.select()
+			.single()
 
-    if (error) {
-      logger.error('Error updating game day:', error);
-      return null;
-    }
+		if (error) {
+			logger.error('Error updating game day:', error)
+			return null
+		}
 
-    return data;
-  } catch (error) {
-    logger.error('Error in updateGameDay:', error);
-    return null;
-  }
-};
+		return data
+	} catch (error) {
+		logger.error('Error in updateGameDay:', error)
+		return null
+	}
+}
 
 export const cancelGameDay = async (id: string): Promise<GameDay | null> => {
-  return updateGameDay(id, { status: 'canceled' });
-};
+	return updateGameDay(id, { status: 'canceled' })
+}
 
 export const completeGameDay = async (id: string): Promise<GameDay | null> => {
-  return updateGameDay(id, { status: 'completed' });
-};
+	return updateGameDay(id, { status: 'completed' })
+}
