@@ -7,7 +7,8 @@ import {
 	TextInputStyle,
 	ActionRowBuilder,
 	type ModalSubmitInteraction,
-	MessageFlags
+	MessageFlags,
+	Interaction
 } from 'discord.js'
 import { createGame } from '../../models/game'
 import { getDiscordServerByDiscordId } from '../../models/discordServer'
@@ -27,101 +28,50 @@ export const config = createCommandConfig({
 
 export default async (interaction: ChatInputCommandInteraction) => {
 	try {
-		// Get the role from the command options
 		const role = interaction.options.getRole('role', true)
 
-		// Create a unique ID for the modal
-		const modalId = `game_setup_modal_${Date.now()}`
+		const [modalId, modal] = createModal()
 
-		// Create the modal
-		const modal = new ModalBuilder().setCustomId(modalId).setTitle('Game Setup')
-
-		// Create the text inputs
-		const nameInput = new TextInputBuilder()
-			.setCustomId('name')
-			.setLabel('Game Name')
-			.setStyle(TextInputStyle.Short)
-			.setPlaceholder('Enter the name of the game')
-			.setRequired(true)
-			.setMaxLength(100)
-
-		const descriptionInput = new TextInputBuilder()
-			.setCustomId('description')
-			.setLabel('Game Description')
-			.setStyle(TextInputStyle.Paragraph)
-			.setPlaceholder('Enter a description of the game')
-			.setRequired(true)
-			.setMaxLength(1000)
-
-		const minPlayersInput = new TextInputBuilder()
-			.setCustomId('min_players')
-			.setLabel('Minimum Players')
-			.setStyle(TextInputStyle.Short)
-			.setPlaceholder('Enter the minimum number of players')
-			.setRequired(true)
-			.setValue('2')
-
-		const maxPlayersInput = new TextInputBuilder()
-			.setCustomId('max_players')
-			.setLabel('Maximum Players')
-			.setStyle(TextInputStyle.Short)
-			.setPlaceholder('Enter the maximum number of players')
-			.setRequired(true)
-			.setValue('4')
-
-		const durationInput = new TextInputBuilder()
-			.setCustomId('duration')
-			.setLabel('Duration (minutes)')
-			.setStyle(TextInputStyle.Short)
-			.setPlaceholder('Enter the estimated duration in minutes')
-			.setRequired(true)
-			.setValue('60')
-
-		// Add inputs to action rows (max 5 inputs per modal, 1 input per action row)
-		const nameActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(nameInput)
-		const descriptionActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
-		const minPlayersActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(minPlayersInput)
-		const maxPlayersActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(maxPlayersInput)
-		const durationActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(durationInput)
-
-		// Add action rows to the modal
-		modal.addComponents(
-			nameActionRow,
-			descriptionActionRow,
-			minPlayersActionRow,
-			maxPlayersActionRow,
-			durationActionRow
-		)
-
-		// Store the role ID in a collection for later use
-		// We need to do this because the modal submission is a separate interaction
-		interaction.client.once(`modalSubmit_${modalId}`, async (modalInteraction: ModalSubmitInteraction) => {
-			await handleModalSubmit(modalInteraction, role.id, interaction.guildId!)
-		})
-
-		// Show the modal to the user
 		await interaction.showModal(modal)
 
-		// Set up a collector for the modal submit
-		const filter = (i: ModalSubmitInteraction) => i.customId === modalId
-
 		try {
-			logger.error('bar')
-			const modalInteraction = await interaction.awaitModalSubmit({
-				filter,
-				time: 300000 // 5 minutes
-			})
+			logger.info('Waiting for modal submission...')
 
-			// Emit the event for our listener
-			interaction.client.emit(`modalSubmit_${modalId}`, modalInteraction)
-			logger.error('Foo')
+			const listener = async (modalInteraction: Interaction) => {
+				if (
+					!modalInteraction.isModalSubmit ||
+					!modalInteraction.isModalSubmit() ||
+					modalInteraction.customId !== modalId
+				) {
+					return
+				}
+
+				interaction.client.removeListener('interactionCreate', listener)
+
+				logger.info('Modal submitted, processing...')
+
+				try {
+					// Process the modal values
+					await handleModalSubmit(modalInteraction as ModalSubmitInteraction, role.id, interaction.guildId!)
+					logger.info('Modal processing complete')
+				} catch (error) {
+					logger.error('Error processing modal submission:', error)
+				}
+			}
+
+			interaction.client.on('interactionCreate', listener)
+
+			// Set a timeout to remove the listener if the user doesn't submit the modal
+			setTimeout(() => {
+				interaction.client.removeListener('interactionCreate', listener)
+				logger.info('Modal submission timeout - listener removed')
+			}, 300000) // 5 minutes timeout
 		} catch (error) {
-			logger.error('Modal submission timed out or failed:', error)
+			logger.error('Error setting up modal collector:', error)
 		}
 	} catch (error) {
 		logger.error('Error in game setup command:', error)
 		if (!interaction.replied) {
-			logger.error('Foo Bar')
 			await interaction.reply({
 				content: 'An error occurred while setting up the game. Please try again later.',
 				flags: MessageFlags.Ephemeral
@@ -130,10 +80,71 @@ export default async (interaction: ChatInputCommandInteraction) => {
 	}
 }
 
+function createModal(): [string, ModalBuilder] {
+	const modalId = `game_setup_modal_${Date.now()}`
+	const modal = new ModalBuilder().setCustomId(modalId).setTitle('Game Setup')
+
+	// Create the text inputs
+	const nameInput = new TextInputBuilder()
+		.setCustomId('name')
+		.setLabel('Game Name')
+		.setStyle(TextInputStyle.Short)
+		.setPlaceholder('Enter the name of the game')
+		.setRequired(true)
+		.setMaxLength(100)
+
+	const descriptionInput = new TextInputBuilder()
+		.setCustomId('description')
+		.setLabel('Game Description')
+		.setStyle(TextInputStyle.Paragraph)
+		.setPlaceholder('Enter a description of the game')
+		.setRequired(true)
+		.setMaxLength(1000)
+
+	const minPlayersInput = new TextInputBuilder()
+		.setCustomId('min_players')
+		.setLabel('Minimum Players')
+		.setStyle(TextInputStyle.Short)
+		.setPlaceholder('Enter the minimum number of players')
+		.setRequired(true)
+		.setValue('2')
+
+	const maxPlayersInput = new TextInputBuilder()
+		.setCustomId('max_players')
+		.setLabel('Maximum Players')
+		.setStyle(TextInputStyle.Short)
+		.setPlaceholder('Enter the maximum number of players')
+		.setRequired(true)
+		.setValue('4')
+
+	const durationInput = new TextInputBuilder()
+		.setCustomId('duration')
+		.setLabel('Duration (minutes)')
+		.setStyle(TextInputStyle.Short)
+		.setPlaceholder('Enter the estimated duration in minutes')
+		.setRequired(true)
+		.setValue('60')
+
+	// Add inputs to action rows (max 5 inputs per modal, 1 input per action row)
+	const nameActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(nameInput)
+	const descriptionActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
+	const minPlayersActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(minPlayersInput)
+	const maxPlayersActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(maxPlayersInput)
+	const durationActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(durationInput)
+
+	// Add action rows to the modal
+	modal.addComponents(nameActionRow, descriptionActionRow, minPlayersActionRow, maxPlayersActionRow, durationActionRow)
+
+	// Show the modal to the user
+
+	return [modalId, modal]
+}
+
 async function handleModalSubmit(interaction: ModalSubmitInteraction, roleId: string, guildId: string) {
 	try {
-		// Get the values from the modal
+		// Always defer the reply first thing
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
 		const name = interaction.fields.getTextInputValue('name')
 		const description = interaction.fields.getTextInputValue('description')
 		const minPlayersStr = interaction.fields.getTextInputValue('min_players')
