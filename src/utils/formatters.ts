@@ -26,17 +26,14 @@ export const createGameDayEmbed = (
   attendances: Attendance[]
 ): EmbedBuilder => {
   // Count attendances by status
-  const confirmedCount = attendances.filter(
-    (a) => a.status === 'confirmed'
+  const availableCount = attendances.filter(
+    (a) => a.status === 'AVAILABLE'
   ).length
   const interestedCount = attendances.filter(
-    (a) => a.status === 'interested'
+    (a) => a.status === 'INTERESTED'
   ).length
-  const declinedCount = attendances.filter(
-    (a) => a.status === 'declined'
-  ).length
-  const waitlistedCount = attendances.filter(
-    (a) => a.status === 'waitlisted'
+  const notAvailableCount = attendances.filter(
+    (a) => a.status === 'NOT_AVAILABLE'
   ).length
 
   // Determine color based on status
@@ -82,7 +79,7 @@ export const createGameDayEmbed = (
       },
       {
         name: 'Attendance',
-        value: `👍 Confirmed: ${confirmedCount}\n🤔 Interested: ${interestedCount}\n👎 Declined: ${declinedCount}\n⏳ Waitlisted: ${waitlistedCount}`,
+        value: `✅ Available: ${availableCount}\n🤔 Interested: ${interestedCount}\n❌ Not Available: ${notAvailableCount}`,
         inline: false
       }
     )

@@ -13,19 +13,19 @@ export type Database = {
         Row: {
           game_day_id: string | null
           id: string
-          status: string
+          status: Database["public"]["Enums"]["attendance_status"]
           user_id: string | null
         }
         Insert: {
           game_day_id?: string | null
           id?: string
-          status: string
+          status: Database["public"]["Enums"]["attendance_status"]
           user_id?: string | null
         }
         Update: {
           game_day_id?: string | null
           id?: string
-          status?: string
+          status?: Database["public"]["Enums"]["attendance_status"]
           user_id?: string | null
         }
         Relationships: [
@@ -201,6 +201,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      attendance_status: "AVAILABLE" | "INTERESTED" | "NOT_AVAILABLE"
       game_day_status: "SCHEDULED" | "SCHEDULING" | "CANCELLED"
     }
     CompositeTypes: {
@@ -317,6 +318,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      attendance_status: ["AVAILABLE", "INTERESTED", "NOT_AVAILABLE"],
       game_day_status: ["SCHEDULED", "SCHEDULING", "CANCELLED"],
     },
   },

@@ -10,7 +10,7 @@ Hermuz is a Discord bot for managing board game scheduling and attendance in a D
 
 - Create and manage games with associated Discord roles
 - Schedule game days with date, time, and location
-- RSVP to game days (interested, confirmed, declined)
+- RSVP to game days (available, interested, not available)
 - View upcoming game days and attendance lists
 - Cancel game days when needed
 
@@ -210,11 +210,13 @@ CREATE TABLE game_days (
 ### Attendances Table
 
 ```sql
+CREATE TYPE attendance_status AS ENUM ('AVAILABLE', 'INTERESTED', 'NOT_AVAILABLE');
+
 CREATE TABLE attendances (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   game_day_id UUID NOT NULL REFERENCES game_days(id),
   user_id TEXT NOT NULL REFERENCES users(discord_id),
-  status TEXT NOT NULL CHECK (status IN ('interested', 'confirmed', 'declined', 'waitlisted')),
+  status attendance_status NOT NULL,
   UNIQUE(game_day_id, user_id)
 );
 ```

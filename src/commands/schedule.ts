@@ -14,16 +14,18 @@ import {
 import { getGameByRoleId } from '../models/game'
 import { createGameDayDraft } from '../models/gameDay'
 import { getOrCreateUser } from '../models/user'
-import { getDiscordServerByDiscordId } from '../models/discordServer'
+import {
+  getDiscordServerByDiscordId,
+  getSchedulingChannel
+} from '../models/discordServer'
 
 export const config = createCommandConfig({
   description: 'Schedule a new game day event',
   options: [
     {
       name: 'role',
-      description:
-        'The Discord role associated with a game (existing role or new role name)',
-      type: 'string',
+      description: 'The Discord role associated with a game',
+      type: 'role',
       required: false
     }
   ]
@@ -31,26 +33,29 @@ export const config = createCommandConfig({
 
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
-    // Get the optional role argument (could be an existing role or a new role name)
-    const roleInput = interaction.options.getString('role')
+    // Check if the server has a scheduling channel set
+    const server = await getDiscordServerByDiscordId(interaction.guildId!)
+    if (!server || !server.scheduling_channel_id) {
+      return interaction.reply({
+        content:
+          'This server does not have a scheduling channel set. Please ask an administrator to use the `/set_scheduling_channel` command to set one up before scheduling game days.',
+        flags: MessageFlags.Ephemeral
+      })
+    }
 
-    // If a role was provided, check if it matches an existing role
+    // Get the optional role argument
+    const role = interaction.options.getRole('role')
+
+    // Set up role info based on the provided role
     let roleInfo: { exists: boolean; id?: string; name?: string } = {
       exists: false
     }
 
-    if (roleInput) {
-      const existingRole = interaction.guild?.roles.cache.find(
-        (r) =>
-          r.name === roleInput ||
-          r.id === roleInput ||
-          `<@&${r.id}>` === roleInput
-      )
-
+    if (role) {
       roleInfo = {
-        exists: !!existingRole,
-        id: existingRole?.id,
-        name: existingRole?.name || roleInput
+        exists: true,
+        id: role.id,
+        name: role.name
       }
     }
 
@@ -208,7 +213,7 @@ async function handleModalSubmit(
       )
     }
 
-    // Get the server record
+    // Get the server record - we already checked that it exists and has a scheduling channel
     const server = await getDiscordServerByDiscordId(guildId)
     if (!server) {
       return interaction.editReply(
@@ -220,54 +225,22 @@ async function handleModalSubmit(
     let gameId: string | undefined
     let gameRoleId: string | undefined
 
-    if (roleInfo) {
-      if (roleInfo.exists && roleInfo.id) {
-        // Check if this is an existing role associated with a game
-        const game = await getGameByRoleId(roleInfo.id)
-        if (game) {
-          gameId = game.id
-          gameRoleId = roleInfo.id
-        } else {
-          return interaction.editReply(
-            'The provided role is not associated with any game. Please use a role that is set up with a game, or leave the role field empty.'
-          )
-        }
-      } else if (roleInfo.name) {
-        // This is a new role name that needs to be created for a game
-        try {
-          const newGameRole = await interaction.guild!.roles.create({
-            name: roleInfo.name,
-            reason: `Game role for ${title}`
-          })
-          gameRoleId = newGameRole.id
-
-          // Note: We don't have a game ID yet because we need to create the game
-          // This would require additional changes to create a game here
-          // For now, we'll just use the role for the game day without associating it with a game
-        } catch (error) {
-          logger.error('Error creating game role:', error)
-          return interaction.editReply(
-            'Failed to create the game role. Please make sure the bot has the necessary permissions.'
-          )
-        }
+    if (roleInfo && roleInfo.exists && roleInfo.id) {
+      // Check if this is an existing role associated with a game
+      const game = await getGameByRoleId(roleInfo.id)
+      if (game) {
+        gameId = game.id
+        gameRoleId = roleInfo.id
+      } else {
+        return interaction.editReply(
+          'The provided role is not associated with any game. Please use a role that is set up with a game, or leave the role field empty.'
+        )
       }
     }
 
     // Create a new Discord role for this game day
     const gameDayRole = await createGameDayRole(interaction, title, dateTime)
     if (!gameDayRole) {
-      // If we created a game role but failed to create the game day role, clean up
-      if (gameRoleId && !roleInfo?.exists) {
-        try {
-          const role = await interaction.guild!.roles.fetch(gameRoleId)
-          if (role) {
-            await role.delete('Game day role creation failed')
-          }
-        } catch (cleanupError) {
-          logger.error('Error cleaning up game role:', cleanupError)
-        }
-      }
-
       return interaction.editReply(
         'Failed to create a role for the game day. Please make sure the bot has the necessary permissions.'
       )
@@ -300,12 +273,9 @@ async function handleModalSubmit(
       )
     }
 
-    // Create a success embed
-    const embed = new EmbedBuilder()
+    // Create a success embed for the user
+    const userEmbed = new EmbedBuilder()
       .setTitle('Game Day Scheduled!')
-      .setDescription(
-        `Your game day has been scheduled in draft mode. Use the publish command to make it visible to others.`
-      )
       .setColor(Colors.Green)
       .addFields(
         { name: 'Title', value: title, inline: false },
@@ -317,8 +287,63 @@ async function handleModalSubmit(
       .setFooter({ text: `Game Day ID: ${gameDay.id}` })
       .setTimestamp()
 
-    // Send the success message
-    await interaction.editReply({ embeds: [embed] })
+    // Send the success message to the user
+    await interaction.editReply({ embeds: [userEmbed] })
+
+    // Get the scheduling channel
+    const schedulingChannel = await getSchedulingChannel(guildId)
+    if (!schedulingChannel) {
+      logger.error('Failed to get scheduling channel for announcement')
+      return
+    }
+
+    // Create an embed for the scheduling channel announcement
+    let gameInfo
+    if (gameId) {
+      const game = await getGameByRoleId(gameRoleId!)
+      if (game) {
+        gameInfo = `${game.name} (${game.short_name})`
+      }
+    }
+
+    const formattedDate = dateTime.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+
+    const fields = [
+      gameInfo && { name: 'Game', value: gameInfo, inline: false },
+      { name: 'Date & Time', value: formattedDate, inline: false },
+      { name: 'Location', value: location, inline: false }
+    ].filter((f) => !!f)
+
+    const announcementEmbed = new EmbedBuilder()
+      .setTitle(`New Game Day: ${title}`)
+      .setDescription(description)
+      .setColor(Colors.Yellow) // Yellow for SCHEDULING status
+      .addFields(fields)
+      .setTimestamp()
+
+    // Post the announcement to the scheduling channel
+    try {
+      await schedulingChannel.send({
+        content: gameRoleId ? `<@&${gameRoleId}>` : `@everyone`,
+        embeds: [announcementEmbed]
+      })
+      logger.info(
+        `Posted game day announcement to scheduling channel: ${schedulingChannel.id}`
+      )
+    } catch (error) {
+      logger.error(
+        'Error posting game day announcement to scheduling channel:',
+        error
+      )
+      // We don't need to return an error to the user here since the game day was created successfully
+    }
   } catch (error) {
     logger.error('Error handling modal submission:', error)
 
