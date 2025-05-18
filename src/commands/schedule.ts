@@ -24,7 +24,7 @@ export const config = createCommandConfig({
       description:
         'The Discord role associated with a game (existing role or new role name)',
       type: 'string',
-      required: true
+      required: false
     }
   ]
 } as const)
@@ -54,14 +54,18 @@ export default async (interaction: ChatInputCommandInteraction) => {
       }
     }
 
-    // Create and show the modal
+    // Create the modal
     const [modalId, modal] = createScheduleModal()
+
+    // Show the modal to the user
+    // This counts as a reply to the interaction
     await interaction.showModal(modal)
 
     try {
       logger.info('Waiting for modal submission...')
 
-      // Use awaitModalSubmit to handle the modal response
+      // Wait for the modal submission
+      // This is a NEW interaction, separate from the original slash command
       const modalSubmitInteraction = await interaction.awaitModalSubmit({
         filter: (i) => i.customId === modalId,
         time: 300000 // 5 minutes timeout
@@ -77,12 +81,17 @@ export default async (interaction: ChatInputCommandInteraction) => {
         interaction.guildId!,
         roleInfo
       )
+
+      logger.info('Modal processing complete')
     } catch (error) {
+      // This will catch timeouts (user didn't submit the modal)
+      // We don't need to respond here as the interaction was handled by showModal
       logger.error('Error with modal submission:', error)
-      // No need to reply here as the interaction may have timed out
+      // Do NOT try to reply to the original interaction here - it's already been handled
     }
   } catch (error) {
     logger.error('Error in schedule command:', error)
+    // Only reply if we haven't already
     if (!interaction.replied) {
       await interaction.reply({
         content:
@@ -166,8 +175,9 @@ async function handleModalSubmit(
   roleInfo?: { exists: boolean; id?: string; name?: string }
 ) {
   try {
-    // Always defer the reply first thing
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+    // For modal submissions, we need to acknowledge the interaction first
+    // Use deferReply to acknowledge the modal submission
+    await interaction.deferReply({ ephemeral: true })
 
     // Extract values from the modal
     const title = interaction.fields.getTextInputValue('title')
@@ -312,16 +322,21 @@ async function handleModalSubmit(
   } catch (error) {
     logger.error('Error handling modal submission:', error)
 
-    if (interaction.deferred || interaction.replied) {
-      await interaction.editReply(
-        'An error occurred while processing your submission. Please try again later.'
-      )
-    } else {
-      await interaction.reply({
-        content:
-          'An error occurred while processing your submission. Please try again later.',
-        flags: MessageFlags.Ephemeral
-      })
+    try {
+      if (interaction.deferred) {
+        await interaction.editReply(
+          'An error occurred while processing your submission. Please try again later.'
+        )
+      } else {
+        await interaction.reply({
+          content:
+            'An error occurred while processing your submission. Please try again later.',
+          ephemeral: true
+        })
+      }
+    } catch (replyError) {
+      // If we can't reply, just log the error
+      logger.error('Error replying to interaction:', replyError)
     }
   }
 }
@@ -377,9 +392,6 @@ async function createGameDayRole(
   try {
     // Generate a role name based on the title and date
     const roleName = generateRoleName(title, dateTime)
-
-    console.log('Creating role:', roleName)
-    console.log('Interaction guild:', interaction.guild)
 
     // Create the role
     const role = await interaction.guild!.roles.create({

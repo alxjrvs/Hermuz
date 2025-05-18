@@ -45,6 +45,34 @@ export const getUpcomingGameDays = async (): Promise<GameDay[]> => {
   }
 }
 
+/**
+ * Get all future game days with specified statuses
+ */
+export const getUpcomingGameDaysByStatus = async (
+  statuses: Array<'SCHEDULED' | 'SCHEDULING' | 'CANCELLED'>
+): Promise<GameDay[]> => {
+  try {
+    const now = new Date().toISOString()
+
+    const { data, error } = await supabase
+      .from('game_days')
+      .select('*')
+      .gte('date_time', now)
+      .in('status', statuses)
+      .order('date_time')
+
+    if (error) {
+      logger.error('Error fetching upcoming game days by status:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    logger.error('Error in getUpcomingGameDaysByStatus:', error)
+    return []
+  }
+}
+
 export const getGameDaysByGame = async (gameId: string): Promise<GameDay[]> => {
   try {
     const { data, error } = await supabase

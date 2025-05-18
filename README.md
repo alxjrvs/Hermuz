@@ -29,9 +29,10 @@ Hermuz is a Discord bot for managing board game scheduling and attendance in a D
 - [🛠️ Development](#development)
 - [🔒 Debugging](#debugging)
 - [🛠️ Client Configuration](#client-configuration)
-- [🔌 Ecosystem](#ecosystem)
+- [🔌 Ecosystem](#robo-ecosystem)
 - [🚀 Hosting](#hosting)
 - [📊 Database Setup](#database-setup)
+- [🔐 Bot Permissions](#bot-permissions)
 
 ## Quick Links
 
@@ -224,3 +225,37 @@ CREATE TABLE attendances (
 SUPABASE_URL="https://your-project-id.supabase.co"
 SUPABASE_KEY="your-supabase-anon-key"
 ```
+
+## Bot Permissions
+
+Hermuz requires specific permissions to function properly in Discord servers:
+
+### Required Permissions
+
+- **Manage Roles**: Essential for creating and managing roles for games and game days
+- **Send Messages**: To communicate with users
+- **Embed Links**: For rich embeds in responses
+- **Read Message History**: To process commands and interactions
+- **Use External Emojis**: For better visual feedback
+- **Add Reactions**: For interactive responses
+
+### Generating a Proper Invite Link
+
+To ensure the bot has all necessary permissions, use the custom invite script:
+
+```bash
+# Generate an invite link with all required permissions
+npm run custom-invite
+# or with bun
+bun run custom-invite
+```
+
+This will output an invite URL that includes all the permissions the bot needs to function properly. Use this URL when adding the bot to a server.
+
+### Troubleshooting Permission Issues
+
+If you encounter errors related to role creation or management:
+
+1. Check that the bot has the "Manage Roles" permission in the server
+2. Ensure the bot's role is positioned higher in the role hierarchy than the roles it needs to manage
+3. Verify the server owner has approved the necessary permissions

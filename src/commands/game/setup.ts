@@ -24,61 +24,38 @@ export const config = createCommandConfig({
 } as const)
 
 export default async (interaction: ChatInputCommandInteraction) => {
-  try {
-    // Get the role input (could be an existing role or a new role name)
-    const roleInput = interaction.options.getString('role', true)
+  const roleInput = interaction.options.getString('role', true)
 
-    // Check if the input matches an existing role
-    const existingRole = interaction.guild?.roles.cache.find(
-      (r) =>
-        r.name === roleInput ||
-        r.id === roleInput ||
-        `<@&${r.id}>` === roleInput
-    )
+  const existingRole = interaction.guild?.roles.cache.find(
+    (r) =>
+      r.name === roleInput || r.id === roleInput || `<@&${r.id}>` === roleInput
+  )
 
-    // Store role information for later use
-    const roleInfo = {
-      exists: !!existingRole,
-      id: existingRole?.id,
-      name: existingRole?.name || roleInput
-    }
-
-    const [modalId, modal] = gameModal()
-
-    await interaction.showModal(modal)
-
-    try {
-      logger.info('Waiting for modal submission...')
-
-      // Use awaitModalSubmit instead of event listeners
-      const modalSubmitInteraction = await interaction.awaitModalSubmit({
-        // Filter to only accept the modal with our custom ID
-        filter: (i) => i.customId === modalId,
-        // Time to wait for a submission in milliseconds
-        time: 300000 // 5 minutes timeout
-      })
-
-      logger.info('Modal submitted, processing...')
-
-      await handleModalSubmit(
-        modalSubmitInteraction,
-        roleInfo,
-        interaction.guildId!
-      )
-      logger.info('Modal processing complete')
-    } catch (error) {
-      logger.error('Error with modal submission:', error)
-    }
-  } catch (error) {
-    logger.error('Error in game setup command:', error)
-    if (!interaction.replied) {
-      await interaction.reply({
-        content:
-          'An error occurred while setting up the game. Please try again later.',
-        flags: MessageFlags.Ephemeral
-      })
-    }
+  const roleInfo = {
+    exists: !!existingRole,
+    id: existingRole?.id,
+    name: existingRole?.name || roleInput
   }
+
+  const [modalId, modal] = gameModal()
+
+  await interaction.showModal(modal)
+
+  logger.info('Waiting for modal submission...')
+
+  const modalSubmitInteraction = await interaction.awaitModalSubmit({
+    filter: (i) => i.customId === modalId,
+    time: 300000
+  })
+
+  logger.info('Modal submitted, processing...')
+
+  await handleModalSubmit(
+    modalSubmitInteraction,
+    roleInfo,
+    interaction.guildId!
+  )
+  logger.info('Modal processing complete')
 }
 
 async function handleModalSubmit(
@@ -87,8 +64,7 @@ async function handleModalSubmit(
   guildId: string
 ) {
   try {
-    // Always defer the reply first thing
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+    await interaction.deferReply({ ephemeral: true })
 
     const name = interaction.fields.getTextInputValue('name')
     const shortName = interaction.fields.getTextInputValue('short_name')
@@ -101,25 +77,33 @@ async function handleModalSubmit(
     const maxPlayers = parseInt(maxPlayersStr, 10)
 
     if (isNaN(minPlayers) || isNaN(maxPlayers)) {
-      return interaction.editReply('Please enter valid numbers for players.')
+      return interaction.reply({
+        content: 'Please enter valid numbers for players.',
+        flags: MessageFlags.Ephemeral
+      })
     }
 
     if (minPlayers <= 0 || maxPlayers <= 0) {
-      return interaction.editReply('Player counts must be positive numbers.')
+      return interaction.reply({
+        content: 'Player counts must be positive numbers.',
+        flags: MessageFlags.Ephemeral
+      })
     }
 
     if (minPlayers > maxPlayers) {
-      return interaction.editReply(
-        'Minimum players cannot be greater than maximum players.'
-      )
+      return interaction.reply({
+        content: 'Minimum players cannot be greater than maximum players.',
+        flags: MessageFlags.Ephemeral
+      })
     }
 
     // Get the server record
     const server = await getDiscordServerByDiscordId(guildId)
     if (!server) {
-      return interaction.editReply(
-        'Failed to retrieve server record. Please try again later.'
-      )
+      return interaction.reply({
+        content: 'Failed to retrieve server record. Please try again later.',
+        flags: MessageFlags.Ephemeral
+      })
     }
 
     // Handle role creation if needed
@@ -137,9 +121,11 @@ async function handleModalSubmit(
         roleId = newRole.id
       } catch (error) {
         logger.error('Error creating role:', error)
-        return interaction.editReply(
-          'Failed to create the role. Please make sure the bot has the necessary permissions.'
-        )
+        return interaction.reply({
+          content:
+            'Failed to create the role. Please make sure the bot has the necessary permissions.',
+          flags: MessageFlags.Ephemeral
+        })
       }
     }
 
@@ -185,16 +171,21 @@ async function handleModalSubmit(
   } catch (error) {
     logger.error('Error handling modal submission:', error)
 
-    if (interaction.deferred || interaction.replied) {
-      await interaction.editReply(
-        'An error occurred while processing your submission. Please try again later.'
-      )
-    } else {
-      await interaction.reply({
-        content:
-          'An error occurred while processing your submission. Please try again later.',
-        flags: MessageFlags.Ephemeral
-      })
+    try {
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply(
+          'An error occurred while processing your submission. Please try again later.'
+        )
+      } else {
+        await interaction.reply({
+          content:
+            'An error occurred while processing your submission. Please try again later.',
+          flags: MessageFlags.Ephemeral
+        })
+      }
+    } catch (replyError) {
+      // If we can't reply, just log the error
+      logger.error('Error replying to interaction:', replyError)
     }
   }
 }
