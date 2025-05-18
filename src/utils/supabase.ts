@@ -1,6 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { logger } from 'robo.js'
-import type { Database, Tables, TablesInsert, TablesUpdate } from '../lib/supabase/database.types'
+import type {
+  Database,
+  Tables,
+  TablesInsert,
+  TablesUpdate
+} from '../lib/supabase/database.types'
 
 // Define types based on the generated database types
 export type User = Tables<'users'>
@@ -28,26 +33,29 @@ const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 
 // Create Supabase client
-export const supabase = createClient<Database>(supabaseUrl || '', supabaseKey || '')
+export const supabase = createClient<Database>(
+  supabaseUrl || '',
+  supabaseKey || ''
+)
 
 // Initialize function to check connection
 export const initSupabase = async (): Promise<boolean> => {
-	if (!supabaseUrl || !supabaseKey) {
-		logger.error('Supabase URL or key not found in environment variables')
-		return false
-	}
+  if (!supabaseUrl || !supabaseKey) {
+    logger.error('Supabase URL or key not found in environment variables')
+    return false
+  }
 
-	try {
-		const { error } = await supabase.from('users').select('*').limit(1)
+  try {
+    const { error } = await supabase.from('users').select('*').limit(1)
 
-		if (error) {
-			logger.error('Error connecting to Supabase:', error)
-			return false
-		}
+    if (error) {
+      logger.error('Error connecting to Supabase:', error)
+      return false
+    }
 
-		return true
-	} catch (error) {
-		logger.error('Error initializing Supabase:', error)
-		return false
-	}
+    return true
+  } catch (error) {
+    logger.error('Error initializing Supabase:', error)
+    return false
+  }
 }

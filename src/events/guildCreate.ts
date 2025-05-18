@@ -7,18 +7,22 @@ import { getOrCreateDiscordServer } from '../models/discordServer'
  * We'll use it to create a record in our database for the server
  */
 export default async (guild: Guild) => {
-	try {
-		logger.info(`Bot joined a new server: ${guild.name} (${guild.id})`)
+  try {
+    logger.info(`Bot joined a new server: ${guild.name} (${guild.id})`)
 
-		// Create a record for the server in our database
-		const server = await getOrCreateDiscordServer(guild.id)
+    // Create a record for the server in our database
+    const server = await getOrCreateDiscordServer(guild.id)
 
-		if (server) {
-			logger.info(`Created/retrieved server record for ${guild.name} (${guild.id})`)
-		} else {
-			logger.error(`Failed to create server record for ${guild.name} (${guild.id})`)
-		}
-	} catch (error) {
-		logger.error('Error in guildCreate event:', error)
-	}
+    if (server) {
+      logger.info(
+        `Created/retrieved server record for ${guild.name} (${guild.id})`
+      )
+    } else {
+      logger.error(
+        `Failed to create server record for ${guild.name} (${guild.id})`
+      )
+    }
+  } catch (error) {
+    logger.error('Error in guildCreate event:', error)
+  }
 }

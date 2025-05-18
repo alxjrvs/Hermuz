@@ -9,5 +9,5 @@
  * https://robojs.dev/plugins/server
  */
 export default () => {
-	return 'Hello, world!'
+  return 'Hello, world!'
 }

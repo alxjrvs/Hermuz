@@ -1,50 +1,50 @@
 {
-	"name": "hermuz",
-	"description": "Discord bot for managing board game scheduling and attendance",
-	"version": "1.0.0",
-	"type": "module",
-	"private": true,
-	"keywords": [
-		"api",
-		"bot",
-		"discord",
-		"discord.js",
-		"http",
-		"robo",
-		"robo.js",
-		"server",
-		"typescript",
-		"vite",
-		"web"
-	],
-	"scripts": {
-		"build": "robox build",
-		"deploy": "robox deploy",
-		"dev": "robox dev",
-		"doctor": "sage doctor",
-		"invite": "robox invite",
-		"lint": "bun lint:eslint && bun lint:style",
-		"lint:eslint": "eslint -c config/eslint.js .",
-		"lint:style": "prettier --write .",
-		"start": "robox start",
-		"upgrade": "sage upgrade",
-		"gen:types": "npx supabase gen types typescript --project-id 'fpajgdwfciwfxwnsfccr' --schema public > src/lib/supabase/database.types.ts"
-	},
-	"dependencies": {
-		"@robojs/server": "^0.6.4",
-		"@supabase/supabase-js": "^2.49.4",
-		"discord.js": "^14.19.3",
-		"extensionless": "^1.9.9",
-		"robo.js": "^0.10.30"
-	},
-	"devDependencies": {
-		"@eslint/js": "^9.26.0",
-		"@swc/core": "^1.11.24",
-		"@types/node": "^22.15.18",
-		"eslint": "9",
-		"globals": "^16.1.0",
-		"prettier": "^3.5.3",
-		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.32.1"
-	}
+  "name": "hermuz",
+  "description": "Discord bot for managing board game scheduling and attendance",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "keywords": [
+    "api",
+    "bot",
+    "discord",
+    "discord.js",
+    "http",
+    "robo",
+    "robo.js",
+    "server",
+    "typescript",
+    "vite",
+    "web"
+  ],
+  "scripts": {
+    "build": "robox build",
+    "deploy": "robox deploy",
+    "dev": "robox dev",
+    "doctor": "sage doctor",
+    "invite": "robox invite",
+    "lint": "bun lint:eslint && bun lint:style",
+    "lint:eslint": "eslint -c config/eslint.js .",
+    "lint:style": "prettier --write .",
+    "start": "robox start",
+    "upgrade": "sage upgrade",
+    "gen:types": "npx supabase gen types typescript --project-id 'fpajgdwfciwfxwnsfccr' --schema public > src/lib/supabase/database.types.ts"
+  },
+  "dependencies": {
+    "@robojs/server": "^0.6.4",
+    "@supabase/supabase-js": "^2.49.4",
+    "discord.js": "^14.19.3",
+    "extensionless": "^1.9.9",
+    "robo.js": "^0.10.30"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@swc/core": "^1.11.24",
+    "@types/node": "^22.15.18",
+    "eslint": "9",
+    "globals": "^16.1.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1"
+  }
 }

@@ -59,7 +59,7 @@ Let's say you want a new `/hello` command. Just create a file in the `/src/comma
 
 ```javascript title="/src/commands/hello.js"
 export default (interaction) => {
-	interaction.reply('Hello World!')
+  interaction.reply('Hello World!')
 }
 ```
 
@@ -75,7 +75,7 @@ Create a file file in `/src/context/message` named after the command. For exampl
 
 ```javascript title="/src/context/message/Quote.js"
 export default (interaction, message) => {
-	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+  interaction.reply(`${message.author} said:\n\n> ${message.content}`)
 }
 ```
 
@@ -112,7 +112,7 @@ You even get `/dev` **[Subcommands](https://robojs.dev/discord-bots/commands#sub
 import { client } from 'robo.js'
 
 export default () => {
-	return `My name is ${client.user.username}`
+  return `My name is ${client.user.username}`
 }
 ```
 
@@ -121,10 +121,10 @@ Intents or other configurations can be set in the `config/robo.mjs` file.
 ```javascript
 // File: /config/robo.mjs
 export default {
-	clientOptions: {
-		intents: ['Guilds', 'GuildMessages']
-	}
-	// ... other options
+  clientOptions: {
+    intents: ['Guilds', 'GuildMessages']
+  }
+  // ... other options
 }
 ```
 

@@ -9,9 +9,9 @@ import { client } from 'robo.js'
  * https://robojs.dev/discord-bots/events
  */
 export default () => {
-	client.user?.setActivity({
-		name: '✨ Built with Robo.js',
-		type: ActivityType.Custom,
-		url: 'https://robojs.dev'
-	})
+  client.user?.setActivity({
+    name: '✨ Built with Robo.js',
+    type: ActivityType.Custom,
+    url: 'https://robojs.dev'
+  })
 }
