@@ -37,19 +37,16 @@ export default async (interaction: ChatInputCommandInteraction) => {
       )
       .setTimestamp()
 
-    // Add each game to the embed
     serverGames.forEach((game) => {
       embed.addFields({
         name: `${game.name} (${game.short_name})`,
         value:
           `**Description:** ${game.description || 'No description'}\n` +
           `**Players:** ${game.min_players || '?'}-${game.max_players || '?'}\n` +
-          `**Duration:** ${game.duration || '?'} minutes\n` +
           `**Role:** <@&${game.discord_role_id}>`
       })
     })
 
-    // Send the embed
     await interaction.editReply({ embeds: [embed] })
   } catch (error) {
     logger.error('Error in game list command:', error)

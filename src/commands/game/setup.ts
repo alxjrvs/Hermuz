@@ -2,15 +2,12 @@ import { createCommandConfig, logger } from 'robo.js'
 import {
   type ChatInputCommandInteraction,
   PermissionFlagsBits,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder,
   type ModalSubmitInteraction,
   MessageFlags
 } from 'discord.js'
 import { createGame } from '../../models/game'
 import { getDiscordServerByDiscordId } from '../../models/discordServer'
+import gameModal from '~/utils/gameModal'
 
 export const config = createCommandConfig({
   description: 'Set up a new game with associated role',
@@ -29,7 +26,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
   try {
     const role = interaction.options.getRole('role', true)
 
-    const [modalId, modal] = createModal()
+    const [modalId, modal] = gameModal()
 
     await interaction.showModal(modal)
 
@@ -67,80 +64,6 @@ export default async (interaction: ChatInputCommandInteraction) => {
   }
 }
 
-function createModal(): [string, ModalBuilder] {
-  const modalId = `game_setup_modal_${Date.now()}`
-  const modal = new ModalBuilder().setCustomId(modalId).setTitle('Game Setup')
-
-  const nameInput = new TextInputBuilder()
-    .setCustomId('name')
-    .setLabel('Game Name')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('Enter the name of the game')
-    .setRequired(true)
-    .setMaxLength(100)
-
-  const shortNameInput = new TextInputBuilder()
-    .setCustomId('short_name')
-    .setLabel('Short Name')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('Enter a short identifier for the game')
-    .setRequired(true)
-    .setMaxLength(50)
-
-  const descriptionInput = new TextInputBuilder()
-    .setCustomId('description')
-    .setLabel('Game Description')
-    .setStyle(TextInputStyle.Paragraph)
-    .setPlaceholder('Enter a description of the game')
-    .setRequired(true)
-    .setMaxLength(1000)
-
-  const minPlayersInput = new TextInputBuilder()
-    .setCustomId('min_players')
-    .setLabel('Minimum Players')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('Enter the minimum number of players')
-    .setRequired(true)
-    .setValue('2')
-
-  const maxPlayersInput = new TextInputBuilder()
-    .setCustomId('max_players')
-    .setLabel('Maximum Players')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('Enter the maximum number of players')
-    .setRequired(true)
-    .setValue('4')
-
-  // Note: We can only have 5 inputs per modal, so we'll remove the duration input
-  // and use a default value of 60 minutes
-
-  // Add inputs to action rows (max 5 inputs per modal, 1 input per action row)
-  const nameActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    nameInput
-  )
-  const shortNameActionRow =
-    new ActionRowBuilder<TextInputBuilder>().addComponents(shortNameInput)
-  const descriptionActionRow =
-    new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
-  const minPlayersActionRow =
-    new ActionRowBuilder<TextInputBuilder>().addComponents(minPlayersInput)
-  const maxPlayersActionRow =
-    new ActionRowBuilder<TextInputBuilder>().addComponents(maxPlayersInput)
-
-  // Add action rows to the modal
-  modal.addComponents(
-    nameActionRow,
-    shortNameActionRow,
-    descriptionActionRow,
-    minPlayersActionRow,
-    maxPlayersActionRow
-  )
-
-  // Show the modal to the user
-
-  return [modalId, modal]
-}
-
 async function handleModalSubmit(
   interaction: ModalSubmitInteraction,
   roleId: string,
@@ -155,8 +78,6 @@ async function handleModalSubmit(
     const description = interaction.fields.getTextInputValue('description')
     const minPlayersStr = interaction.fields.getTextInputValue('min_players')
     const maxPlayersStr = interaction.fields.getTextInputValue('max_players')
-    // Since we removed the duration input, we'll use a default value
-    const duration = 60 // Default to 60 minutes
 
     // Validate numeric inputs
     const minPlayers = parseInt(minPlayersStr, 10)
@@ -192,8 +113,6 @@ async function handleModalSubmit(
       discord_role_id: roleId,
       min_players: minPlayers,
       max_players: maxPlayers,
-      duration,
-      complexity_rating: 1, // Default value
       server_id: server.id
     })
 

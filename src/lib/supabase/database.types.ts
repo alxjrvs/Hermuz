@@ -125,10 +125,8 @@ export type Database = {
       }
       games: {
         Row: {
-          complexity_rating: number | null
           description: string | null
           discord_role_id: string | null
-          duration: number | null
           id: string
           max_players: number | null
           min_players: number | null
@@ -137,10 +135,8 @@ export type Database = {
           short_name: string
         }
         Insert: {
-          complexity_rating?: number | null
           description?: string | null
           discord_role_id?: string | null
-          duration?: number | null
           id?: string
           max_players?: number | null
           min_players?: number | null
@@ -149,10 +145,8 @@ export type Database = {
           short_name: string
         }
         Update: {
-          complexity_rating?: number | null
           description?: string | null
           discord_role_id?: string | null
-          duration?: number | null
           id?: string
           max_players?: number | null
           min_players?: number | null

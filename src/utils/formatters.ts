@@ -1,6 +1,5 @@
 import { EmbedBuilder, Colors } from 'discord.js'
 import type { GameDay, Game, Attendance } from './supabase'
-import { GameDayStatus } from '../types/enums'
 
 /**
  * Format a date string to a human-readable format
@@ -74,12 +73,6 @@ export const createGameDayEmbed = (
       },
       { name: 'Min Players', value: game.min_players.toString(), inline: true },
       { name: 'Max Players', value: game.max_players.toString(), inline: true },
-      { name: 'Duration', value: `${game.duration} minutes`, inline: true },
-      {
-        name: 'Complexity',
-        value: `${game.complexity_rating}/5`,
-        inline: true
-      },
       {
         name: 'Attendance',
         value: `👍 Confirmed: ${confirmedCount}\n🤔 Interested: ${interestedCount}\n👎 Declined: ${declinedCount}\n⏳ Waitlisted: ${waitlistedCount}`,
@@ -101,12 +94,6 @@ export const createGameEmbed = (game: Game): EmbedBuilder => {
     .addFields(
       { name: 'Min Players', value: game.min_players.toString(), inline: true },
       { name: 'Max Players', value: game.max_players.toString(), inline: true },
-      { name: 'Duration', value: `${game.duration} minutes`, inline: true },
-      {
-        name: 'Complexity',
-        value: `${game.complexity_rating}/5`,
-        inline: true
-      },
       {
         name: 'Discord Role',
         value: `<@&${game.discord_role_id}>`,

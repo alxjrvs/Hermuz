@@ -1,7 +1,6 @@
 import { supabase } from '../utils/supabase'
 import type { GameDay, GameDayInsert, GameDayUpdate } from '../utils/supabase'
 import { logger } from 'robo.js'
-import { GameDayStatus } from '../types/enums'
 
 export const getGameDay = async (id: string): Promise<GameDay | null> => {
   try {
