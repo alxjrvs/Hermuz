@@ -74,6 +74,13 @@ export const createGameDayEmbed = (
       { name: 'Min Players', value: game.min_players.toString(), inline: true },
       { name: 'Max Players', value: game.max_players.toString(), inline: true },
       {
+        name: 'Discord Role',
+        value: gameDay.discord_role_id
+          ? `<@&${gameDay.discord_role_id}>`
+          : 'None',
+        inline: true
+      },
+      {
         name: 'Attendance',
         value: `👍 Confirmed: ${confirmedCount}\n🤔 Interested: ${interestedCount}\n👎 Declined: ${declinedCount}\n⏳ Waitlisted: ${waitlistedCount}`,
         inline: false

@@ -74,6 +74,7 @@ export type Database = {
           created_at: string | null
           date_time: string
           description: string | null
+          discord_role_id: string | null
           game_id: string | null
           host_user_id: string | null
           id: string
@@ -86,6 +87,7 @@ export type Database = {
           created_at?: string | null
           date_time: string
           description?: string | null
+          discord_role_id?: string | null
           game_id?: string | null
           host_user_id?: string | null
           id?: string
@@ -98,6 +100,7 @@ export type Database = {
           created_at?: string | null
           date_time?: string
           description?: string | null
+          discord_role_id?: string | null
           game_id?: string | null
           host_user_id?: string | null
           id?: string

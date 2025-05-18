@@ -96,6 +96,24 @@ export const createGameDay = async (
       gameDay.status = 'SCHEDULED' // Default to SCHEDULED if not provided
     }
 
+    // If game_id is provided but discord_role_id is not, try to get it from the game
+    if (gameDay.game_id && !gameDay.discord_role_id) {
+      try {
+        const { data: gameData } = await supabase
+          .from('games')
+          .select('discord_role_id')
+          .eq('id', gameDay.game_id)
+          .single()
+
+        if (gameData && gameData.discord_role_id) {
+          gameDay.discord_role_id = gameData.discord_role_id
+        }
+      } catch (err) {
+        logger.warn('Could not fetch discord_role_id from game:', err)
+        // Continue without the discord_role_id
+      }
+    }
+
     const { data, error } = await supabase
       .from('game_days')
       .insert(gameDay)

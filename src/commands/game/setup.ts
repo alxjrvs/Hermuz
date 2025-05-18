@@ -15,8 +15,9 @@ export const config = createCommandConfig({
   options: [
     {
       name: 'role',
-      description: 'The Discord role associated with this game',
-      type: 'role',
+      description:
+        'The Discord role associated with this game (existing role or new role name)',
+      type: 'string',
       required: true
     }
   ]
@@ -24,7 +25,23 @@ export const config = createCommandConfig({
 
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
-    const role = interaction.options.getRole('role', true)
+    // Get the role input (could be an existing role or a new role name)
+    const roleInput = interaction.options.getString('role', true)
+
+    // Check if the input matches an existing role
+    const existingRole = interaction.guild?.roles.cache.find(
+      (r) =>
+        r.name === roleInput ||
+        r.id === roleInput ||
+        `<@&${r.id}>` === roleInput
+    )
+
+    // Store role information for later use
+    const roleInfo = {
+      exists: !!existingRole,
+      id: existingRole?.id,
+      name: existingRole?.name || roleInput
+    }
 
     const [modalId, modal] = gameModal()
 
@@ -45,7 +62,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 
       await handleModalSubmit(
         modalSubmitInteraction,
-        role.id,
+        roleInfo,
         interaction.guildId!
       )
       logger.info('Modal processing complete')
@@ -66,7 +83,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 
 async function handleModalSubmit(
   interaction: ModalSubmitInteraction,
-  roleId: string,
+  roleInfo: { exists: boolean; id?: string; name: string },
   guildId: string
 ) {
   try {
@@ -105,6 +122,27 @@ async function handleModalSubmit(
       )
     }
 
+    // Handle role creation if needed
+    let roleId: string
+    if (roleInfo.exists && roleInfo.id) {
+      // Use existing role
+      roleId = roleInfo.id
+    } else {
+      // Create a new role with the provided name
+      try {
+        const newRole = await interaction.guild!.roles.create({
+          name: roleInfo.name,
+          reason: `Game role for ${name}`
+        })
+        roleId = newRole.id
+      } catch (error) {
+        logger.error('Error creating role:', error)
+        return interaction.editReply(
+          'Failed to create the role. Please make sure the bot has the necessary permissions.'
+        )
+      }
+    }
+
     // Create the game
     const game = await createGame({
       name,
@@ -117,14 +155,32 @@ async function handleModalSubmit(
     })
 
     if (!game) {
+      // If game creation failed and we created a new role, try to clean up
+      if (!roleInfo.exists) {
+        try {
+          const role = await interaction.guild!.roles.fetch(roleId)
+          if (role) {
+            await role.delete('Game creation failed')
+          }
+        } catch (cleanupError) {
+          logger.error(
+            'Error cleaning up role after game creation failed:',
+            cleanupError
+          )
+        }
+      }
+
       return interaction.editReply(
         'Failed to create the game. Please try again later.'
       )
     }
 
     // Success message
+    const roleMention = `<@&${roleId}>`
+    const roleCreationMessage = roleInfo.exists ? 'with the' : 'and created the'
+
     await interaction.editReply({
-      content: `Game "${name}" (${shortName}) has been successfully set up with the <@&${roleId}> role!`
+      content: `Game "${name}" (${shortName}) has been successfully set up ${roleCreationMessage} ${roleMention} role!`
     })
   } catch (error) {
     logger.error('Error handling modal submission:', error)
