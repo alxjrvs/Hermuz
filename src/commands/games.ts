@@ -4,8 +4,8 @@ import {
   EmbedBuilder,
   MessageFlags
 } from 'discord.js'
-import { getAllGames } from '../../models/game'
-import { getDiscordServerByDiscordId } from '../../models/discordServer'
+import { getAllGames } from '../models/game'
+import { getDiscordServerByDiscordId } from '../models/discordServer'
 
 export const config = createCommandConfig({
   description: 'List all games set up in this server'
@@ -15,7 +15,6 @@ export default async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply()
 
-    // Get the server record
     const server = await getDiscordServerByDiscordId(interaction.guildId!)
     if (!server) {
       return interaction.editReply(
@@ -23,16 +22,13 @@ export default async (interaction: ChatInputCommandInteraction) => {
       )
     }
 
-    // Get all games for this server
     const serverGames = await getAllGames(server.id)
-
     if (serverGames.length === 0) {
       return interaction.editReply(
         'No games have been set up in this server yet. Use `/game setup` to add a game.'
       )
     }
 
-    // Create an embed to display the games
     const embed = new EmbedBuilder()
       .setTitle('Games in this Server')
       .setColor('#0099ff')
@@ -44,7 +40,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     // Add each game to the embed
     serverGames.forEach((game) => {
       embed.addFields({
-        name: game.name,
+        name: `${game.name} (${game.short_name})`,
         value:
           `**Description:** ${game.description || 'No description'}\n` +
           `**Players:** ${game.min_players || '?'}-${game.max_players || '?'}\n` +

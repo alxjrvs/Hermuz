@@ -1,5 +1,6 @@
 import { EmbedBuilder, Colors } from 'discord.js'
 import type { GameDay, Game, Attendance } from './supabase'
+import { GameDayStatus } from '../types/enums'
 
 /**
  * Format a date string to a human-readable format
@@ -41,11 +42,12 @@ export const createGameDayEmbed = (
 
   // Determine color based on status
   let color: number
-  if (gameDay.status === 'canceled') {
+  if (gameDay.status === 'CANCELLED') {
     color = Colors.Red
-  } else if (gameDay.status === 'completed') {
-    color = Colors.Grey
+  } else if (gameDay.status === 'SCHEDULING') {
+    color = Colors.Yellow
   } else {
+    // SCHEDULED
     color = Colors.Green
   }
 
@@ -54,7 +56,11 @@ export const createGameDayEmbed = (
     .setDescription(gameDay.description)
     .setColor(color)
     .addFields(
-      { name: 'Game', value: game.name, inline: true },
+      {
+        name: 'Game',
+        value: `${game.name} (${game.short_name})`,
+        inline: true
+      },
       {
         name: 'Date & Time',
         value: formatDate(gameDay.date_time),
@@ -89,7 +95,7 @@ export const createGameDayEmbed = (
  */
 export const createGameEmbed = (game: Game): EmbedBuilder => {
   return new EmbedBuilder()
-    .setTitle(game.name)
+    .setTitle(`${game.name} (${game.short_name})`)
     .setDescription(game.description)
     .setColor(Colors.Blue)
     .addFields(
@@ -104,6 +110,11 @@ export const createGameEmbed = (game: Game): EmbedBuilder => {
       {
         name: 'Discord Role',
         value: `<@&${game.discord_role_id}>`,
+        inline: true
+      },
+      {
+        name: 'Short Name',
+        value: game.short_name,
         inline: true
       }
     )

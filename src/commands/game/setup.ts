@@ -79,6 +79,14 @@ function createModal(): [string, ModalBuilder] {
     .setRequired(true)
     .setMaxLength(100)
 
+  const shortNameInput = new TextInputBuilder()
+    .setCustomId('short_name')
+    .setLabel('Short Name')
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder('Enter a short identifier for the game')
+    .setRequired(true)
+    .setMaxLength(50)
+
   const descriptionInput = new TextInputBuilder()
     .setCustomId('description')
     .setLabel('Game Description')
@@ -103,34 +111,29 @@ function createModal(): [string, ModalBuilder] {
     .setRequired(true)
     .setValue('4')
 
-  const durationInput = new TextInputBuilder()
-    .setCustomId('duration')
-    .setLabel('Duration (minutes)')
-    .setStyle(TextInputStyle.Short)
-    .setPlaceholder('Enter the estimated duration in minutes')
-    .setRequired(true)
-    .setValue('60')
+  // Note: We can only have 5 inputs per modal, so we'll remove the duration input
+  // and use a default value of 60 minutes
 
   // Add inputs to action rows (max 5 inputs per modal, 1 input per action row)
   const nameActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
     nameInput
   )
+  const shortNameActionRow =
+    new ActionRowBuilder<TextInputBuilder>().addComponents(shortNameInput)
   const descriptionActionRow =
     new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
   const minPlayersActionRow =
     new ActionRowBuilder<TextInputBuilder>().addComponents(minPlayersInput)
   const maxPlayersActionRow =
     new ActionRowBuilder<TextInputBuilder>().addComponents(maxPlayersInput)
-  const durationActionRow =
-    new ActionRowBuilder<TextInputBuilder>().addComponents(durationInput)
 
   // Add action rows to the modal
   modal.addComponents(
     nameActionRow,
+    shortNameActionRow,
     descriptionActionRow,
     minPlayersActionRow,
-    maxPlayersActionRow,
-    durationActionRow
+    maxPlayersActionRow
   )
 
   // Show the modal to the user
@@ -148,26 +151,23 @@ async function handleModalSubmit(
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const name = interaction.fields.getTextInputValue('name')
+    const shortName = interaction.fields.getTextInputValue('short_name')
     const description = interaction.fields.getTextInputValue('description')
     const minPlayersStr = interaction.fields.getTextInputValue('min_players')
     const maxPlayersStr = interaction.fields.getTextInputValue('max_players')
-    const durationStr = interaction.fields.getTextInputValue('duration')
+    // Since we removed the duration input, we'll use a default value
+    const duration = 60 // Default to 60 minutes
 
     // Validate numeric inputs
     const minPlayers = parseInt(minPlayersStr, 10)
     const maxPlayers = parseInt(maxPlayersStr, 10)
-    const duration = parseInt(durationStr, 10)
 
-    if (isNaN(minPlayers) || isNaN(maxPlayers) || isNaN(duration)) {
-      return interaction.editReply(
-        'Please enter valid numbers for players and duration.'
-      )
+    if (isNaN(minPlayers) || isNaN(maxPlayers)) {
+      return interaction.editReply('Please enter valid numbers for players.')
     }
 
-    if (minPlayers <= 0 || maxPlayers <= 0 || duration <= 0) {
-      return interaction.editReply(
-        'Player counts and duration must be positive numbers.'
-      )
+    if (minPlayers <= 0 || maxPlayers <= 0) {
+      return interaction.editReply('Player counts must be positive numbers.')
     }
 
     if (minPlayers > maxPlayers) {
@@ -187,6 +187,7 @@ async function handleModalSubmit(
     // Create the game
     const game = await createGame({
       name,
+      short_name: shortName,
       description,
       discord_role_id: roleId,
       min_players: minPlayers,
@@ -204,7 +205,7 @@ async function handleModalSubmit(
 
     // Success message
     await interaction.editReply({
-      content: `Game "${name}" has been successfully set up with the <@&${roleId}> role!`
+      content: `Game "${name}" (${shortName}) has been successfully set up with the <@&${roleId}> role!`
     })
   } catch (error) {
     logger.error('Error handling modal submission:', error)

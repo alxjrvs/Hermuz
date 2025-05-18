@@ -1,6 +1,7 @@
 import { supabase } from '../utils/supabase'
 import type { GameDay, GameDayInsert, GameDayUpdate } from '../utils/supabase'
 import { logger } from 'robo.js'
+import { GameDayStatus } from '../types/enums'
 
 export const getGameDay = async (id: string): Promise<GameDay | null> => {
   try {
@@ -30,7 +31,7 @@ export const getUpcomingGameDays = async (): Promise<GameDay[]> => {
       .from('game_days')
       .select('*')
       .gte('date_time', now)
-      .eq('status', 'scheduled')
+      .eq('status', 'SCHEDULED')
       .order('date_time')
 
     if (error) {
@@ -91,6 +92,11 @@ export const createGameDay = async (
   gameDay: GameDayInsert
 ): Promise<GameDay | null> => {
   try {
+    // Ensure the status is a valid enum value
+    if (!gameDay.status) {
+      gameDay.status = 'SCHEDULED' // Default to SCHEDULED if not provided
+    }
+
     const { data, error } = await supabase
       .from('game_days')
       .insert(gameDay)
@@ -107,6 +113,18 @@ export const createGameDay = async (
     logger.error('Error in createGameDay:', error)
     return null
   }
+}
+
+/**
+ * Create a new game day in SCHEDULING status (draft mode)
+ */
+export const createGameDayDraft = async (
+  gameDay: Omit<GameDayInsert, 'status'>
+): Promise<GameDay | null> => {
+  return createGameDay({
+    ...gameDay,
+    status: 'SCHEDULING'
+  })
 }
 
 export const updateGameDay = async (
@@ -136,10 +154,16 @@ export const updateGameDay = async (
   }
 }
 
-export const cancelGameDay = async (id: string): Promise<GameDay | null> => {
-  return updateGameDay(id, { status: 'canceled' })
+/**
+ * Publish a game day that was in SCHEDULING status to SCHEDULED
+ */
+export const publishGameDay = async (id: string): Promise<GameDay | null> => {
+  return updateGameDay(id, { status: 'SCHEDULED' })
 }
 
-export const completeGameDay = async (id: string): Promise<GameDay | null> => {
-  return updateGameDay(id, { status: 'completed' })
+/**
+ * Cancel a game day
+ */
+export const cancelGameDay = async (id: string): Promise<GameDay | null> => {
+  return updateGameDay(id, { status: 'CANCELLED' })
 }
