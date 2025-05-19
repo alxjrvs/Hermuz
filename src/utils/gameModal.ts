@@ -7,9 +7,10 @@ import {
 import { Game } from '~/utils/supabase'
 
 export default function gameModal(
-  defaultValues?: Game
-): [string, ModalBuilder] {
-  const modalId = `game_setup_modal_${Date.now()}`
+  defaultValues?: Game,
+  customId?: string
+): ModalBuilder {
+  const modalId = customId || `game_setup_modal_${Date.now()}`
   const modal = new ModalBuilder().setCustomId(modalId).setTitle('Game Setup')
 
   const nameInput = new TextInputBuilder()
@@ -94,7 +95,6 @@ export default function gameModal(
     maxPlayersActionRow
   )
 
-  // Show the modal to the user
-
-  return [modalId, modal]
+  // Return the modal ID and the modal builder
+  return modal
 }
