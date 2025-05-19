@@ -35,30 +35,46 @@ export type ModalData =
   | CampaignCreateModalData
 export function serializeModalData(data: ModalData): string {
   try {
-    const timestamp = Date.now().toString(36) 
-    if (isGameSetupModal(data)) {
-      const exists = data.roleInfo.exists ? '1' : '0'
-      const roleId = data.roleInfo.id || ''
-      const guildId = data.guildId
-      return `gs:${timestamp}:${exists}:${roleId}:${guildId}:${data.roleInfo.name}`
-    } else if (isGameDayScheduleModal(data)) {
-      const exists = data.roleInfo?.exists ? '1' : '0'
-      const roleId = data.roleInfo?.id || ''
-      return `gds:${timestamp}:${data.userId}:${data.guildId}:${exists}:${roleId}:${data.username}:${data.roleInfo?.name || ''}`
-    } else if (isCampaignCreateModal(data)) {
-      const guildId = data.guildId
-      const gameInput = encodeURIComponent(data.gameInfo.input)
-      const roleInput = encodeURIComponent(data.roleInfo.input)
-      return `cc:${timestamp}:${guildId}:${gameInput}:${roleInput}`
-    }
-    logger.warn('Unknown modal type, using JSON serialization')
-    return JSON.stringify(data)
+    // Add a timestamp to ensure uniqueness
+    const timestamp = Date.now().toString(36)
+    const dataWithTimestamp = { ...data, timestamp }
+
+    // Use JSON for all serialization
+    return JSON.stringify(dataWithTimestamp)
   } catch (error) {
     logger.error('Error serializing modal data:', error)
     throw new Error('Failed to serialize modal data')
   }
 }
 export function deserializeModalData(customId: string): ModalData | null {
+  try {
+    // Handle legacy format IDs for backward compatibility
+    if (
+      customId.startsWith('gs:') ||
+      customId.startsWith('gds:') ||
+      customId.startsWith('cc:')
+    ) {
+      return deserializeLegacyModalData(customId)
+    }
+
+    // Use JSON for all deserialization
+    const data = JSON.parse(customId) as ModalData & { timestamp?: string }
+
+    // Remove the timestamp property if it exists
+    if (data.timestamp) {
+      const { timestamp, ...modalData } = data
+      return modalData as ModalData
+    }
+
+    return data
+  } catch (error) {
+    logger.error('Error deserializing modal data:', error)
+    return null
+  }
+}
+
+// Function to handle legacy modal data formats for backward compatibility
+function deserializeLegacyModalData(customId: string): ModalData | null {
   try {
     if (customId.startsWith('gs:')) {
       const parts = customId.split(':')
@@ -123,11 +139,11 @@ export function deserializeModalData(customId: string): ModalData | null {
           input: roleInput
         }
       }
-    } else {
-      return JSON.parse(customId) as ModalData
     }
+
+    return null
   } catch (error) {
-    logger.error('Error deserializing modal data:', error)
+    logger.error('Error deserializing legacy modal data:', error)
     return null
   }
 }
@@ -145,13 +161,48 @@ export function isCampaignCreateModal(
   return data.command === 'campaign_create'
 }
 export function isGameSetupModalId(customId: string): boolean {
-  return customId.startsWith('gs:')
+  // Handle legacy format
+  if (customId.startsWith('gs:')) {
+    return true
+  }
+
+  // Handle JSON format
+  try {
+    const data = JSON.parse(customId) as ModalData
+    return isGameSetupModal(data)
+  } catch {
+    return false
+  }
 }
+
 export function isGameDayScheduleModalId(customId: string): boolean {
-  return customId.startsWith('gds:')
+  // Handle legacy format
+  if (customId.startsWith('gds:')) {
+    return true
+  }
+
+  // Handle JSON format
+  try {
+    const data = JSON.parse(customId) as ModalData
+    return isGameDayScheduleModal(data)
+  } catch {
+    return false
+  }
 }
+
 export function isCampaignCreateModalId(customId: string): boolean {
-  return customId.startsWith('cc:')
+  // Handle legacy format
+  if (customId.startsWith('cc:')) {
+    return true
+  }
+
+  // Handle JSON format
+  try {
+    const data = JSON.parse(customId) as ModalData
+    return isCampaignCreateModal(data)
+  } catch {
+    return false
+  }
 }
 export function createGameSetupModalId(
   roleInfo: {

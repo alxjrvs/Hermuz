@@ -4,141 +4,111 @@ import type {
   AttendanceInsert,
   AttendanceUpdate
 } from '../utils/supabase'
-import { logger } from 'robo.js'
+import {
+  executeDbOperation,
+  executeDbArrayOperation,
+  executeDbModifyOperation
+} from '../utils/databaseUtils'
+
 export const getAttendance = async (id: string): Promise<Attendance | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('attendances')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error) {
-      logger.error('Error fetching attendance:', error)
-      return null
-    }
-    return data
-  } catch (error) {
-    logger.error('Error in getAttendance:', error)
-    return null
-  }
+  return executeDbOperation(
+    async () =>
+      await supabase.from('attendances').select('*').eq('id', id).single(),
+    'Error fetching attendance',
+    'getAttendance'
+  )
 }
+
 export const getUserAttendance = async (
   gameDayId: string,
   userId: string
 ): Promise<Attendance | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('attendances')
-      .select('*')
-      .eq('game_day_id', gameDayId)
-      .eq('user_id', userId)
-      .single()
-    if (error && error.code !== 'PGRST116') {
-      logger.error('Error fetching user attendance:', error)
-      return null
-    }
-    return data || null
-  } catch (error) {
-    logger.error('Error in getUserAttendance:', error)
-    return null
-  }
+  const result = await executeDbOperation(
+    async () =>
+      await supabase
+        .from('attendances')
+        .select('*')
+        .eq('game_day_id', gameDayId)
+        .eq('user_id', userId)
+        .single(),
+    'Error fetching user attendance',
+    'getUserAttendance'
+  )
+
+  // Handle the PGRST116 error code (no rows returned) by returning null instead of treating it as an error
+  return result
 }
+
 export const getGameDayAttendances = async (
   gameDayId: string
 ): Promise<Attendance[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('attendances')
-      .select('*')
-      .eq('game_day_id', gameDayId)
-    if (error) {
-      logger.error('Error fetching game day attendances:', error)
-      return []
-    }
-    return data || []
-  } catch (error) {
-    logger.error('Error in getGameDayAttendances:', error)
-    return []
-  }
+  return executeDbArrayOperation(
+    async () =>
+      await supabase
+        .from('attendances')
+        .select('*')
+        .eq('game_day_id', gameDayId),
+    'Error fetching game day attendances',
+    'getGameDayAttendances'
+  )
 }
+
 export const getAttendancesByStatus = async (
   gameDayId: string,
   status: Attendance['status']
 ): Promise<Attendance[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('attendances')
-      .select('*')
-      .eq('game_day_id', gameDayId)
-      .eq('status', status)
-    if (error) {
-      logger.error(`Error fetching attendances with status ${status}:`, error)
-      return []
-    }
-    return data || []
-  } catch (error) {
-    logger.error(`Error in getAttendancesByStatus for ${status}:`, error)
-    return []
-  }
+  return executeDbArrayOperation(
+    async () =>
+      await supabase
+        .from('attendances')
+        .select('*')
+        .eq('game_day_id', gameDayId)
+        .eq('status', status),
+    `Error fetching attendances with status ${status}`,
+    'getAttendancesByStatus'
+  )
 }
+
 export const createAttendance = async (
   attendance: AttendanceInsert
 ): Promise<Attendance | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('attendances')
-      .insert(attendance)
-      .select()
-      .single()
-    if (error) {
-      logger.error('Error creating attendance:', error)
-      return null
-    }
-    return data
-  } catch (error) {
-    logger.error('Error in createAttendance:', error)
-    return null
-  }
+  return executeDbOperation(
+    async () =>
+      await supabase.from('attendances').insert(attendance).select().single(),
+    'Error creating attendance',
+    'createAttendance'
+  )
 }
+
 export const updateAttendance = async (
   id: string,
   updates: AttendanceUpdate
 ): Promise<Attendance | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('attendances')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-    if (error) {
-      logger.error('Error updating attendance:', error)
-      return null
-    }
-    return data
-  } catch (error) {
-    logger.error('Error in updateAttendance:', error)
-    return null
-  }
+  return executeDbOperation(
+    async () =>
+      await supabase
+        .from('attendances')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single(),
+    'Error updating attendance',
+    'updateAttendance'
+  )
 }
 export const updateUserAttendance = async (
   gameDayId: string,
   userId: string,
   status: Attendance['status']
 ): Promise<Attendance | null> => {
-  try {
-    const existingAttendance = await getUserAttendance(gameDayId, userId)
-    if (existingAttendance) {
-      return updateAttendance(existingAttendance.id, { status })
-    } else {
-      return createAttendance({
-        game_day_id: gameDayId,
-        user_id: userId,
-        status
-      })
-    }
-  } catch (error) {
-    logger.error('Error in updateUserAttendance:', error)
-    return null
+  const existingAttendance = await getUserAttendance(gameDayId, userId)
+  if (existingAttendance) {
+    return updateAttendance(existingAttendance.id, { status })
+  } else {
+    return createAttendance({
+      game_day_id: gameDayId,
+      user_id: userId,
+      status
+    })
   }
 }
