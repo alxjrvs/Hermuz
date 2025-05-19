@@ -1,11 +1,8 @@
 import { logger } from 'robo.js'
 import { initSupabase } from '../../utils/supabase'
-
 export default async () => {
   logger.info('Initializing Supabase connection...')
-
   const connected = await initSupabase()
-
   if (connected) {
     logger.info('Successfully connected to Supabase')
   } else {

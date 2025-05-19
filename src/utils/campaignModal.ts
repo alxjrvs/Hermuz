@@ -5,7 +5,6 @@ import {
   ActionRowBuilder
 } from 'discord.js'
 import { Campaign } from '~/utils/supabase'
-
 export default function campaignModal(
   customId: string,
   defaultValues?: Campaign
@@ -13,7 +12,6 @@ export default function campaignModal(
   const modal = new ModalBuilder()
     .setCustomId(customId)
     .setTitle('Create Campaign')
-
   const titleInput = new TextInputBuilder()
     .setCustomId('title')
     .setLabel('Campaign Title')
@@ -21,11 +19,9 @@ export default function campaignModal(
     .setPlaceholder('Enter the title of the campaign')
     .setRequired(true)
     .setMaxLength(100)
-
   if (defaultValues?.title) {
     titleInput.setValue(defaultValues.title)
   }
-
   const descriptionInput = new TextInputBuilder()
     .setCustomId('description')
     .setLabel('Campaign Description')
@@ -33,11 +29,9 @@ export default function campaignModal(
     .setPlaceholder('Enter a description of the campaign')
     .setRequired(true)
     .setMaxLength(1000)
-
   if (defaultValues?.description) {
     descriptionInput.setValue(defaultValues.description)
   }
-
   const regularGameTimeInput = new TextInputBuilder()
     .setCustomId('regular_game_time')
     .setLabel('Regular Game Time')
@@ -45,12 +39,9 @@ export default function campaignModal(
     .setPlaceholder('e.g., Fridays 8PM-11PM EST')
     .setRequired(true)
     .setMaxLength(100)
-
   if (defaultValues?.regular_game_time) {
     regularGameTimeInput.setValue(defaultValues.regular_game_time)
   }
-
-  // Add inputs to action rows (max 5 inputs per modal, 1 input per action row)
   const titleActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
     titleInput
   )
@@ -58,13 +49,10 @@ export default function campaignModal(
     new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput)
   const regularGameTimeActionRow =
     new ActionRowBuilder<TextInputBuilder>().addComponents(regularGameTimeInput)
-
-  // Add action rows to the modal
   modal.addComponents(
     titleActionRow,
     descriptionActionRow,
     regularGameTimeActionRow
   )
-
   return modal
 }

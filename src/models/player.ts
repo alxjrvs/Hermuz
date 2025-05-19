@@ -10,10 +10,6 @@ import {
   executeDbArrayOperation,
   executeDbModifyOperation
 } from '../utils/databaseUtils'
-
-/**
- * Get a player by ID
- */
 export const getPlayer = async (id: string): Promise<Player | null> => {
   return executeDbOperation(
     async () =>
@@ -22,10 +18,6 @@ export const getPlayer = async (id: string): Promise<Player | null> => {
     'getPlayer'
   )
 }
-
-/**
- * Get a player by user ID and campaign ID
- */
 export const getPlayerByUserAndCampaign = async (
   userId: string,
   campaignId: string
@@ -42,10 +34,6 @@ export const getPlayerByUserAndCampaign = async (
     'getPlayerByUserAndCampaign'
   )
 }
-
-/**
- * Get all players for a campaign
- */
 export const getPlayersByCampaign = async (
   campaignId: string
 ): Promise<Player[]> => {
@@ -60,10 +48,6 @@ export const getPlayersByCampaign = async (
     'getPlayersByCampaign'
   )
 }
-
-/**
- * Get all campaigns for a user
- */
 export const getPlayersByUser = async (userId: string): Promise<Player[]> => {
   return executeDbArrayOperation(
     async () =>
@@ -76,10 +60,6 @@ export const getPlayersByUser = async (userId: string): Promise<Player[]> => {
     'getPlayersByUser'
   )
 }
-
-/**
- * Create a new player
- */
 export const createPlayer = async (
   player: PlayerInsert
 ): Promise<Player | null> => {
@@ -89,10 +69,6 @@ export const createPlayer = async (
     'createPlayer'
   )
 }
-
-/**
- * Update a player
- */
 export const updatePlayer = async (
   id: string,
   updates: PlayerUpdate
@@ -109,10 +85,6 @@ export const updatePlayer = async (
     'updatePlayer'
   )
 }
-
-/**
- * Update a player by user ID and campaign ID
- */
 export const updatePlayerByUserAndCampaign = async (
   userId: string,
   campaignId: string,
@@ -131,10 +103,6 @@ export const updatePlayerByUserAndCampaign = async (
     'updatePlayerByUserAndCampaign'
   )
 }
-
-/**
- * Delete a player
- */
 export const deletePlayer = async (id: string): Promise<boolean> => {
   return executeDbModifyOperation(
     async () => await supabase.from('players').delete().eq('id', id),
@@ -142,10 +110,6 @@ export const deletePlayer = async (id: string): Promise<boolean> => {
     'deletePlayer'
   )
 }
-
-/**
- * Delete a player by user ID and campaign ID
- */
 export const deletePlayerByUserAndCampaign = async (
   userId: string,
   campaignId: string
@@ -161,24 +125,16 @@ export const deletePlayerByUserAndCampaign = async (
     'deletePlayerByUserAndCampaign'
   )
 }
-
-/**
- * Get or create a player
- */
 export const getOrCreatePlayer = async (
   userId: string,
   campaignId: string,
   characterName?: string,
   status: PlayerStatus = 'INTERESTED'
 ): Promise<Player | null> => {
-  // Try to get the existing player
   const existingPlayer = await getPlayerByUserAndCampaign(userId, campaignId)
-
   if (existingPlayer) {
     return existingPlayer
   }
-
-  // Create a new player if one doesn't exist
   return createPlayer({
     user_id: userId,
     campaign_id: campaignId,
@@ -186,10 +142,6 @@ export const getOrCreatePlayer = async (
     status
   })
 }
-
-/**
- * Get players by campaign and status
- */
 export const getPlayersByCampaignAndStatus = async (
   campaignId: string,
   status: PlayerStatus
@@ -206,20 +158,12 @@ export const getPlayersByCampaignAndStatus = async (
     'getPlayersByCampaignAndStatus'
   )
 }
-
-/**
- * Update player status
- */
 export const updatePlayerStatus = async (
   id: string,
   status: PlayerStatus
 ): Promise<Player | null> => {
   return updatePlayer(id, { status })
 }
-
-/**
- * Update player status by user ID and campaign ID
- */
 export const updatePlayerStatusByUserAndCampaign = async (
   userId: string,
   campaignId: string,

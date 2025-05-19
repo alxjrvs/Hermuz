@@ -7,10 +7,9 @@ import {
 import { getDiscordServerByDiscordId } from '../../models/discordServer'
 import { createCampaignModalId } from '../../utils/modalUtils'
 import campaignModal from '../../utils/campaignModal'
-
 export const config = createCommandConfig({
   description: 'Create a new campaign with associated role and channels',
-  defaultMemberPermissions: PermissionFlagsBits.Administrator, // Requires Administrator permission
+  defaultMemberPermissions: PermissionFlagsBits.Administrator, 
   options: [
     {
       name: 'game',
@@ -27,14 +26,10 @@ export const config = createCommandConfig({
     }
   ]
 } as const)
-
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
-    // Get the game and role options
     const gameInput = interaction.options.getString('game', true)
     const roleInput = interaction.options.getString('role', true)
-
-    // Check if the server exists in our database
     const server = await getDiscordServerByDiscordId(interaction.guildId!)
     if (!server) {
       return interaction.reply({
@@ -43,8 +38,6 @@ export default async (interaction: ChatInputCommandInteraction) => {
         flags: MessageFlags.Ephemeral
       })
     }
-
-    // Create modal data to pass to the handler
     const modalData = {
       command: 'campaign_create',
       gameInfo: {
@@ -55,11 +48,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
       },
       guildId: interaction.guildId!
     }
-
-    // Create a unique ID for the modal that includes the data
     const modalId = createCampaignModalId(modalData)
-
-    // Show the modal to the user
     await interaction.showModal(campaignModal(modalId))
   } catch (error) {
     logger.error('Error in campaign create command:', error)

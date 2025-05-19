@@ -9,10 +9,9 @@ import {
   getOrCreateDiscordServer,
   updateDiscordServer
 } from '../models/discordServer'
-
 export const config = createCommandConfig({
   description: 'Set the channel for game day scheduling',
-  defaultMemberPermissions: PermissionFlagsBits.Administrator, // Requires Administrator permission
+  defaultMemberPermissions: PermissionFlagsBits.Administrator, 
   options: [
     {
       name: 'channel',
@@ -23,41 +22,29 @@ export const config = createCommandConfig({
     }
   ]
 } as const)
-
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
-
-    // Get the scheduling channel from the command options
     const schedulingChannel = interaction.options.getChannel('channel', true)
-
-    // Validate the channel type
     if (schedulingChannel.type !== ChannelType.GuildText) {
       return interaction.editReply(
         'The scheduling channel must be a text channel.'
       )
     }
-
-    // Get or create the Discord server record
     const server = await getOrCreateDiscordServer(interaction.guildId!)
     if (!server) {
       return interaction.editReply(
         'Failed to retrieve server record. Please try again later.'
       )
     }
-
-    // Update the scheduling channel ID
     const updatedServer = await updateDiscordServer(server.id, {
       scheduling_channel_id: schedulingChannel.id
     })
-
     if (!updatedServer) {
       return interaction.editReply(
         'Failed to update server settings. Please try again later.'
       )
     }
-
-    // Success message
     interaction.editReply(
       `Channel set successfully! <#${schedulingChannel.id}> will now be used for game day scheduling.`
     )

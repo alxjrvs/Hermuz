@@ -5,10 +5,6 @@ import {
   executeDbArrayOperation,
   executeDbModifyOperation
 } from '../utils/databaseUtils'
-
-/**
- * Get a game by its ID
- */
 export const getGame = async (id: string): Promise<Game | null> => {
   return executeDbOperation(
     async () => await supabase.from('games').select('*').eq('id', id).single(),
@@ -16,10 +12,6 @@ export const getGame = async (id: string): Promise<Game | null> => {
     'getGame'
   )
 }
-
-/**
- * Get a game by its associated Discord role ID
- */
 export const getGameByRoleId = async (
   discordRoleId: string
 ): Promise<Game | null> => {
@@ -34,30 +26,19 @@ export const getGameByRoleId = async (
     'getGameByRoleId'
   )
 }
-
-/**
- * Get all games, optionally filtered by server ID
- */
 export const getAllGames = async (serverId?: string): Promise<Game[]> => {
   return executeDbArrayOperation(
     async () => {
       let query = supabase.from('games').select('*').order('name')
-
-      // If serverId is provided, filter by server_id
       if (serverId) {
         query = query.eq('server_id', serverId)
       }
-
       return await query
     },
     'Error fetching all games',
     'getAllGames'
   )
 }
-
-/**
- * Create a new game
- */
 export const createGame = async (game: GameInsert): Promise<Game | null> => {
   return executeDbOperation(
     async () => await supabase.from('games').insert(game).select().single(),
@@ -65,10 +46,6 @@ export const createGame = async (game: GameInsert): Promise<Game | null> => {
     'createGame'
   )
 }
-
-/**
- * Update an existing game
- */
 export const updateGame = async (
   id: string,
   updates: GameUpdate
@@ -85,10 +62,6 @@ export const updateGame = async (
     'updateGame'
   )
 }
-
-/**
- * Delete a game
- */
 export const deleteGame = async (id: string): Promise<boolean> => {
   return executeDbModifyOperation(
     async () => await supabase.from('games').delete().eq('id', id),

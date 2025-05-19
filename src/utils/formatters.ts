@@ -1,9 +1,5 @@
 import { EmbedBuilder, Colors } from 'discord.js'
 import type { GameDay, Game, Attendance } from './supabase'
-
-/**
- * Format a date string to a human-readable format
- */
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -16,16 +12,11 @@ export const formatDate = (dateString: string): string => {
     timeZoneName: 'short'
   })
 }
-
-/**
- * Create an embed for a game day
- */
 export const createGameDayEmbed = (
   gameDay: GameDay,
   game: Game,
   attendances: Attendance[]
 ): EmbedBuilder => {
-  // Count attendances by status
   const availableCount = attendances.filter(
     (a) => a.status === 'AVAILABLE'
   ).length
@@ -35,18 +26,14 @@ export const createGameDayEmbed = (
   const notAvailableCount = attendances.filter(
     (a) => a.status === 'NOT_AVAILABLE'
   ).length
-
-  // Determine color based on status
   let color: number
   if (gameDay.status === 'CANCELLED') {
     color = Colors.Red
   } else if (gameDay.status === 'SCHEDULING') {
     color = Colors.Yellow
   } else {
-    // CLOSED
     color = Colors.Green
   }
-
   return new EmbedBuilder()
     .setTitle(gameDay.title)
     .setDescription(gameDay.description)
@@ -86,10 +73,6 @@ export const createGameDayEmbed = (
     .setFooter({ text: `Game Day ID: ${gameDay.id}` })
     .setTimestamp(new Date(gameDay.updated_at))
 }
-
-/**
- * Create an embed for a game
- */
 export const createGameEmbed = (game: Game): EmbedBuilder => {
   return new EmbedBuilder()
     .setTitle(`${game.name} (${game.short_name})`)
@@ -111,10 +94,6 @@ export const createGameEmbed = (game: Game): EmbedBuilder => {
     )
     .setFooter({ text: `Game ID: ${game.id}` })
 }
-
-/**
- * Capitalize the first letter of a string
- */
 export const capitalizeFirstLetter = (string: string): string => {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }

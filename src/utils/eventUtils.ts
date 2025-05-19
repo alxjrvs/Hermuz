@@ -1,9 +1,5 @@
 import { logger } from 'robo.js'
 import { type Guild, type GuildScheduledEvent } from 'discord.js'
-
-/**
- * Error codes that can occur when working with Discord scheduled events
- */
 export enum EventErrorCode {
   MISSING_PERMISSIONS = 'MISSING_PERMISSIONS',
   EVENT_NOT_FOUND = 'EVENT_NOT_FOUND',
@@ -12,14 +8,9 @@ export enum EventErrorCode {
   INVALID_SCHEDULED_TIME = 'INVALID_SCHEDULED_TIME',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
-
-/**
- * Error class for Discord scheduled event operations
- */
 export class EventError extends Error {
   code: EventErrorCode
   originalError?: Error
-
   constructor(
     code: EventErrorCode,
     message: string,
@@ -28,21 +19,11 @@ export class EventError extends Error {
     super(message)
     this.name = 'EventError'
     this.code = code
-
     if (originalError instanceof Error) {
       this.originalError = originalError
     }
   }
 }
-
-/**
- * Safely fetch a Discord scheduled event
- *
- * @param guild The guild to fetch the event from
- * @param eventId The ID of the event to fetch
- * @returns The fetched event or null if not found
- * @throws EventError if an error occurs
- */
 export async function safelyFetchEvent(
   guild: Guild,
   eventId: string
@@ -50,7 +31,6 @@ export async function safelyFetchEvent(
   try {
     return await guild.scheduledEvents.fetch(eventId)
   } catch (error) {
-    // Check for specific error types
     if (error instanceof Error) {
       if (error.message.includes('Missing Permissions')) {
         throw new EventError(
@@ -63,8 +43,6 @@ export async function safelyFetchEvent(
         return null
       }
     }
-
-    // Log the error and return null
     logger.error(`Error fetching scheduled event ${eventId}:`, error)
     throw new EventError(
       EventErrorCode.UNKNOWN_ERROR,
@@ -73,36 +51,22 @@ export async function safelyFetchEvent(
     )
   }
 }
-
-/**
- * Safely delete a Discord scheduled event
- *
- * @param guild The guild containing the event
- * @param eventId The ID of the event to delete
- * @returns True if the event was deleted, false if it wasn't found
- * @throws EventError if an error occurs
- */
 export async function safelyDeleteEvent(
   guild: Guild,
   eventId: string
 ): Promise<boolean> {
   try {
     const event = await safelyFetchEvent(guild, eventId)
-
     if (!event) {
       return false
     }
-
     await event.delete()
     logger.info(`Successfully deleted scheduled event: ${eventId}`)
     return true
   } catch (error) {
     if (error instanceof EventError) {
-      // Re-throw EventError instances
       throw error
     }
-
-    // Handle other errors
     logger.error(`Error deleting scheduled event ${eventId}:`, error)
     throw new EventError(
       EventErrorCode.UNKNOWN_ERROR,
@@ -111,13 +75,6 @@ export async function safelyDeleteEvent(
     )
   }
 }
-
-/**
- * Get a user-friendly error message for an EventError
- *
- * @param error The error to get a message for
- * @returns A user-friendly error message
- */
 export function getUserFriendlyEventErrorMessage(error: EventError): string {
   switch (error.code) {
     case EventErrorCode.MISSING_PERMISSIONS:
