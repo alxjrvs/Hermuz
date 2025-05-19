@@ -3,7 +3,7 @@ import type { Campaign } from '../utils/supabase'
 
 /**
  * Format the regular game time for display
- * 
+ *
  * @param regularGameTime The regular game time string
  * @returns A formatted string for display
  */
@@ -19,7 +19,7 @@ export function formatRegularGameTime(regularGameTime: string): string {
 
 /**
  * Generate a role name for a campaign
- * 
+ *
  * @param title The title of the campaign
  * @returns A generated role name
  */
@@ -36,7 +36,7 @@ export function generateCampaignRoleName(title: string): string {
 
 /**
  * Get a display name for a campaign
- * 
+ *
  * @param campaign The campaign object
  * @returns A display name that includes the game name if available
  */

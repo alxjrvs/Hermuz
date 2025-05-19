@@ -1,5 +1,9 @@
 import { supabase } from '../utils/supabase'
-import type { Campaign, CampaignInsert, CampaignUpdate } from '../utils/supabase'
+import type {
+  Campaign,
+  CampaignInsert,
+  CampaignUpdate
+} from '../utils/supabase'
 import {
   executeDbOperation,
   executeDbArrayOperation,
@@ -11,7 +15,8 @@ import {
  */
 export const getCampaign = async (id: string): Promise<Campaign | null> => {
   return executeDbOperation(
-    async () => await supabase.from('campaigns').select('*').eq('id', id).single(),
+    async () =>
+      await supabase.from('campaigns').select('*').eq('id', id).single(),
     'Error fetching campaign',
     'getCampaign'
   )
@@ -38,7 +43,9 @@ export const getCampaignByRoleId = async (
 /**
  * Get all campaigns, optionally filtered by server ID
  */
-export const getAllCampaigns = async (serverId?: string): Promise<Campaign[]> => {
+export const getAllCampaigns = async (
+  serverId?: string
+): Promise<Campaign[]> => {
   return executeDbArrayOperation(
     async () => {
       let query = supabase.from('campaigns').select('*').order('title')
@@ -58,7 +65,9 @@ export const getAllCampaigns = async (serverId?: string): Promise<Campaign[]> =>
 /**
  * Get campaigns by game ID
  */
-export const getCampaignsByGame = async (gameId: string): Promise<Campaign[]> => {
+export const getCampaignsByGame = async (
+  gameId: string
+): Promise<Campaign[]> => {
   return executeDbArrayOperation(
     async () =>
       await supabase
@@ -74,9 +83,12 @@ export const getCampaignsByGame = async (gameId: string): Promise<Campaign[]> =>
 /**
  * Create a new campaign
  */
-export const createCampaign = async (campaign: CampaignInsert): Promise<Campaign | null> => {
+export const createCampaign = async (
+  campaign: CampaignInsert
+): Promise<Campaign | null> => {
   return executeDbOperation(
-    async () => await supabase.from('campaigns').insert(campaign).select().single(),
+    async () =>
+      await supabase.from('campaigns').insert(campaign).select().single(),
     'Error creating campaign',
     'createCampaign'
   )

@@ -14,7 +14,8 @@ export const config = createCommandConfig({
   options: [
     {
       name: 'game',
-      description: 'The game for this campaign (existing game role or new game name)',
+      description:
+        'The game for this campaign (existing game role or new game name)',
       type: 'string',
       required: true
     },

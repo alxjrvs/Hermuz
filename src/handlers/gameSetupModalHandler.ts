@@ -6,7 +6,7 @@ import { GameSetupModalData } from '../utils/modalUtils'
 
 /**
  * Handle the game setup modal submission
- * 
+ *
  * @param interaction The modal submission interaction
  * @param modalData The deserialized modal data
  */
@@ -31,9 +31,7 @@ export async function handleGameSetupModalSubmit(
     const maxPlayers = parseInt(maxPlayersStr, 10)
 
     if (isNaN(minPlayers) || minPlayers < 1) {
-      return interaction.editReply(
-        'Minimum players must be a positive number.'
-      )
+      return interaction.editReply('Minimum players must be a positive number.')
     }
 
     if (isNaN(maxPlayers) || maxPlayers < minPlayers) {

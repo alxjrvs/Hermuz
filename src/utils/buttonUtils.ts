@@ -10,13 +10,21 @@ export interface AttendanceButtonData {
 }
 
 /**
+ * Interface for campaign interest button data
+ */
+export interface CampaignInterestButtonData {
+  command: 'campaign_interest'
+  campaignId: string
+}
+
+/**
  * Type for all button data types
  */
-export type ButtonData = AttendanceButtonData
+export type ButtonData = AttendanceButtonData | CampaignInterestButtonData
 
 /**
  * Serialize button data to a customId string
- * 
+ *
  * @param data The button data to serialize
  * @returns A string that can be used as a customId
  */
@@ -31,7 +39,7 @@ export function serializeButtonData(data: ButtonData): string {
 
 /**
  * Deserialize a customId string to button data
- * 
+ *
  * @param customId The customId string to deserialize
  * @returns The deserialized button data or null if deserialization fails
  */
@@ -46,17 +54,31 @@ export function deserializeButtonData(customId: string): ButtonData | null {
 
 /**
  * Check if the customId is for an attendance button
- * 
+ *
  * @param data The button data to check
  * @returns True if the button is an attendance button, false otherwise
  */
-export function isAttendanceButton(data: ButtonData): data is AttendanceButtonData {
+export function isAttendanceButton(
+  data: ButtonData
+): data is AttendanceButtonData {
   return data.command === 'attendance'
 }
 
 /**
+ * Check if the customId is for a campaign interest button
+ *
+ * @param data The button data to check
+ * @returns True if the button is a campaign interest button, false otherwise
+ */
+export function isCampaignInterestButton(
+  data: ButtonData
+): data is CampaignInterestButtonData {
+  return data.command === 'campaign_interest'
+}
+
+/**
  * Create a customId for an attendance button
- * 
+ *
  * @param status The attendance status
  * @param gameDayId The game day ID
  * @returns A customId string for the button
@@ -69,5 +91,18 @@ export function createAttendanceButtonId(
     command: 'attendance',
     status,
     gameDayId
+  })
+}
+
+/**
+ * Create a customId for a campaign interest button
+ *
+ * @param campaignId The campaign ID
+ * @returns A customId string for the button
+ */
+export function createCampaignInterestButtonId(campaignId: string): string {
+  return serializeButtonData({
+    command: 'campaign_interest',
+    campaignId
   })
 }

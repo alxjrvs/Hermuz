@@ -2,9 +2,6 @@ import { logger } from 'robo.js'
 import {
   MessageFlags,
   type ModalSubmitInteraction,
-  ButtonBuilder,
-  ButtonStyle,
-  ActionRowBuilder,
   GuildScheduledEventEntityType,
   GuildScheduledEventPrivacyLevel
 } from 'discord.js'
@@ -14,20 +11,15 @@ import {
 } from '../utils/eventUtils'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
 import { getGameByRoleId } from '../models/game'
-import {
-  createGameDayDraft,
-  updateGameDay,
-  getGameDay
-} from '../models/gameDay'
+import { createGameDayDraft, updateGameDay } from '../models/gameDay'
 import { getOrCreateUser } from '../models/user'
 import { createAttendance } from '../models/attendance'
-import {
-  getSchedulingChannel,
-  getDiscordServerByDiscordId
-} from '../models/discordServer'
+// These imports are not used in this file but may be needed in the future
+// import { getSchedulingChannel, getDiscordServerByDiscordId } from '../models/discordServer'
 import { createGameDayChannels } from '../utils/channelUtils'
 import { GameDayScheduleModalData } from '../utils/modalUtils'
-import { createAttendanceButtonId } from '../utils/buttonUtils'
+// This import is not used in this file but may be needed in the future
+// import { createAttendanceButtonId } from '../utils/buttonUtils'
 import { parseDateTime, createGameDayRole } from '../utils/gameDayUtils'
 
 /**
@@ -45,7 +37,7 @@ export async function handleGameDayScheduleModalSubmit(
     // Use deferReply to acknowledge the modal submission
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-    const { userId, username, guildId, roleInfo } = modalData
+    const { userId, username, roleInfo } = modalData
 
     // Extract values from the modal
     const title = interaction.fields.getTextInputValue('title')
@@ -78,7 +70,6 @@ export async function handleGameDayScheduleModalSubmit(
 
     // Set up game information
     let gameId: string | undefined
-    let gameRoleId: string | undefined
     let gameForEmbed = null
 
     if (roleInfo?.exists && roleInfo.id) {
@@ -86,7 +77,7 @@ export async function handleGameDayScheduleModalSubmit(
       const game = await getGameByRoleId(roleInfo.id)
       if (game) {
         gameId = game.id
-        gameRoleId = game.discord_role_id
+        // We don't need to use the game's role ID here as we're creating a new role for the game day
         gameForEmbed = game
       }
     }
@@ -163,7 +154,8 @@ export async function handleGameDayScheduleModalSubmit(
 
       // Update the game day record with the event ID
       await updateGameDay(gameDay.id, {
-        discord_event_id: scheduledEvent.id
+        discord_event_id: scheduledEvent.id,
+        discord_category_id: channels?.category.id
       })
 
       logger.info(`Updated game day with event ID: ${scheduledEvent.id}`)
@@ -240,97 +232,17 @@ export async function handleGameDayScheduleModalSubmit(
       replyContent = `Game day created successfully, but there was an issue creating the Discord scheduled event: ${eventErrorMessage}`
     }
 
+    // Add information about the new announce command
+    if (replyContent) {
+      replyContent += '\n\n'
+    }
+    replyContent += `Game day created successfully! Use \`/game_day announce @${gameDayRole.name}\` to announce it in the scheduling channel.`
+
     // Send the success message to the user
     await interaction.editReply({
       content: replyContent || undefined,
       embeds: [userEmbed]
     })
-
-    // Get the scheduling channel
-    const schedulingChannel = await getSchedulingChannel(guildId)
-    if (!schedulingChannel) {
-      logger.error('Failed to get scheduling channel for announcement')
-      return
-    }
-
-    // Get the game if it exists
-    if (gameId && gameRoleId) {
-      gameForEmbed = await getGameByRoleId(gameRoleId)
-    }
-
-    // Create an embed for the scheduling channel announcement using our utility function
-    // Include the host's attendance in the announcement
-    const announcementEmbed = createGameDayMessageEmbed(
-      gameDay,
-      attendances, // Use the same attendances array we created earlier
-      gameForEmbed
-    )
-
-    // Create attendance buttons using our utility function
-    const availableButton = new ButtonBuilder()
-      .setCustomId(createAttendanceButtonId('AVAILABLE', gameDay.id))
-      .setLabel("I'm in")
-      .setStyle(ButtonStyle.Success)
-
-    const interestedButton = new ButtonBuilder()
-      .setCustomId(createAttendanceButtonId('INTERESTED', gameDay.id))
-      .setLabel("I'm Interested")
-      .setStyle(ButtonStyle.Primary)
-
-    const notAvailableButton = new ButtonBuilder()
-      .setCustomId(createAttendanceButtonId('NOT_AVAILABLE', gameDay.id))
-      .setLabel('Not Available')
-      .setStyle(ButtonStyle.Secondary)
-
-    // Create a row of buttons
-    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      availableButton,
-      interestedButton,
-      notAvailableButton
-    )
-
-    // Get the updated game day with the event ID
-    const updatedGameDay = await getGameDay(gameDay.id)
-
-    // Prepare content with mentions and event link if available
-    let content = gameRoleId ? `<@&${gameRoleId}>` : `@everyone`
-
-    // Add link to Discord event if it was created
-    if (updatedGameDay?.discord_event_id) {
-      content += `\n\nJoin the Discord event: https://discord.com/events/${guildId}/${updatedGameDay.discord_event_id}`
-    }
-
-    // Send the announcement to the scheduling channel
-    const announcementMessage = await schedulingChannel.send({
-      content: content,
-      embeds: [announcementEmbed],
-      components: [buttonRow]
-    })
-
-    // If we have both the event ID and the announcement message, update the event description to include the message link
-    if (updatedGameDay?.discord_event_id && announcementMessage) {
-      try {
-        const guild = interaction.guild!
-        const event = await guild.scheduledEvents.fetch(
-          updatedGameDay.discord_event_id
-        )
-
-        // Update the event description to include a link to the announcement message
-        const messageLink = `https://discord.com/channels/${guildId}/${schedulingChannel.id}/${announcementMessage.id}`
-        const updatedDescription = `${description || `Game day for ${title}`}\n\nRSVP and discussion: ${messageLink}`
-
-        await event.edit({
-          description: updatedDescription
-        })
-
-        logger.info(`Updated event description with announcement message link`)
-      } catch (error) {
-        logger.error(
-          'Error updating event description with message link:',
-          error
-        )
-      }
-    }
 
     logger.info(`Game day scheduled: ${gameDay.id}`)
   } catch (error) {

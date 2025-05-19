@@ -1,8 +1,7 @@
 import { createCommandConfig, logger } from 'robo.js'
 import {
   type ChatInputCommandInteraction,
-  PermissionFlagsBits,
-  MessageFlags
+  PermissionFlagsBits
 } from 'discord.js'
 import gameModal from '~/utils/gameModal'
 import { createGameSetupModalId } from '../../utils/modalUtils'

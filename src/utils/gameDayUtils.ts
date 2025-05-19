@@ -3,7 +3,7 @@ import { PermissionFlagsBits, type Guild } from 'discord.js'
 
 /**
  * Parse a date/time string in YYYY-MM-DD HH:MM format
- * 
+ *
  * @param dateTimeStr The date/time string to parse
  * @returns A Date object if the string is valid, null otherwise
  */
@@ -46,7 +46,7 @@ export function parseDateTime(dateTimeStr: string): Date | null {
 
 /**
  * Create a Discord role for a game day
- * 
+ *
  * @param guild The Discord guild where the role will be created
  * @param title The title of the game day
  * @param dateTime The date and time of the game day
@@ -77,7 +77,7 @@ export async function createGameDayRole(
 
 /**
  * Generate a role name based on the title and date
- * 
+ *
  * @param title The title of the game day
  * @param dateTime The date and time of the game day
  * @returns A generated role name

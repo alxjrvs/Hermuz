@@ -89,7 +89,7 @@ function createGameDayAttendanceEmbed(attendances: Attendance[]) {
     (a) => a.status === 'NOT_AVAILABLE'
   )
 
-  const embed = new EmbedBuilder().setTitle('Game Day Attendance')
+  // No need to create an embed here as we're just returning the fields
 
   return [
     {

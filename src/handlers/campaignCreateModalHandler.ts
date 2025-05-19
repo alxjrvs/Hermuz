@@ -31,7 +31,8 @@ export async function handleCampaignCreateModalSubmit(
     // Get the values from the modal
     const title = interaction.fields.getTextInputValue('title')
     const description = interaction.fields.getTextInputValue('description')
-    const regularGameTime = interaction.fields.getTextInputValue('regular_game_time')
+    const regularGameTime =
+      interaction.fields.getTextInputValue('regular_game_time')
 
     // Get the Discord server
     const server = await getDiscordServerByDiscordId(guildId)
@@ -62,7 +63,7 @@ export async function handleCampaignCreateModalSubmit(
       // It's a role ID or mention, try to find the game
       const roleId = roleMatch[1] || roleMatch[2]
       const game = await getGameByRoleId(roleId)
-      
+
       if (game) {
         gameId = game.id
       } else {
@@ -76,7 +77,7 @@ export async function handleCampaignCreateModalSubmit(
 
     // Process the role input and create a role
     const roleName = generateCampaignRoleName(roleInfo.input)
-    
+
     // Create the role
     const role = await guild.roles.create({
       name: roleName,
@@ -121,7 +122,8 @@ export async function handleCampaignCreateModalSubmit(
   } catch (error) {
     logger.error('Error in campaign create modal handler:', error)
     return interaction.editReply({
-      content: 'An error occurred while creating the campaign. Please try again later.'
+      content:
+        'An error occurred while creating the campaign. Please try again later.'
     })
   }
 }

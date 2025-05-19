@@ -28,7 +28,7 @@ export class EventError extends Error {
     super(message)
     this.name = 'EventError'
     this.code = code
-    
+
     if (originalError instanceof Error) {
       this.originalError = originalError
     }
@@ -37,7 +37,7 @@ export class EventError extends Error {
 
 /**
  * Safely fetch a Discord scheduled event
- * 
+ *
  * @param guild The guild to fetch the event from
  * @param eventId The ID of the event to fetch
  * @returns The fetched event or null if not found
@@ -63,7 +63,7 @@ export async function safelyFetchEvent(
         return null
       }
     }
-    
+
     // Log the error and return null
     logger.error(`Error fetching scheduled event ${eventId}:`, error)
     throw new EventError(
@@ -76,7 +76,7 @@ export async function safelyFetchEvent(
 
 /**
  * Safely delete a Discord scheduled event
- * 
+ *
  * @param guild The guild containing the event
  * @param eventId The ID of the event to delete
  * @returns True if the event was deleted, false if it wasn't found
@@ -88,11 +88,11 @@ export async function safelyDeleteEvent(
 ): Promise<boolean> {
   try {
     const event = await safelyFetchEvent(guild, eventId)
-    
+
     if (!event) {
       return false
     }
-    
+
     await event.delete()
     logger.info(`Successfully deleted scheduled event: ${eventId}`)
     return true
@@ -101,7 +101,7 @@ export async function safelyDeleteEvent(
       // Re-throw EventError instances
       throw error
     }
-    
+
     // Handle other errors
     logger.error(`Error deleting scheduled event ${eventId}:`, error)
     throw new EventError(
@@ -114,7 +114,7 @@ export async function safelyDeleteEvent(
 
 /**
  * Get a user-friendly error message for an EventError
- * 
+ *
  * @param error The error to get a message for
  * @returns A user-friendly error message
  */

@@ -3,17 +3,16 @@ import { MessageFlags, type ButtonInteraction } from 'discord.js'
 import { getOrCreateUser } from '../../models/user'
 import {
   updateUserAttendance,
-  getGameDayAttendances,
-  getUserAttendance
+  getGameDayAttendances
 } from '../../models/attendance'
 import { getGameDay } from '../../models/gameDay'
 import { getGame } from '../../models/game'
 import { AttendanceStatus } from '../../types/enums'
 import { createGameDayMessageEmbed } from '../../utils/gameDayMessageUtils'
+import { GameDay } from '../../utils/supabase'
 import {
   deserializeButtonData,
-  isAttendanceButton,
-  AttendanceButtonData
+  isAttendanceButton
 } from '../../utils/buttonUtils'
 import { isAttendanceStatus, isDiscordId, isUUID } from '../../utils/typeGuards'
 
@@ -147,7 +146,7 @@ async function processAttendanceUpdate(
  */
 async function handleRoleAssignment(
   interaction: ButtonInteraction,
-  gameDay: any,
+  gameDay: GameDay,
   status: AttendanceStatus,
   gameDayId: string
 ) {
@@ -188,7 +187,7 @@ async function handleRoleAssignment(
  */
 async function updateGameDayMessage(
   interaction: ButtonInteraction,
-  gameDay: any,
+  gameDay: GameDay,
   gameDayId: string
 ) {
   try {

@@ -1,11 +1,5 @@
 import { logger } from 'robo.js'
-import {
-  ChannelType,
-  Guild,
-  PermissionFlagsBits,
-  PermissionOverwriteOptions,
-  Role
-} from 'discord.js'
+import { ChannelType, Guild, PermissionFlagsBits, Role } from 'discord.js'
 import type { CategoryChannel, TextChannel, VoiceChannel } from 'discord.js'
 
 /**
