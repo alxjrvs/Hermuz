@@ -33,7 +33,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     // Check if the role is associated with a game day
     const gameDay = await getGameDayByRoleId(roleId)
     if (!gameDay) {
-      return interaction.editReply({
+      return interaction.reply({
         content: `The role <@&${roleId}> is not associated with any game day. Please provide a valid game day role.`,
         flags: MessageFlags.Ephemeral
       })
@@ -41,7 +41,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 
     // Check if the game day is already cancelled
     if (gameDay.status === 'CANCELLED') {
-      return interaction.editReply({
+      return interaction.reply({
         content: `The game day "${gameDay.title}" is already cancelled.`,
         flags: MessageFlags.Ephemeral
       })
@@ -53,7 +53,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     })
 
     if (!updatedGameDay) {
-      return interaction.editReply({
+      return interaction.reply({
         content: 'Failed to cancel the game day. Please try again later.',
         flags: MessageFlags.Ephemeral
       })
@@ -63,7 +63,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     const schedulingChannel = await getSchedulingChannel(interaction.guildId!)
     if (!schedulingChannel) {
       logger.error('Failed to get scheduling channel for announcement update')
-      return interaction.editReply({
+      return interaction.reply({
         content: `Game day "${gameDay.title}" has been cancelled, but failed to update the announcement message. The scheduling channel could not be found.`,
         flags: MessageFlags.Ephemeral
       })
@@ -105,7 +105,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
           `Updated announcement message for cancelled game day: ${gameDay.id}`
         )
 
-        return interaction.editReply({
+        return interaction.reply({
           content: `Game day "${gameDay.title}" has been cancelled and the announcement has been updated.`,
           flags: MessageFlags.Ephemeral
         })
@@ -114,7 +114,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
           `Could not find announcement message for game day: ${gameDay.id}`
         )
 
-        return interaction.editReply({
+        return interaction.reply({
           content: `Game day "${gameDay.title}" has been cancelled, but the announcement message could not be found. It may have been deleted or is too old.`,
           flags: MessageFlags.Ephemeral
         })
@@ -122,7 +122,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     } catch (error) {
       logger.error('Error updating announcement message:', error)
 
-      return interaction.editReply({
+      return interaction.reply({
         content: `Game day "${gameDay.title}" has been cancelled, but failed to update the announcement message due to an error.`,
         flags: MessageFlags.Ephemeral
       })
@@ -132,7 +132,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 
     try {
       if (interaction.deferred) {
-        await interaction.editReply({
+        await interaction.reply({
           content:
             'An error occurred while cancelling the game day. Please try again later.',
           flags: MessageFlags.Ephemeral
