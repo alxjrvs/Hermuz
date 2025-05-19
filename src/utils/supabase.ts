@@ -32,22 +32,35 @@ export type DiscordServerUpdate = TablesUpdate<'discord_servers'>
 export type CampaignUpdate = TablesUpdate<'campaigns'>
 export type PlayerUpdate = TablesUpdate<'players'>
 const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_KEY
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY
 export const supabase = createClient<Database>(
   supabaseUrl || '',
-  supabaseKey || ''
+  supabaseKey || '',
+  {
+    auth: {
+      persistSession: false
+    }
+  }
 )
 export const initSupabase = async (): Promise<boolean> => {
   if (!supabaseUrl || !supabaseKey) {
     logger.error('Supabase URL or key not found in environment variables')
     return false
   }
+
+  // Check if we're using the service role key
+  const isServiceRole = supabaseKey === process.env.SUPABASE_SERVICE_KEY
+
   try {
     const { error } = await supabase.from('users').select('*').limit(1)
     if (error) {
       logger.error('Error connecting to Supabase:', error)
       return false
     }
+
+    logger.info(
+      `Successfully connected to Supabase using ${isServiceRole ? 'service role' : 'public'} key`
+    )
     return true
   } catch (error) {
     logger.error('Error initializing Supabase:', error)
