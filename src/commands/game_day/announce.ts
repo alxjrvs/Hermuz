@@ -54,7 +54,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
           gameDay.announcement_message_id
         )
         if (existingMessage) {
-          const messageLink = `https:
+          const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${existingMessage.id}`
           return interaction.editReply({
             content: `Game day "${gameDay.title}" has already been announced. You can view the announcement here: ${messageLink}`
           })
@@ -112,7 +112,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
       ? `<@&${gameForEmbed.discord_role_id}>`
       : `@everyone`
     if (gameDay.discord_event_id) {
-      content += `\n\nJoin the Discord event: https:
+      content += `\n\nJoin the Discord event: https://discord.com/events/${interaction.guildId}/${gameDay.discord_event_id}`
     }
     const announcementMessage = await channel.send({
       content: content,
@@ -128,7 +128,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         const event = await guild.scheduledEvents.fetch(
           gameDay.discord_event_id
         )
-        const messageLink = `https:
+        const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${announcementMessage.id}`
         const updatedDescription = `${gameDay.description || `Game day for ${gameDay.title}`}\n\nRSVP and discussion: ${messageLink}`
         await event.edit({
           description: updatedDescription
@@ -141,7 +141,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         )
       }
     }
-    const messageLink = `https:
+    const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${announcementMessage.id}`
     return interaction.editReply({
       content: `Game day "${gameDay.title}" has been announced in the scheduling channel. You can view the announcement here: ${messageLink}`
     })

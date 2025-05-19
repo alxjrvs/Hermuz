@@ -4,6 +4,6 @@ export default () => {
   client.user?.setActivity({
     name: '✨ Built with Robo.js',
     type: ActivityType.Custom,
-    url: 'https:
+    url: 'https://robojs.dev'
   })
 }

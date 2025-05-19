@@ -54,7 +54,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
           campaign.announcement_message_id
         )
         if (existingMessage) {
-          const messageLink = `https:
+          const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${existingMessage.id}`
           return interaction.editReply({
             content: `Campaign "${campaign.title}" has already been announced. You can view the announcement here: ${messageLink}`
           })
@@ -92,7 +92,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     await updateCampaign(campaign.id, {
       announcement_message_id: announcementMessage.id
     })
-    const messageLink = `https:
+    const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${announcementMessage.id}`
     return interaction.editReply({
       content: `Campaign "${campaign.title}" has been announced in the scheduling channel. You can view the announcement here: ${messageLink}`
     })
