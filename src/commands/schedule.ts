@@ -15,13 +15,14 @@ import {
 } from 'discord.js'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
 import { getGameByRoleId } from '../models/game'
-import { createGameDayDraft } from '../models/gameDay'
+import { createGameDayDraft, updateGameDay } from '../models/gameDay'
 import { getOrCreateUser } from '../models/user'
 import { createAttendance } from '../models/attendance'
 import {
   getDiscordServerByDiscordId,
   getSchedulingChannel
 } from '../models/discordServer'
+import { createGameDayChannels } from '../utils/channelUtils'
 
 export const config = createCommandConfig({
   description: 'Schedule a new game day event',
@@ -278,6 +279,30 @@ async function handleModalSubmit(
       return interaction.editReply(
         'Failed to create the game day. Please try again later.'
       )
+    }
+
+    // Create private category and channels for the game day
+    const channels = await createGameDayChannels(
+      interaction.guild!,
+      title,
+      gameDayRole
+    )
+
+    if (channels) {
+      logger.info(`Created channels for game day ${gameDay.id}`)
+
+      // Update the game day with the category ID
+      await updateGameDay(gameDay.id, {
+        discord_category_id: channels.category.id
+      })
+
+      // Send a welcome message in the general channel
+      await channels.generalChannel.send({
+        content: `Welcome to the ${title} game day channels! <@&${gameDayRole.id}>\n\nThis is a private category only visible to people who have RSVP'd as available for this game day. Use these channels to coordinate and discuss the upcoming game day.`
+      })
+    } else {
+      logger.warn(`Failed to create channels for game day ${gameDay.id}`)
+      // Continue with the game day creation even if channel creation fails
     }
 
     // Create an attendance record for the host with AVAILABLE status

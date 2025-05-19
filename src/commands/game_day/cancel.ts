@@ -8,6 +8,7 @@ import {
 } from 'discord.js'
 import { getGameDayByRoleId, updateGameDay } from '../../models/gameDay'
 import { getSchedulingChannel } from '../../models/discordServer'
+import { deleteGameDayChannels } from '../../utils/channelUtils'
 
 export const config = createCommandConfig({
   description: 'Cancel a scheduled game day',
@@ -105,8 +106,29 @@ export default async (interaction: ChatInputCommandInteraction) => {
           `Updated announcement message for cancelled game day: ${gameDay.id}`
         )
 
+        // Delete the category and channels if they exist
+        let channelsDeleted = false
+        if (gameDay.discord_category_id) {
+          channelsDeleted = await deleteGameDayChannels(
+            interaction.guild!,
+            gameDay.discord_category_id
+          )
+
+          if (channelsDeleted) {
+            logger.info(
+              `Deleted channels for cancelled game day: ${gameDay.id}`
+            )
+          } else {
+            logger.warn(
+              `Failed to delete channels for cancelled game day: ${gameDay.id}`
+            )
+          }
+        }
+
         return interaction.reply({
-          content: `Game day "${gameDay.title}" has been cancelled and the announcement has been updated.`,
+          content: `Game day "${gameDay.title}" has been cancelled and the announcement has been updated.${
+            channelsDeleted ? ' All associated channels have been deleted.' : ''
+          }`,
           flags: MessageFlags.Ephemeral
         })
       } else {

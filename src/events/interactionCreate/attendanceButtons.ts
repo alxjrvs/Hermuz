@@ -77,13 +77,6 @@ export default async (interaction: ButtonInteraction) => {
       })
     }
 
-    // Get the previous attendance status if it exists
-    const previousAttendance = await getUserAttendance(
-      gameDayId,
-      interaction.user.id
-    )
-    const previousStatus = previousAttendance?.status
-
     // Handle role assignment/removal based on status
     if (gameDay.discord_role_id) {
       try {
@@ -92,7 +85,6 @@ export default async (interaction: ButtonInteraction) => {
         )
         if (member) {
           if (status === 'AVAILABLE') {
-            // Add the role if the user is available
             await member.roles.add(
               gameDay.discord_role_id,
               'User marked as available for game day'
@@ -100,16 +92,15 @@ export default async (interaction: ButtonInteraction) => {
             logger.info(
               `Added role ${gameDay.discord_role_id} to user ${interaction.user.id} for game day ${gameDayId}`
             )
-          } else if (previousStatus === 'AVAILABLE') {
-            // Remove the role if the user was previously available but is no longer
-            await member.roles.remove(
-              gameDay.discord_role_id,
-              'User no longer available for game day'
-            )
-            logger.info(
-              `Removed role ${gameDay.discord_role_id} from user ${interaction.user.id} for game day ${gameDayId}`
-            )
+            return
           }
+          await member.roles.remove(
+            gameDay.discord_role_id,
+            'User no longer available for game day'
+          )
+          logger.info(
+            `Removed role ${gameDay.discord_role_id} from user ${interaction.user.id} for game day ${gameDayId}`
+          )
         }
       } catch (error) {
         logger.error(
