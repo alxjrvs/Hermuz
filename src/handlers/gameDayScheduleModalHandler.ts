@@ -4,11 +4,21 @@ import {
   type ModalSubmitInteraction,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  GuildScheduledEventEntityType,
+  GuildScheduledEventPrivacyLevel
 } from 'discord.js'
+import {
+  EventError,
+  getUserFriendlyEventErrorMessage
+} from '../utils/eventUtils'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
 import { getGameByRoleId } from '../models/game'
-import { createGameDayDraft, updateGameDay } from '../models/gameDay'
+import {
+  createGameDayDraft,
+  updateGameDay,
+  getGameDay
+} from '../models/gameDay'
 import { getOrCreateUser } from '../models/user'
 import { createAttendance } from '../models/attendance'
 import {
@@ -129,6 +139,70 @@ export async function handleGameDayScheduleModalSubmit(
       logger.info(`Created channels for game day: ${gameDay.id}`)
     }
 
+    // Create a Discord scheduled event
+    let scheduledEvent = null
+    let eventErrorMessage = ''
+
+    try {
+      const guild = interaction.guild!
+
+      // Create the scheduled event
+      scheduledEvent = await guild.scheduledEvents.create({
+        name: title,
+        description: description || `Game day for ${title}`,
+        scheduledStartTime: dateTime,
+        scheduledEndTime: new Date(dateTime.getTime() + 4 * 60 * 60 * 1000), // Add 4 hours to start time
+        privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+        entityType: GuildScheduledEventEntityType.External,
+        entityMetadata: {
+          location: location || 'TBD'
+        }
+      })
+
+      logger.info(`Created Discord scheduled event: ${scheduledEvent.id}`)
+
+      // Update the game day record with the event ID
+      await updateGameDay(gameDay.id, {
+        discord_event_id: scheduledEvent.id
+      })
+
+      logger.info(`Updated game day with event ID: ${scheduledEvent.id}`)
+    } catch (error) {
+      if (error instanceof EventError) {
+        eventErrorMessage = getUserFriendlyEventErrorMessage(error)
+        logger.error(
+          `Event error for game day ${gameDay.id}: ${error.message}`,
+          error.originalError
+        )
+      } else {
+        logger.error('Error creating Discord scheduled event:', error)
+
+        // Try to determine the specific error
+        if (error instanceof Error) {
+          if (error.message.includes('Missing Permissions')) {
+            eventErrorMessage =
+              'The bot does not have permission to create scheduled events. Please ensure the bot has the "Manage Events" permission.'
+          } else if (error.message.includes('Invalid Form Body')) {
+            eventErrorMessage =
+              'Invalid event data provided. Please check the event details.'
+          } else {
+            eventErrorMessage =
+              'An unknown error occurred while creating the Discord scheduled event.'
+          }
+        } else {
+          eventErrorMessage =
+            'An unknown error occurred while creating the Discord scheduled event.'
+        }
+      }
+
+      // Log the error message that will be shown to the user
+      logger.warn(
+        `Event error message for game day ${gameDay.id}: ${eventErrorMessage}`
+      )
+
+      // Continue with the game day creation even if event creation fails
+    }
+
     // Mark the host as available by default
     const hostAttendance = await createAttendance({
       game_day_id: gameDay.id,
@@ -158,8 +232,19 @@ export async function handleGameDayScheduleModalSubmit(
       gameForEmbed
     )
 
+    // Prepare the reply content
+    let replyContent = ''
+
+    // Add information about any event creation errors
+    if (eventErrorMessage) {
+      replyContent = `Game day created successfully, but there was an issue creating the Discord scheduled event: ${eventErrorMessage}`
+    }
+
     // Send the success message to the user
-    await interaction.editReply({ embeds: [userEmbed] })
+    await interaction.editReply({
+      content: replyContent || undefined,
+      embeds: [userEmbed]
+    })
 
     // Get the scheduling channel
     const schedulingChannel = await getSchedulingChannel(guildId)
@@ -204,12 +289,48 @@ export async function handleGameDayScheduleModalSubmit(
       notAvailableButton
     )
 
+    // Get the updated game day with the event ID
+    const updatedGameDay = await getGameDay(gameDay.id)
+
+    // Prepare content with mentions and event link if available
+    let content = gameRoleId ? `<@&${gameRoleId}>` : `@everyone`
+
+    // Add link to Discord event if it was created
+    if (updatedGameDay?.discord_event_id) {
+      content += `\n\nJoin the Discord event: https://discord.com/events/${guildId}/${updatedGameDay.discord_event_id}`
+    }
+
     // Send the announcement to the scheduling channel
-    await schedulingChannel.send({
-      content: gameRoleId ? `<@&${gameRoleId}>` : `@everyone`,
+    const announcementMessage = await schedulingChannel.send({
+      content: content,
       embeds: [announcementEmbed],
       components: [buttonRow]
     })
+
+    // If we have both the event ID and the announcement message, update the event description to include the message link
+    if (updatedGameDay?.discord_event_id && announcementMessage) {
+      try {
+        const guild = interaction.guild!
+        const event = await guild.scheduledEvents.fetch(
+          updatedGameDay.discord_event_id
+        )
+
+        // Update the event description to include a link to the announcement message
+        const messageLink = `https://discord.com/channels/${guildId}/${schedulingChannel.id}/${announcementMessage.id}`
+        const updatedDescription = `${description || `Game day for ${title}`}\n\nRSVP and discussion: ${messageLink}`
+
+        await event.edit({
+          description: updatedDescription
+        })
+
+        logger.info(`Updated event description with announcement message link`)
+      } catch (error) {
+        logger.error(
+          'Error updating event description with message link:',
+          error
+        )
+      }
+    }
 
     logger.info(`Game day scheduled: ${gameDay.id}`)
   } catch (error) {

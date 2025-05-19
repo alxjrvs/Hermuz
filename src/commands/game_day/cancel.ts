@@ -9,6 +9,11 @@ import {
 import { getGameDayByRoleId, updateGameDay } from '../../models/gameDay'
 import { getSchedulingChannel } from '../../models/discordServer'
 import { deleteGameDayChannels } from '../../utils/channelUtils'
+import {
+  safelyDeleteEvent,
+  EventError,
+  getUserFriendlyEventErrorMessage
+} from '../../utils/eventUtils'
 
 export const config = createCommandConfig({
   description: 'Cancel a scheduled game day',
@@ -125,10 +130,63 @@ export default async (interaction: ChatInputCommandInteraction) => {
           }
         }
 
+        // Delete the Discord scheduled event if it exists
+        let eventDeleted = false
+        let eventErrorMessage = ''
+
+        if (gameDay.discord_event_id) {
+          try {
+            const guild = interaction.guild!
+            eventDeleted = await safelyDeleteEvent(
+              guild,
+              gameDay.discord_event_id
+            )
+
+            if (eventDeleted) {
+              logger.info(
+                `Deleted Discord scheduled event for cancelled game day: ${gameDay.id}`
+              )
+            } else {
+              logger.warn(
+                `Discord scheduled event not found for cancelled game day: ${gameDay.id}`
+              )
+            }
+          } catch (error) {
+            if (error instanceof EventError) {
+              eventErrorMessage = getUserFriendlyEventErrorMessage(error)
+              logger.error(
+                `Event error for cancelled game day ${gameDay.id}: ${error.message}`,
+                error.originalError
+              )
+            } else {
+              logger.error(
+                `Failed to delete Discord scheduled event for cancelled game day: ${gameDay.id}`,
+                error
+              )
+              eventErrorMessage =
+                'An unknown error occurred while deleting the Discord scheduled event.'
+            }
+          }
+        }
+
+        let replyContent = `Game day "${gameDay.title}" has been cancelled and the announcement has been updated.${
+          channelsDeleted ? ' All associated channels have been deleted.' : ''
+        }`
+
+        // Add information about the Discord scheduled event
+        if (gameDay.discord_event_id) {
+          if (eventDeleted) {
+            replyContent += ' The Discord scheduled event has been deleted.'
+          } else if (eventErrorMessage) {
+            replyContent += ` There was an issue deleting the Discord scheduled event: ${eventErrorMessage}`
+          } else {
+            replyContent +=
+              ' The Discord scheduled event could not be found (it may have been deleted already).'
+          }
+        }
+
         return interaction.reply({
-          content: `Game day "${gameDay.title}" has been cancelled and the announcement has been updated.${
-            channelsDeleted ? ' All associated channels have been deleted.' : ''
-          }`,
+          content: replyContent,
           flags: MessageFlags.Ephemeral
         })
       } else {
