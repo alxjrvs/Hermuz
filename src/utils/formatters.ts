@@ -43,7 +43,7 @@ export const createGameDayEmbed = (
   } else if (gameDay.status === 'SCHEDULING') {
     color = Colors.Yellow
   } else {
-    // SCHEDULED
+    // CLOSED
     color = Colors.Green
   }
 

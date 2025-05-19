@@ -202,7 +202,7 @@ export type Database = {
     }
     Enums: {
       attendance_status: "AVAILABLE" | "INTERESTED" | "NOT_AVAILABLE"
-      game_day_status: "SCHEDULED" | "SCHEDULING" | "CANCELLED"
+      game_day_status: "CLOSED" | "SCHEDULING" | "CANCELLED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -319,7 +319,7 @@ export const Constants = {
   public: {
     Enums: {
       attendance_status: ["AVAILABLE", "INTERESTED", "NOT_AVAILABLE"],
-      game_day_status: ["SCHEDULED", "SCHEDULING", "CANCELLED"],
+      game_day_status: ["CLOSED", "SCHEDULING", "CANCELLED"],
     },
   },
 } as const

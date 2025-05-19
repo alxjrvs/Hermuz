@@ -25,9 +25,9 @@ export default async (interaction: ChatInputCommandInteraction) => {
       )
     }
 
-    // Get all future game days with status SCHEDULED or SCHEDULING
-    const gameDays = await getUpcomingGameDaysByStatus(['SCHEDULED', 'SCHEDULING'])
-    
+    // Get all future game days with status CLOSED or SCHEDULING
+    const gameDays = await getUpcomingGameDaysByStatus(['CLOSED', 'SCHEDULING'])
+
     if (gameDays.length === 0) {
       return interaction.editReply(
         'No upcoming game days found. Use `/schedule` to create a new game day.'
@@ -66,7 +66,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
       // Add a field for this game day
       embed.addFields({
         name: `${gameDay.title} - ${formattedDate}`,
-        value: 
+        value:
           `**Status:** ${gameDay.status}\n` +
           `**Location:** ${gameDay.location || 'Not specified'}\n` +
           `**Game:** ${gameInfo}\n` +

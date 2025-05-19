@@ -201,7 +201,7 @@ CREATE TABLE game_days (
   description TEXT NOT NULL,
   date_time TIMESTAMP WITH TIME ZONE NOT NULL,
   location TEXT NOT NULL,
-  status TEXT NOT NULL CHECK (status IN ('scheduled', 'canceled', 'completed')),
+  status TEXT NOT NULL CHECK (status IN ('closed', 'scheduling', 'cancelled')),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );

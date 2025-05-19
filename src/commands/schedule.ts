@@ -9,11 +9,15 @@ import {
   MessageFlags,
   Colors,
   EmbedBuilder,
-  PermissionFlagsBits
+  PermissionFlagsBits,
+  ButtonBuilder,
+  ButtonStyle
 } from 'discord.js'
+import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
 import { getGameByRoleId } from '../models/game'
 import { createGameDayDraft } from '../models/gameDay'
 import { getOrCreateUser } from '../models/user'
+import { createAttendance } from '../models/attendance'
 import {
   getDiscordServerByDiscordId,
   getSchedulingChannel
@@ -182,7 +186,7 @@ async function handleModalSubmit(
   try {
     // For modal submissions, we need to acknowledge the interaction first
     // Use deferReply to acknowledge the modal submission
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     // Extract values from the modal
     const title = interaction.fields.getTextInputValue('title')
@@ -212,6 +216,9 @@ async function handleModalSubmit(
         'Failed to retrieve or create user record. Please try again later.'
       )
     }
+
+    // Variable to store game information for embeds
+    let gameForEmbed = null
 
     // Get the server record - we already checked that it exists and has a scheduling channel
     const server = await getDiscordServerByDiscordId(guildId)
@@ -273,19 +280,36 @@ async function handleModalSubmit(
       )
     }
 
-    // Create a success embed for the user
-    const userEmbed = new EmbedBuilder()
-      .setTitle('Game Day Scheduled!')
-      .setColor(Colors.Green)
-      .addFields(
-        { name: 'Title', value: title, inline: false },
-        { name: 'Date & Time', value: dateTime.toLocaleString(), inline: true },
-        { name: 'Location', value: location, inline: true },
-        { name: 'Status', value: 'SCHEDULING (Draft)', inline: true },
-        { name: 'Role', value: `<@&${gameDayRole.id}>`, inline: true }
+    // Create an attendance record for the host with AVAILABLE status
+    const hostAttendance = await createAttendance({
+      game_day_id: gameDay.id,
+      user_id: userId,
+      status: 'AVAILABLE'
+    })
+
+    if (!hostAttendance) {
+      logger.warn(
+        `Failed to create attendance record for host (${userId}) for game day ${gameDay.id}`
       )
-      .setFooter({ text: `Game Day ID: ${gameDay.id}` })
-      .setTimestamp()
+    } else {
+      logger.info(
+        `Created attendance record for host (${userId}) for game day ${gameDay.id}`
+      )
+    }
+
+    // Create a success embed for the user using our utility function
+    // Use the game we already fetched or fetch it if needed
+    if (gameId && !gameForEmbed && gameRoleId) {
+      gameForEmbed = await getGameByRoleId(gameRoleId)
+    }
+
+    // Create the embed with the host's attendance
+    const attendances = hostAttendance ? [hostAttendance] : []
+    const userEmbed = createGameDayMessageEmbed(
+      gameDay,
+      attendances,
+      gameForEmbed
+    )
 
     // Send the success message to the user
     await interaction.editReply({ embeds: [userEmbed] })
@@ -297,42 +321,48 @@ async function handleModalSubmit(
       return
     }
 
-    // Create an embed for the scheduling channel announcement
-    let gameInfo
-    if (gameId) {
-      const game = await getGameByRoleId(gameRoleId!)
-      if (game) {
-        gameInfo = `${game.name} (${game.short_name})`
-      }
+    // Get the game if it exists
+    if (gameId && gameRoleId) {
+      gameForEmbed = await getGameByRoleId(gameRoleId)
     }
 
-    const formattedDate = dateTime.toLocaleString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    // Create an embed for the scheduling channel announcement using our utility function
+    // Include the host's attendance in the announcement
+    const announcementEmbed = createGameDayMessageEmbed(
+      gameDay,
+      attendances, // Use the same attendances array we created earlier
+      gameForEmbed
+    )
 
-    const fields = [
-      gameInfo && { name: 'Game', value: gameInfo, inline: false },
-      { name: 'Date & Time', value: formattedDate, inline: false },
-      { name: 'Location', value: location, inline: false }
-    ].filter((f) => !!f)
+    // Create attendance buttons
+    const availableButton = new ButtonBuilder()
+      .setCustomId(`attendance_AVAILABLE_${gameDay.id}`)
+      .setLabel("I'm in")
+      .setStyle(ButtonStyle.Success)
 
-    const announcementEmbed = new EmbedBuilder()
-      .setTitle(`New Game Day: ${title}`)
-      .setDescription(description)
-      .setColor(Colors.Yellow) // Yellow for SCHEDULING status
-      .addFields(fields)
-      .setTimestamp()
+    const interestedButton = new ButtonBuilder()
+      .setCustomId(`attendance_INTERESTED_${gameDay.id}`)
+      .setLabel("I'm Interested")
+      .setStyle(ButtonStyle.Primary)
+
+    const notAvailableButton = new ButtonBuilder()
+      .setCustomId(`attendance_NOT_AVAILABLE_${gameDay.id}`)
+      .setLabel('Not Available')
+      .setStyle(ButtonStyle.Secondary)
+
+    // Create a row of buttons
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      availableButton,
+      interestedButton,
+      notAvailableButton
+    )
 
     // Post the announcement to the scheduling channel
     try {
       await schedulingChannel.send({
         content: gameRoleId ? `<@&${gameRoleId}>` : `@everyone`,
-        embeds: [announcementEmbed]
+        embeds: [announcementEmbed],
+        components: [buttonRow]
       })
       logger.info(
         `Posted game day announcement to scheduling channel: ${schedulingChannel.id}`
@@ -356,7 +386,7 @@ async function handleModalSubmit(
         await interaction.reply({
           content:
             'An error occurred while processing your submission. Please try again later.',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         })
       }
     } catch (replyError) {

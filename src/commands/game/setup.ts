@@ -64,7 +64,7 @@ async function handleModalSubmit(
   guildId: string
 ) {
   try {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const name = interaction.fields.getTextInputValue('name')
     const shortName = interaction.fields.getTextInputValue('short_name')

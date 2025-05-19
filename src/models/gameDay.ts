@@ -22,6 +22,31 @@ export const getGameDay = async (id: string): Promise<GameDay | null> => {
   }
 }
 
+/**
+ * Get a game day by its associated Discord role ID
+ */
+export const getGameDayByRoleId = async (
+  roleId: string
+): Promise<GameDay | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('game_days')
+      .select('*')
+      .eq('discord_role_id', roleId)
+      .single()
+
+    if (error) {
+      logger.error('Error fetching game day by role ID:', error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    logger.error('Error in getGameDayByRoleId:', error)
+    return null
+  }
+}
+
 export const getUpcomingGameDays = async (): Promise<GameDay[]> => {
   try {
     const now = new Date().toISOString()
@@ -30,7 +55,7 @@ export const getUpcomingGameDays = async (): Promise<GameDay[]> => {
       .from('game_days')
       .select('*')
       .gte('date_time', now)
-      .eq('status', 'SCHEDULED')
+      .eq('status', 'CLOSED')
       .order('date_time')
 
     if (error) {
@@ -49,7 +74,7 @@ export const getUpcomingGameDays = async (): Promise<GameDay[]> => {
  * Get all future game days with specified statuses
  */
 export const getUpcomingGameDaysByStatus = async (
-  statuses: Array<'SCHEDULED' | 'SCHEDULING' | 'CANCELLED'>
+  statuses: Array<'CLOSED' | 'SCHEDULING' | 'CANCELLED'>
 ): Promise<GameDay[]> => {
   try {
     const now = new Date().toISOString()
@@ -121,7 +146,7 @@ export const createGameDay = async (
   try {
     // Ensure the status is a valid enum value
     if (!gameDay.status) {
-      gameDay.status = 'SCHEDULED' // Default to SCHEDULED if not provided
+      gameDay.status = 'CLOSED' // Default to CLOSED if not provided
     }
 
     // If game_id is provided but discord_role_id is not, try to get it from the game
@@ -200,10 +225,10 @@ export const updateGameDay = async (
 }
 
 /**
- * Publish a game day that was in SCHEDULING status to SCHEDULED
+ * Publish a game day that was in SCHEDULING status to CLOSED
  */
 export const publishGameDay = async (id: string): Promise<GameDay | null> => {
-  return updateGameDay(id, { status: 'SCHEDULED' })
+  return updateGameDay(id, { status: 'CLOSED' })
 }
 
 /**
