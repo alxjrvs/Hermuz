@@ -45,6 +45,57 @@ export type Database = {
           },
         ]
       }
+      campaigns: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discord_role_id: string
+          game_id: string | null
+          game_name: string | null
+          id: string
+          regular_game_time: string
+          server_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discord_role_id: string
+          game_id?: string | null
+          game_name?: string | null
+          id?: string
+          regular_game_time: string
+          server_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discord_role_id?: string
+          game_id?: string | null
+          game_name?: string | null
+          id?: string
+          regular_game_time?: string
+          server_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "discord_servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discord_servers: {
         Row: {
           created_at: string

@@ -42,7 +42,6 @@ async function handleInteractionError(
 }
 
 export default async (interaction: ModalSubmitInteraction) => {
-  // Only handle modal submission interactions
   if (!interaction.isModalSubmit()) return
 
   try {
