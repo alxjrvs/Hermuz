@@ -13,16 +13,17 @@ import {
   ButtonBuilder,
   ButtonStyle
 } from 'discord.js'
-import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
-import { getGameByRoleId } from '../models/game'
-import { createGameDayDraft, updateGameDay } from '../models/gameDay'
-import { getOrCreateUser } from '../models/user'
-import { createAttendance } from '../models/attendance'
+import { createGameDayMessageEmbed } from '../../utils/gameDayMessageUtils'
+import { getGameByRoleId } from '../../models/game'
+import { createGameDayDraft, updateGameDay } from '../../models/gameDay'
+import { getOrCreateUser } from '../../models/user'
+import { createAttendance } from '../../models/attendance'
 import {
   getDiscordServerByDiscordId,
   getSchedulingChannel
-} from '../models/discordServer'
-import { createGameDayChannels } from '../utils/channelUtils'
+} from '../../models/discordServer'
+import { createGameDayChannels } from '../../utils/channelUtils'
+import { createAttendanceButtonId } from '../../utils/buttonUtils'
 
 export const config = createCommandConfig({
   description: 'Schedule a new game day event',
@@ -100,7 +101,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
       // Do NOT try to reply to the original interaction here - it's already been handled
     }
   } catch (error) {
-    logger.error('Error in schedule command:', error)
+    logger.error('Error in game_day schedule command:', error)
     // Only reply if we haven't already
     if (!interaction.replied) {
       await interaction.reply({
@@ -359,19 +360,19 @@ async function handleModalSubmit(
       gameForEmbed
     )
 
-    // Create attendance buttons
+    // Create attendance buttons using our utility function
     const availableButton = new ButtonBuilder()
-      .setCustomId(`attendance_AVAILABLE_${gameDay.id}`)
+      .setCustomId(createAttendanceButtonId('AVAILABLE', gameDay.id))
       .setLabel("I'm in")
       .setStyle(ButtonStyle.Success)
 
     const interestedButton = new ButtonBuilder()
-      .setCustomId(`attendance_INTERESTED_${gameDay.id}`)
+      .setCustomId(createAttendanceButtonId('INTERESTED', gameDay.id))
       .setLabel("I'm Interested")
       .setStyle(ButtonStyle.Primary)
 
     const notAvailableButton = new ButtonBuilder()
-      .setCustomId(`attendance_NOT_AVAILABLE_${gameDay.id}`)
+      .setCustomId(createAttendanceButtonId('NOT_AVAILABLE', gameDay.id))
       .setLabel('Not Available')
       .setStyle(ButtonStyle.Secondary)
 
@@ -500,7 +501,8 @@ function generateRoleName(title: string, dateTime: Date): string {
   // Format the date as MM-DD-YY
   const month = (dateTime.getMonth() + 1).toString().padStart(2, '0')
   const day = dateTime.getDate().toString().padStart(2, '0')
-  const year = dateTime.getFullYear().toString().substring(2) // Last 2 digits of year
+  const year = dateTime.getFullYear().toString().substring(2)
 
-  return `${titlePart}-${month}-${day}-${year}`
+  // Combine the parts
+  return `gameday-${titlePart}-${month}${day}${year}`
 }

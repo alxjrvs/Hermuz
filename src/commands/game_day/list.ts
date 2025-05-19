@@ -5,9 +5,9 @@ import {
   Colors,
   MessageFlags
 } from 'discord.js'
-import { getUpcomingGameDaysByStatus } from '../models/gameDay'
-import { getDiscordServerByDiscordId } from '../models/discordServer'
-import { getGame } from '../models/game'
+import { getUpcomingGameDaysByStatus } from '../../models/gameDay'
+import { getDiscordServerByDiscordId } from '../../models/discordServer'
+import { getGame } from '../../models/game'
 
 export const config = createCommandConfig({
   description: 'List all scheduled or scheduling game days in the future'
@@ -30,7 +30,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
 
     if (gameDays.length === 0) {
       return interaction.editReply(
-        'No upcoming game days found. Use `/schedule` to create a new game day.'
+        'No upcoming game days found. Use `/game_day schedule` to create a new game day.'
       )
     }
 
@@ -78,7 +78,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     // Send the embed
     await interaction.editReply({ embeds: [embed] })
   } catch (error) {
-    logger.error('Error in game_days command:', error)
+    logger.error('Error in game_day list command:', error)
     if (interaction.deferred || interaction.replied) {
       await interaction.editReply(
         'An error occurred while listing game days. Please try again later.'
