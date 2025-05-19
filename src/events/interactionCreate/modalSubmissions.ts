@@ -4,11 +4,14 @@ import {
   deserializeModalData,
   isGameSetupModal,
   isGameDayScheduleModal,
+  isCampaignCreateModal,
   isGameSetupModalId,
-  isGameDayScheduleModalId
+  isGameDayScheduleModalId,
+  isCampaignCreateModalId
 } from '../../utils/modalUtils'
 import { handleGameSetupModalSubmit } from '../../handlers/gameSetupModalHandler'
 import { handleGameDayScheduleModalSubmit } from '../../handlers/gameDayScheduleModalHandler'
+import { handleCampaignCreateModalSubmit } from '../../handlers/campaignCreateModalHandler'
 
 /**
  * Handle interaction errors
@@ -71,6 +74,16 @@ export default async (interaction: ModalSubmitInteraction) => {
           `Failed to deserialize game day schedule modal data for ID: ${customId}`
         )
       }
+    } else if (isCampaignCreateModalId(customId)) {
+      // Campaign create modal
+      modalData = deserializeModalData(customId)
+      if (modalData && isCampaignCreateModal(modalData)) {
+        await handleCampaignCreateModalSubmit(interaction, modalData)
+      } else {
+        logger.warn(
+          `Failed to deserialize campaign create modal data for ID: ${customId}`
+        )
+      }
     } else {
       // Try legacy format or unknown format
       modalData = deserializeModalData(customId)
@@ -84,6 +97,8 @@ export default async (interaction: ModalSubmitInteraction) => {
         await handleGameSetupModalSubmit(interaction, modalData)
       } else if (isGameDayScheduleModal(modalData)) {
         await handleGameDayScheduleModalSubmit(interaction, modalData)
+      } else if (isCampaignCreateModal(modalData)) {
+        await handleCampaignCreateModalSubmit(interaction, modalData)
       } else {
         logger.warn(`Unknown modal type: ${JSON.stringify(modalData)}`)
       }

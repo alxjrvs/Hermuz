@@ -29,9 +29,26 @@ export interface GameDayScheduleModalData {
 }
 
 /**
+ * Interface for campaign create modal data
+ */
+export interface CampaignCreateModalData {
+  command: 'campaign_create'
+  gameInfo: {
+    input: string
+  }
+  roleInfo: {
+    input: string
+  }
+  guildId: string
+}
+
+/**
  * Type for all modal data types
  */
-export type ModalData = GameSetupModalData | GameDayScheduleModalData
+export type ModalData =
+  | GameSetupModalData
+  | GameDayScheduleModalData
+  | CampaignCreateModalData
 
 /**
  * Serialize modal data to a customId string
@@ -61,6 +78,13 @@ export function serializeModalData(data: ModalData): string {
       const roleId = data.roleInfo?.id || ''
 
       return `gds:${timestamp}:${data.userId}:${data.guildId}:${exists}:${roleId}:${data.username}:${data.roleInfo?.name || ''}`
+    } else if (isCampaignCreateModal(data)) {
+      // For campaign create: cc:<timestamp>:<guildId>:<gameInput>:<roleInput>
+      const guildId = data.guildId
+      const gameInput = encodeURIComponent(data.gameInfo.input)
+      const roleInput = encodeURIComponent(data.roleInfo.input)
+
+      return `cc:${timestamp}:${guildId}:${gameInput}:${roleInput}`
     }
 
     // Fallback to JSON for unknown types (should never happen)
@@ -131,6 +155,28 @@ export function deserializeModalData(customId: string): ModalData | null {
             }
           : undefined
       }
+    } else if (customId.startsWith('cc:')) {
+      // Campaign create format: cc:<timestamp>:<guildId>:<gameInput>:<roleInput>
+      const parts = customId.split(':')
+      if (parts.length < 5) {
+        logger.error('Invalid campaign create modal ID format')
+        return null
+      }
+
+      const guildId = parts[2]
+      const gameInput = decodeURIComponent(parts[3])
+      const roleInput = decodeURIComponent(parts[4])
+
+      return {
+        command: 'campaign_create',
+        guildId,
+        gameInfo: {
+          input: gameInput
+        },
+        roleInfo: {
+          input: roleInput
+        }
+      }
     } else {
       // Try JSON format for backward compatibility
       return JSON.parse(customId) as ModalData
@@ -164,6 +210,18 @@ export function isGameDayScheduleModal(
 }
 
 /**
+ * Check if the customId is for a campaign create modal
+ *
+ * @param data The modal data to check
+ * @returns True if the modal is a campaign create modal, false otherwise
+ */
+export function isCampaignCreateModal(
+  data: ModalData
+): data is CampaignCreateModalData {
+  return data.command === 'campaign_create'
+}
+
+/**
  * Check if a string is a game setup modal ID
  *
  * @param customId The custom ID to check
@@ -181,6 +239,16 @@ export function isGameSetupModalId(customId: string): boolean {
  */
 export function isGameDayScheduleModalId(customId: string): boolean {
   return customId.startsWith('gds:')
+}
+
+/**
+ * Check if a string is a campaign create modal ID
+ *
+ * @param customId The custom ID to check
+ * @returns True if the custom ID is for a campaign create modal, false otherwise
+ */
+export function isCampaignCreateModalId(customId: string): boolean {
+  return customId.startsWith('cc:')
 }
 
 /**
@@ -231,4 +299,16 @@ export function createGameDayScheduleModalId(
     guildId,
     roleInfo
   })
+}
+
+/**
+ * Create a customId for a campaign create modal
+ *
+ * @param modalData The campaign create modal data
+ * @returns A customId string for the modal
+ */
+export function createCampaignModalId(
+  modalData: CampaignCreateModalData
+): string {
+  return serializeModalData(modalData)
 }
