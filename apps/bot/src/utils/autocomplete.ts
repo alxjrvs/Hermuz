@@ -1,8 +1,12 @@
 import {
   getAllCampaigns,
   getAllGameDays,
+  getAllGames,
   getGameDayTasks,
-  getPlayersByUser
+  getOpenSurveys,
+  getPlayersByUser,
+  getSurveyDates,
+  getSurveyResponses
 } from '@hermuz/db'
 import type { AutocompleteInteraction } from 'discord.js'
 import { logger } from '~/utils/logger'
@@ -85,6 +89,67 @@ export async function respondTaskAutocomplete(
     )
   } catch (err) {
     logger.error('Task autocomplete failed:', err)
+    await interaction.respond([])
+  }
+}
+
+/**
+ * Autocomplete for the `/survey` admin commands: the `survey` option lists open
+ * surveys (by game), and the `date` option lists that survey's candidate dates
+ * with their current availability counts.
+ */
+export async function respondSurveyAutocomplete(
+  interaction: AutocompleteInteraction
+): Promise<void> {
+  try {
+    const focused = interaction.options.getFocused(true)
+    if (focused.name === 'survey') {
+      const [surveys, games] = await Promise.all([
+        getOpenSurveys(),
+        getAllGames()
+      ])
+      const gameName = (id: string) =>
+        games.find((g) => g.id === id)?.name ?? 'Game'
+      const filtered = surveys
+        .filter((s) => matches(gameName(s.gameId), String(focused.value)))
+        .slice(0, MAX_CHOICES)
+      return interaction.respond(
+        filtered.map((s) => ({
+          name: short(
+            `${gameName(s.gameId)} — ${new Date(s.createdAt ?? '').toLocaleDateString()}`
+          ),
+          value: s.id
+        }))
+      )
+    }
+    // focused.name === 'date' — scoped to the already-chosen survey.
+    const surveyId = interaction.options.getString('survey', false)
+    if (!surveyId) return interaction.respond([])
+    const [dates, responses] = await Promise.all([
+      getSurveyDates(surveyId),
+      getSurveyResponses(surveyId)
+    ])
+    const count = (dateId: string) =>
+      responses.filter((r) => r.surveyDateId === dateId && r.available).length
+    const label = (iso: string) =>
+      new Date(iso).toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+    return interaction.respond(
+      dates
+        .filter((d) => matches(label(d.dateTime), String(focused.value)))
+        .slice(0, MAX_CHOICES)
+        .map((d) => ({
+          name: short(`${label(d.dateTime)} (${count(d.id)} available)`),
+          value: d.id
+        }))
+    )
+  } catch (err) {
+    logger.error('Survey autocomplete failed:', err)
     await interaction.respond([])
   }
 }

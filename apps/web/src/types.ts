@@ -157,3 +157,40 @@ export interface Meal {
   dueAt: string | null
   responses: MealResponse[]
 }
+
+export type SurveyStatus = 'OPEN' | 'CANONIZED' | 'CANCELLED'
+
+export interface SurveyDate {
+  id: string
+  surveyId: string
+  dateTime: string
+  sortOrder: number
+  createdAt: string | null
+}
+
+export interface SurveyResponse {
+  id: string
+  surveyId: string
+  surveyDateId: string
+  userId: string
+  available: number // 0/1
+  respondedAt: string | null
+}
+
+export interface Survey {
+  id: string
+  gameId: string
+  gameName: string | null
+  title: string | null
+  description: string | null
+  status: SurveyStatus
+  channelId: string | null
+  messageId: string | null
+  createdByUserId: string | null
+  canonizedSurveyDateId: string | null
+  canonizedGameDayId: string | null
+  createdAt: string | null
+  updatedAt: string | null
+  dates: SurveyDate[]
+  responses: SurveyResponse[]
+}

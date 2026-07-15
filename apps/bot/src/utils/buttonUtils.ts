@@ -13,10 +13,17 @@ export interface MealButtonData {
   response: 'IN' | 'OUT'
   mealId: string
 }
+/** Carried on the survey availability select menu; `interaction.values` holds
+ *  the picked survey-date ids. */
+export interface SurveyVoteData {
+  command: 'survey_vote'
+  surveyId: string
+}
 export type ButtonData =
   | AttendanceButtonData
   | CampaignInterestButtonData
   | MealButtonData
+  | SurveyVoteData
 export function serializeButtonData(data: ButtonData): string {
   try {
     return JSON.stringify(data)
@@ -45,6 +52,12 @@ export function isCampaignInterestButton(
 }
 export function isMealButton(data: ButtonData): data is MealButtonData {
   return data.command === 'meal'
+}
+export function isSurveyVote(data: ButtonData): data is SurveyVoteData {
+  return data.command === 'survey_vote'
+}
+export function createSurveyVoteId(surveyId: string): string {
+  return serializeButtonData({ command: 'survey_vote', surveyId })
 }
 export function createMealButtonId(
   response: 'IN' | 'OUT',

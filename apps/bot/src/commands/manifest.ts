@@ -29,6 +29,9 @@ import * as mySchedule from './my/schedule'
 import * as ping from './ping'
 import * as rsvp from './rsvp'
 import * as setSchedulingChannel from './set_scheduling_channel'
+import * as surveyCancel from './survey/cancel'
+import * as surveyCanonize from './survey/canonize'
+import * as surveyCreate from './survey/create'
 import * as taskClaim from './task/claim'
 import * as taskDone from './task/done'
 import * as taskList from './task/list'
@@ -104,6 +107,14 @@ const groups: Record<string, CommandGroup> = {
       list: leaf(taskList),
       done: leaf(taskDone),
       claim: leaf(taskClaim)
+    }
+  },
+  survey: {
+    description: 'Survey candidate dates for a new game day',
+    subcommands: {
+      create: leaf(surveyCreate, true),
+      canonize: leaf(surveyCanonize, true),
+      cancel: leaf(surveyCancel, true)
     }
   }
 }

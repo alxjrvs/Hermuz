@@ -12,6 +12,7 @@ const NAV: NavItem[] = [
   { to: '/calendar', label: 'Calendar' },
   { to: '/games', label: 'Games' },
   { to: '/game-days', label: 'Game Days' },
+  { to: '/surveys', label: 'Surveys' },
   { to: '/campaigns', label: 'Campaigns' },
   { to: '/attendance', label: 'Attendance' },
   { to: '/settings', label: 'Settings' }

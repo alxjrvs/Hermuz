@@ -20,6 +20,10 @@ import type {
   PLAYER_STATUS,
   players,
   SCHEDULING_KIND,
+  SURVEY_STATUS,
+  surveyDates,
+  surveyResponses,
+  surveys,
   taskTemplates,
   users
 } from './schema'
@@ -47,6 +51,12 @@ export type TaskTemplate = typeof taskTemplates.$inferSelect
 export type NewTaskTemplate = typeof taskTemplates.$inferInsert
 export type GameDayTask = typeof gameDayTasks.$inferSelect
 export type NewGameDayTask = typeof gameDayTasks.$inferInsert
+export type Survey = typeof surveys.$inferSelect
+export type NewSurvey = typeof surveys.$inferInsert
+export type SurveyDate = typeof surveyDates.$inferSelect
+export type NewSurveyDate = typeof surveyDates.$inferInsert
+export type SurveyResponse = typeof surveyResponses.$inferSelect
+export type NewSurveyResponse = typeof surveyResponses.$inferInsert
 
 // Status union types (replace the Supabase `Enums<>`).
 export type GameDayStatus = (typeof GAME_DAY_STATUS)[number]
@@ -57,3 +67,4 @@ export type LocationType = (typeof LOCATION_TYPE)[number]
 export type MealKind = (typeof MEAL_KIND)[number]
 export type MealStatus = (typeof MEAL_STATUS)[number]
 export type JobStatus = (typeof JOB_STATUS)[number]
+export type SurveyStatus = (typeof SURVEY_STATUS)[number]
