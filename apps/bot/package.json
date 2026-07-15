@@ -1,0 +1,17 @@
+{
+  "name": "@hermuz/bot",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "register": "bun run src/register.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hermuz/db": "workspace:*",
+    "discord.js": "^14.19.3",
+    "hono": "^4.6.0"
+  }
+}

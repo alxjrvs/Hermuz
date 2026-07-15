@@ -1,0 +1,47 @@
+# Render blueprint — ONE web service that runs the Discord gateway AND serves the
+# JSON API, both over a single SQLite connection on a persistent disk.
+#
+# Why one service (not two): a Render Disk attaches to exactly one service, and
+# SQLite is a local file — one process = one writer = no lock contention. A Discord
+# gateway also holds exactly one connection, so numInstances:1 is mandatory anyway.
+#
+# The web GUI (React + Vite SPA) is NOT served here — it ships to Netlify's CDN and
+# calls this service's JSON API over HTTPS. Phase 2 adds a CORS allow-list for the
+# Netlify origin. Phases 1–2 replace the placeholder startCommand below.
+services:
+  - type: web
+    name: hermuz
+    runtime: node # Render uses Bun when BUN_VERSION is set + bun.lock is present.
+    region: oregon
+    plan: starter
+    numInstances: 1 # Required: one Discord gateway connection, and one disk writer.
+    branch: main
+    buildCommand: bun install
+    # Phase 1: `bun --filter '@hermuz/db' migrate` then start the bot + API process.
+    startCommand: echo "Hermuz bot + API land in Phase 1"
+    disk:
+      name: hermuz-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: BUN_VERSION
+        value: 1.3.14
+      - key: DATABASE_PATH
+        value: /var/data/hermuz.db
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: GUILD_ID
+        sync: false
+      # --- Web GUI / Discord OAuth2 ---
+      - key: DISCORD_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: API_ORIGIN
+        sync: false # e.g. https://hermuz.onrender.com
+      - key: WEB_ORIGIN
+        sync: false # e.g. https://hermuz.netlify.app
+# TODO (Phase 1/2): add a periodic backup of /var/data/hermuz.db (e.g. a Render
+# cron job snapshotting the .db file) so a lost disk doesn't lose campaign history.

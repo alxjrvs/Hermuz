@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck packages/db
+        run: cd packages/db && bunx tsc --noEmit -p tsconfig.json
+
+      - name: Check migrations are up to date
+        run: |
+          cd packages/db
+          bunx drizzle-kit generate
+          if [ -n "$(git status --porcelain migrations)" ]; then
+            echo "::error::Drizzle migrations are out of date — run 'bun --filter @hermuz/db generate' and commit."
+            git status --porcelain migrations
+            exit 1
+          fi
+
+      - name: Typecheck apps/bot
+        run: cd apps/bot && bunx tsc --noEmit -p tsconfig.json
+
+      - name: Typecheck & build apps/web
+        run: cd apps/web && bun run typecheck && bun run build
+
+      - name: Format check
+        run: bunx prettier --check "apps/**/*.{ts,tsx}" "packages/**/*.ts"
