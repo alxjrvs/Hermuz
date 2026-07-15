@@ -40,3 +40,24 @@ jobs:
 
       - name: Lint & format (Biome)
         run: bunx biome ci .
+
+  # Deploy the API service to Render after CI passes on main. Render's native
+  # GitHub auto-deploy has proven unreliable here, so CI is the source of truth:
+  # a green build on main triggers the deploy via a scoped Deploy Hook.
+  deploy:
+    name: Deploy (Render)
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL is not set — skipping deploy. Add the service's Deploy Hook URL as a repo secret to enable CI deploys."
+            exit 0
+          fi
+          echo "Triggering Render deploy…"
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Deploy triggered."
