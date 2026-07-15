@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../client'
-import { settings, SETTING_KEYS } from '../schema'
+import { SETTING_KEYS, settings } from '../schema'
 
 /** Read a raw setting value, or null if unset. */
 export const getSetting = async (key: string): Promise<string | null> => {

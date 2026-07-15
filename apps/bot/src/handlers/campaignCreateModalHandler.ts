@@ -1,13 +1,13 @@
-import { logger } from '~/utils/logger'
+import { createCampaign, getGameByRoleId } from '@hermuz/db'
 import {
   MessageFlags,
   type ModalSubmitInteraction,
   PermissionFlagsBits
 } from 'discord.js'
-import { getGameByRoleId, createCampaign } from '@hermuz/db'
-import { createCampaignChannels } from '../utils/channelUtils'
-import { CampaignCreateModalData } from '../utils/modalUtils'
+import { logger } from '~/utils/logger'
 import { generateCampaignRoleName } from '../utils/campaignUtils'
+import { createCampaignChannels } from '../utils/channelUtils'
+import type { CampaignCreateModalData } from '../utils/modalUtils'
 export async function handleCampaignCreateModalSubmit(
   interaction: ModalSubmitInteraction,
   modalData: CampaignCreateModalData

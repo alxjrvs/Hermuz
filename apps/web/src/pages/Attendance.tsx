@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { gameDaysApi } from '../api'
 import { AttendanceTable } from '../components/AttendanceTable'
-import { Loading, ErrorBanner, Panel } from '../components/Panel'
+import { ErrorBanner, Loading, Panel } from '../components/Panel'
 import { GameDayStatusChip } from '../components/StatusChip'
 import { formatDateTime } from '../lib/format'
 import { toMessage, useAsync } from '../lib/useAsync'
@@ -39,7 +39,7 @@ export function Attendance() {
 
   useEffect(() => {
     if (selectedId) loadAttendances(selectedId)
-  }, [selectedId])
+  }, [selectedId, loadAttendances])
 
   return (
     <>

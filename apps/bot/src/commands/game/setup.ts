@@ -1,10 +1,10 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   PermissionFlagsBits
 } from 'discord.js'
+import { createCommandConfig } from '~/framework/command'
 import gameModal from '~/utils/gameModal'
+import { logger } from '~/utils/logger'
 import { createGameSetupModalId } from '../../utils/modalUtils'
 export const config = createCommandConfig({
   description: 'Set up a new game with associated role',
@@ -21,7 +21,7 @@ export const config = createCommandConfig({
 })
 export default async (interaction: ChatInputCommandInteraction) => {
   const roleInput = interaction.options.getString('role', true)
-  const existingRole = interaction.guild?.roles.cache.find(
+  const existingRole = interaction.guild!.roles.cache.find(
     (r) =>
       r.name === roleInput || r.id === roleInput || `<@&${r.id}>` === roleInput
   )

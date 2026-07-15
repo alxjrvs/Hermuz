@@ -1,22 +1,22 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
-import {
-  type ChatInputCommandInteraction,
-  MessageFlags,
-  ButtonBuilder,
-  ButtonStyle,
-  ActionRowBuilder
-} from 'discord.js'
 import {
   type Attendance,
-  getGameDayByRoleId,
-  updateGameDay,
   getGame,
-  getGameDayAttendances
+  getGameDayAttendances,
+  getGameDayByRoleId,
+  updateGameDay
 } from '@hermuz/db'
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type ChatInputCommandInteraction,
+  MessageFlags
+} from 'discord.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import { getSchedulingChannel } from '~/utils/schedulingChannel'
-import { createGameDayMessageEmbed } from '../../utils/gameDayMessageUtils'
 import { createAttendanceButtonId } from '../../utils/buttonUtils'
+import { createGameDayMessageEmbed } from '../../utils/gameDayMessageUtils'
 export const config = createCommandConfig({
   description: 'Announce an existing game day in the scheduling channel',
   options: [
@@ -48,7 +48,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     const channel = await interaction.guild!.channels.fetch(
       schedulingChannel.id
     )
-    if (!channel || !channel.isTextBased()) {
+    if (!channel?.isTextBased()) {
       return interaction.editReply({
         content:
           'The scheduling channel is not available or is not a text channel. Please use `/set_scheduling_channel` to set up a new one.'

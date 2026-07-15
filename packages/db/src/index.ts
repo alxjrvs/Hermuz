@@ -1,18 +1,18 @@
-export * from './schema'
-export { db, sqlite, schema, runMigrations } from './client'
+export { db, runMigrations, schema, sqlite } from './client'
 export * from './repositories'
+export * from './schema'
 
-import {
-  users,
-  games,
-  gameDays,
-  campaigns,
-  players,
-  attendances,
-  GAME_DAY_STATUS,
-  PLAYER_STATUS,
+import type {
   ATTENDANCE_STATUS,
-  SCHEDULING_KIND
+  attendances,
+  campaigns,
+  GAME_DAY_STATUS,
+  gameDays,
+  games,
+  PLAYER_STATUS,
+  players,
+  SCHEDULING_KIND,
+  users
 } from './schema'
 
 // Row types (replace the Supabase-generated `Tables<>` / `TablesInsert<>`).

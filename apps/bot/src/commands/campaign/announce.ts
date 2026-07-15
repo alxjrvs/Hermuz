@@ -1,21 +1,21 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
 import {
-  type ChatInputCommandInteraction,
-  MessageFlags,
+  getCampaignByRoleId,
+  getPlayersByCampaign,
+  type Player,
+  updateCampaign
+} from '@hermuz/db'
+import {
+  ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder
+  type ChatInputCommandInteraction,
+  MessageFlags
 } from 'discord.js'
-import {
-  type Player,
-  getCampaignByRoleId,
-  updateCampaign,
-  getPlayersByCampaign
-} from '@hermuz/db'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import { getSchedulingChannel } from '~/utils/schedulingChannel'
-import { createCampaignMessageEmbed } from '../../utils/campaignMessageUtils'
 import { createCampaignInterestButtonId } from '../../utils/buttonUtils'
+import { createCampaignMessageEmbed } from '../../utils/campaignMessageUtils'
 export const config = createCommandConfig({
   description: 'Announce an existing campaign in the scheduling channel',
   options: [
@@ -47,7 +47,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     const channel = await interaction.guild!.channels.fetch(
       schedulingChannel.id
     )
-    if (!channel || !channel.isTextBased()) {
+    if (!channel?.isTextBased()) {
       return interaction.editReply({
         content:
           'The scheduling channel is not available or is not a text channel. Please use `/set_scheduling_channel` to set up a new one.'

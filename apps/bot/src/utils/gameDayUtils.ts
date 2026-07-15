@@ -1,5 +1,5 @@
+import { type Guild, PermissionFlagsBits } from 'discord.js'
 import { logger } from '~/utils/logger'
-import { PermissionFlagsBits, type Guild } from 'discord.js'
 export function parseDateTime(dateTimeStr: string): Date | null {
   const regex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/
   const match = dateTimeStr.match(regex)
@@ -25,7 +25,7 @@ export function parseDateTime(dateTimeStr: string): Date | null {
     return null
   }
   const date = new Date(year, month, day, hour, minute)
-  return isNaN(date.getTime()) ? null : date
+  return Number.isNaN(date.getTime()) ? null : date
 }
 export async function createGameDayRole(
   guild: Guild,

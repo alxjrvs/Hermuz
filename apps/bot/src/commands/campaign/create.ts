@@ -1,12 +1,12 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
-  PermissionFlagsBits,
-  MessageFlags
+  MessageFlags,
+  PermissionFlagsBits
 } from 'discord.js'
-import { createCampaignModalId } from '../../utils/modalUtils'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import campaignModal from '../../utils/campaignModal'
+import { createCampaignModalId } from '../../utils/modalUtils'
 export const config = createCommandConfig({
   description: 'Create a new campaign with associated role and channels',
   defaultMemberPermissions: PermissionFlagsBits.Administrator,

@@ -1,10 +1,10 @@
+import type { Game } from '@hermuz/db'
 import {
+  ActionRowBuilder,
   ModalBuilder,
   TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder
+  TextInputStyle
 } from 'discord.js'
-import type { Game } from '@hermuz/db'
 export default function gameModal(
   defaultValues?: Game,
   customId?: string

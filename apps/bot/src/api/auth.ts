@@ -1,7 +1,7 @@
+import { getOrCreateUser } from '@hermuz/db'
+import { type Client, PermissionFlagsBits } from 'discord.js'
 import { Hono } from 'hono'
 import { sign } from 'hono/jwt'
-import { PermissionFlagsBits, type Client } from 'discord.js'
-import { getOrCreateUser } from '@hermuz/db'
 import { config } from '~/config'
 import { logger } from '~/utils/logger'
 

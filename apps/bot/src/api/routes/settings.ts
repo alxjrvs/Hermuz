@@ -1,6 +1,6 @@
+import { getSchedulingChannelId, setSchedulingChannelId } from '@hermuz/db'
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
-import { getSchedulingChannelId, setSchedulingChannelId } from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
 import { readJson } from './helpers'
 

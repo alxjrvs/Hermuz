@@ -1,19 +1,19 @@
-import type { Client } from 'discord.js'
-import { Hono } from 'hono'
 import {
+  deleteGame,
   getAllGames,
   getGame,
-  updateGame,
-  deleteGame,
-  type NewGame
+  type NewGame,
+  updateGame
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
+import { Hono } from 'hono'
 import { requireAdmin } from '~/api/middleware'
 import {
-  createGameWithRole,
-  type CreateGameInput
+  type CreateGameInput,
+  createGameWithRole
 } from '~/services/gameService'
 import { logger } from '~/utils/logger'
-import { sendResult, resolveGuild, readJson } from './helpers'
+import { readJson, resolveGuild, sendResult } from './helpers'
 
 export function gamesRoutes(client: Client): Hono {
   const app = new Hono()

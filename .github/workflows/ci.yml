@@ -38,5 +38,5 @@ jobs:
       - name: Typecheck & build apps/web
         run: cd apps/web && bun run typecheck && bun run build
 
-      - name: Format check
-        run: bunx prettier --check "apps/**/*.{ts,tsx}" "packages/**/*.ts"
+      - name: Lint & format (Biome)
+        run: bunx biome ci .

@@ -4,10 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "workspaces": ["packages/*", "apps/*"],
   "keywords": [
     "bot",
     "discord",
@@ -19,17 +16,13 @@
   "scripts": {
     "db:generate": "bun --filter '@hermuz/db' generate",
     "db:migrate": "bun --filter '@hermuz/db' migrate",
-    "lint": "eslint -c config/eslint.js . && prettier --check .",
-    "format": "prettier --write ."
+    "lint": "biome check .",
+    "format": "biome check --write ."
   },
   "devDependencies": {
-    "@eslint/js": "^9.26.0",
+    "@biomejs/biome": "^2.5.4",
     "@types/bun": "latest",
     "@types/node": "^22.15.18",
-    "eslint": "9",
-    "globals": "^16.1.0",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.1"
+    "typescript": "^5.8.3"
   }
 }

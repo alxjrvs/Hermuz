@@ -1,11 +1,11 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useState,
-  type ReactNode
+  useState
 } from 'react'
 import { meApi } from '../api'
 import { clearToken, getToken, UNAUTHORIZED_EVENT } from '../api/client'

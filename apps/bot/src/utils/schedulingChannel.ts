@@ -1,5 +1,5 @@
-import { ChannelType, type Client, type TextChannel } from 'discord.js'
 import { getSchedulingChannelId } from '@hermuz/db'
+import { ChannelType, type Client, type TextChannel } from 'discord.js'
 import { logger } from '~/utils/logger'
 
 /**

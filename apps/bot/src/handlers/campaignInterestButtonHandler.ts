@@ -1,23 +1,23 @@
-import { logger } from '~/utils/logger'
-import { MessageFlags, type ButtonInteraction } from 'discord.js'
 import {
-  getOrCreateUser,
+  type Campaign,
   getCampaign,
   getOrCreatePlayer,
-  getPlayersByCampaign,
-  type Campaign
+  getOrCreateUser,
+  getPlayersByCampaign
 } from '@hermuz/db'
+import { type ButtonInteraction, MessageFlags } from 'discord.js'
+import { logger } from '~/utils/logger'
 import { getSchedulingChannel } from '~/utils/schedulingChannel'
+import type { PlayerStatus } from '../types/enums'
+import type { ButtonHandler } from '../utils/buttonRegistry'
+import { type ButtonData, isCampaignInterestButton } from '../utils/buttonUtils'
 import { createCampaignMessageEmbed } from '../utils/campaignMessageUtils'
-import { ButtonData, isCampaignInterestButton } from '../utils/buttonUtils'
-import { isUUID, isDiscordId } from '../utils/typeGuards'
-import { PlayerStatus } from '../types/enums'
-import { ButtonHandler } from '../utils/buttonRegistry'
 import {
-  generateCampaignInterestStatusMessage,
-  generateCampaignInterestErrorMessage
+  generateCampaignInterestErrorMessage,
+  generateCampaignInterestStatusMessage
 } from '../utils/messageUtils'
 import { handleCampaignRoleAssignment } from '../utils/roleUtils'
+import { isDiscordId, isUUID } from '../utils/typeGuards'
 
 async function processCampaignInterest(
   interaction: ButtonInteraction,
@@ -82,7 +82,7 @@ async function handleRoleAssignment(
   campaign: Campaign
 ) {
   try {
-    const member = await interaction.guild?.members.fetch(interaction.user.id)
+    const member = await interaction.guild!.members.fetch(interaction.user.id)
     if (member) {
       await handleCampaignRoleAssignment(member, campaign)
     }
@@ -109,7 +109,7 @@ async function updateCampaignMessage(
       return
     }
 
-    const channel = await interaction.guild?.channels.fetch(
+    const channel = await interaction.guild!.channels.fetch(
       schedulingChannel.id
     )
 

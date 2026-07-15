@@ -1,7 +1,7 @@
-import { eq, and } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../client'
+import type { Attendance, AttendanceStatus, NewAttendance } from '../index'
 import { attendances } from '../schema'
-import type { Attendance, NewAttendance, AttendanceStatus } from '../index'
 
 export const getAttendance = async (id: string): Promise<Attendance | null> => {
   try {

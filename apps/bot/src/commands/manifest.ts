@@ -1,25 +1,24 @@
 import {
-  PermissionFlagsBits,
-  SlashCommandBuilder,
   type ChatInputCommandInteraction,
-  type RESTPostAPIApplicationCommandsJSONBody
+  PermissionFlagsBits,
+  type RESTPostAPIApplicationCommandsJSONBody,
+  SlashCommandBuilder
 } from 'discord.js'
 import {
   applyOptions,
   type CommandConfig,
   type CommandLeaf
 } from '~/framework/command'
-
-import * as ping from './ping'
-import * as games from './games'
-import * as setSchedulingChannel from './set_scheduling_channel'
+import * as campaignAnnounce from './campaign/announce'
+import * as campaignCreate from './campaign/create'
 import * as gameSetup from './game/setup'
-import * as gameDaySchedule from './game_day/schedule'
 import * as gameDayAnnounce from './game_day/announce'
 import * as gameDayCancel from './game_day/cancel'
 import * as gameDayList from './game_day/list'
-import * as campaignCreate from './campaign/create'
-import * as campaignAnnounce from './campaign/announce'
+import * as gameDaySchedule from './game_day/schedule'
+import * as games from './games'
+import * as ping from './ping'
+import * as setSchedulingChannel from './set_scheduling_channel'
 
 type CommandModule = {
   config: CommandConfig

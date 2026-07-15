@@ -258,7 +258,7 @@ async function cmdCampaigns() {
     const sessions = await api<any[]>(`/api/campaigns/${c.id}/sessions`)
     const active = sessions.filter((s) => s.status !== 'CANCELLED').length
     console.log(
-      `${c.title.slice(0, 26).padEnd(26)} ${c.schedulingKind.padEnd(9)} sessions=${active}${c.maxSessions ? '/' + c.maxSessions : ''}  anchor=${fmt(c.recurrenceAnchor)}  ${c.id}`
+      `${c.title.slice(0, 26).padEnd(26)} ${c.schedulingKind.padEnd(9)} sessions=${active}${c.maxSessions ? `/${c.maxSessions}` : ''}  anchor=${fmt(c.recurrenceAnchor)}  ${c.id}`
     )
   }
 }

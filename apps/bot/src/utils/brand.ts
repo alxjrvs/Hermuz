@@ -1,4 +1,4 @@
-import { EmbedBuilder, type EmbedAuthorOptions } from 'discord.js'
+import { type EmbedAuthorOptions, EmbedBuilder } from 'discord.js'
 
 /**
  * Hermuz brand tokens for Discord embeds.
