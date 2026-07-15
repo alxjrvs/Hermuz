@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 export interface GameSetupModalData {
   command: 'game_setup'
   roleInfo: {

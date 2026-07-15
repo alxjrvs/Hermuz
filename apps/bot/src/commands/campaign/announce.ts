@@ -1,4 +1,5 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   MessageFlags,
@@ -6,11 +7,15 @@ import {
   ButtonStyle,
   ActionRowBuilder
 } from 'discord.js'
-import { getCampaignByRoleId, updateCampaign } from '../../models/campaign'
-import { getSchedulingChannel } from '../../models/discordServer'
+import {
+  type Player,
+  getCampaignByRoleId,
+  updateCampaign,
+  getPlayersByCampaign
+} from '@hermuz/db'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { createCampaignMessageEmbed } from '../../utils/campaignMessageUtils'
 import { createCampaignInterestButtonId } from '../../utils/buttonUtils'
-import { Player, supabase } from '../../utils/supabase'
 export const config = createCommandConfig({
   description: 'Announce an existing campaign in the scheduling channel',
   options: [
@@ -21,7 +26,7 @@ export const config = createCommandConfig({
       required: true
     }
   ]
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     const role = interaction.options.getRole('role', true)
@@ -32,7 +37,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         content: `No campaign found associated with the role ${role.name}.`
       })
     }
-    const schedulingChannel = await getSchedulingChannel(interaction.guildId!)
+    const schedulingChannel = await getSchedulingChannel(interaction.client)
     if (!schedulingChannel) {
       return interaction.editReply({
         content:
@@ -48,10 +53,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
           'The scheduling channel is not available or is not a text channel. Please use `/set_scheduling_channel` to set up a new one.'
       })
     }
-    if (campaign.announcement_message_id) {
+    if (campaign.announcementMessageId) {
       try {
         const existingMessage = await channel.messages.fetch(
-          campaign.announcement_message_id
+          campaign.announcementMessageId
         )
         if (existingMessage) {
           const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${existingMessage.id}`
@@ -65,13 +70,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     }
     let players: Player[] = []
     try {
-      const { data } = await supabase
-        .from('players')
-        .select('*')
-        .eq('campaign_id', campaign.id)
-      if (data) {
-        players = data
-      }
+      players = await getPlayersByCampaign(campaign.id)
     } catch (error) {
       logger.error('Error fetching players:', error)
     }
@@ -83,14 +82,14 @@ export default async (interaction: ChatInputCommandInteraction) => {
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       interestedButton
     )
-    const content = `<@&${campaign.discord_role_id}>`
+    const content = `<@&${campaign.discordRoleId}>`
     const announcementMessage = await channel.send({
       content: content,
       embeds: [embed],
       components: [actionRow]
     })
     await updateCampaign(campaign.id, {
-      announcement_message_id: announcementMessage.id
+      announcementMessageId: announcementMessage.id
     })
     const messageLink = `https://discordapp.com/channels/${interaction.guildId}/${channel.id}/${announcementMessage.id}`
     return interaction.editReply({

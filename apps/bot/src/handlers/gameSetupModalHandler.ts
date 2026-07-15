@@ -1,7 +1,6 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import { MessageFlags, type ModalSubmitInteraction } from 'discord.js'
-import { createGame } from '../models/game'
-import { getDiscordServerByDiscordId } from '../models/discordServer'
+import { createGame } from '@hermuz/db'
 import { GameSetupModalData } from '../utils/modalUtils'
 export async function handleGameSetupModalSubmit(
   interaction: ModalSubmitInteraction,
@@ -9,7 +8,7 @@ export async function handleGameSetupModalSubmit(
 ) {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
-    const { roleInfo, guildId } = modalData
+    const { roleInfo } = modalData
     const name = interaction.fields.getTextInputValue('name')
     const shortName = interaction.fields.getTextInputValue('short_name')
     const description = interaction.fields.getTextInputValue('description')
@@ -23,12 +22,6 @@ export async function handleGameSetupModalSubmit(
     if (isNaN(maxPlayers) || maxPlayers < minPlayers) {
       return interaction.editReply(
         'Maximum players must be a number greater than or equal to minimum players.'
-      )
-    }
-    const server = await getDiscordServerByDiscordId(guildId)
-    if (!server) {
-      return interaction.editReply(
-        'Server not found. Please make sure the bot is properly installed.'
       )
     }
     let roleId: string
@@ -51,12 +44,11 @@ export async function handleGameSetupModalSubmit(
     }
     const game = await createGame({
       name,
-      short_name: shortName,
+      shortName,
       description,
-      discord_role_id: roleId,
-      min_players: minPlayers,
-      max_players: maxPlayers,
-      server_id: server.id
+      discordRoleId: roleId,
+      minPlayers,
+      maxPlayers
     })
     if (!game) {
       if (!roleInfo.exists) {

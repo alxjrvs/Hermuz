@@ -1,12 +1,10 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import {
   MessageFlags,
   type ModalSubmitInteraction,
   PermissionFlagsBits
 } from 'discord.js'
-import { getGameByRoleId } from '../models/game'
-import { createCampaign } from '../models/campaign'
-import { getDiscordServerByDiscordId } from '../models/discordServer'
+import { getGameByRoleId, createCampaign } from '@hermuz/db'
 import { createCampaignChannels } from '../utils/channelUtils'
 import { CampaignCreateModalData } from '../utils/modalUtils'
 import { generateCampaignRoleName } from '../utils/campaignUtils'
@@ -16,18 +14,11 @@ export async function handleCampaignCreateModalSubmit(
 ) {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
-    const { guildId, gameInfo, roleInfo } = modalData
+    const { gameInfo, roleInfo } = modalData
     const title = interaction.fields.getTextInputValue('title')
     const description = interaction.fields.getTextInputValue('description')
     const regularGameTime =
       interaction.fields.getTextInputValue('regular_game_time')
-    const server = await getDiscordServerByDiscordId(guildId)
-    if (!server) {
-      return interaction.editReply({
-        content:
-          'This server is not properly set up. Please reinstall the bot to continue.'
-      })
-    }
     const guild = interaction.guild
     if (!guild) {
       return interaction.editReply({
@@ -58,11 +49,10 @@ export async function handleCampaignCreateModalSubmit(
     const campaign = await createCampaign({
       title,
       description,
-      game_id: gameId,
-      game_name: gameName,
-      regular_game_time: regularGameTime,
-      discord_role_id: role.id,
-      server_id: server.id
+      gameId,
+      gameName,
+      regularGameTime,
+      discordRoleId: role.id
     })
     if (!campaign) {
       await role.delete('Campaign creation failed')

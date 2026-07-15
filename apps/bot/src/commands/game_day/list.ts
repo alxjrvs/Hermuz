@@ -1,25 +1,18 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
   Colors,
   MessageFlags
 } from 'discord.js'
-import { getUpcomingGameDaysByStatus } from '../../models/gameDay'
-import { getDiscordServerByDiscordId } from '../../models/discordServer'
-import { getGame } from '../../models/game'
+import { getUpcomingGameDaysByStatus, getGame } from '@hermuz/db'
 export const config = createCommandConfig({
   description: 'List all scheduled or scheduling game days in the future'
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply()
-    const server = await getDiscordServerByDiscordId(interaction.guildId!)
-    if (!server) {
-      return interaction.editReply(
-        'Failed to retrieve server record. Please try again later.'
-      )
-    }
     const gameDays = await getUpcomingGameDaysByStatus(['CLOSED', 'SCHEDULING'])
     if (gameDays.length === 0) {
       return interaction.editReply(
@@ -32,7 +25,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
       .setDescription('Here are all the upcoming game days:')
       .setTimestamp()
     for (const gameDay of gameDays) {
-      const date = new Date(gameDay.date_time)
+      const date = new Date(gameDay.dateTime)
       const formattedDate = date.toLocaleString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -42,10 +35,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
         minute: '2-digit'
       })
       let gameInfo = 'No specific game'
-      if (gameDay.game_id) {
-        const game = await getGame(gameDay.game_id)
+      if (gameDay.gameId) {
+        const game = await getGame(gameDay.gameId)
         if (game) {
-          gameInfo = `${game.name} (${game.short_name})`
+          gameInfo = `${game.name} (${game.shortName})`
         }
       }
       embed.addFields({
@@ -54,8 +47,8 @@ export default async (interaction: ChatInputCommandInteraction) => {
           `**Status:** ${gameDay.status}\n` +
           `**Location:** ${gameDay.location || 'Not specified'}\n` +
           `**Game:** ${gameInfo}\n` +
-          `**Host:** <@${gameDay.host_user_id}>\n` +
-          `**Role:** ${gameDay.discord_role_id ? `<@&${gameDay.discord_role_id}>` : 'None'}`
+          `**Host:** <@${gameDay.hostUserId}>\n` +
+          `**Role:** ${gameDay.discordRoleId ? `<@&${gameDay.discordRoleId}>` : 'None'}`
       })
     }
     await interaction.editReply({ embeds: [embed] })

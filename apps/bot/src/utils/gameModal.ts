@@ -4,7 +4,7 @@ import {
   TextInputStyle,
   ActionRowBuilder
 } from 'discord.js'
-import { Game } from '~/utils/supabase'
+import type { Game } from '@hermuz/db'
 export default function gameModal(
   defaultValues?: Game,
   customId?: string
@@ -28,8 +28,8 @@ export default function gameModal(
     .setPlaceholder('Enter a short identifier for the game')
     .setRequired(true)
     .setMaxLength(50)
-  if (defaultValues?.short_name) {
-    shortNameInput.setValue(defaultValues.short_name)
+  if (defaultValues?.shortName) {
+    shortNameInput.setValue(defaultValues.shortName)
   }
   const descriptionInput = new TextInputBuilder()
     .setCustomId('description')
@@ -48,8 +48,8 @@ export default function gameModal(
     .setPlaceholder('Enter the minimum number of players')
     .setRequired(true)
     .setValue('2')
-  if (defaultValues?.min_players) {
-    minPlayersInput.setValue(defaultValues.min_players.toString())
+  if (defaultValues?.minPlayers) {
+    minPlayersInput.setValue(defaultValues.minPlayers.toString())
   }
   const maxPlayersInput = new TextInputBuilder()
     .setCustomId('max_players')
@@ -58,8 +58,8 @@ export default function gameModal(
     .setPlaceholder('Enter the maximum number of players')
     .setRequired(true)
     .setValue('4')
-  if (defaultValues?.max_players) {
-    maxPlayersInput.setValue(defaultValues.max_players.toString())
+  if (defaultValues?.maxPlayers) {
+    maxPlayersInput.setValue(defaultValues.maxPlayers.toString())
   }
   const nameActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
     nameInput

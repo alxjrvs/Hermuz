@@ -1,4 +1,5 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   PermissionFlagsBits
@@ -7,7 +8,7 @@ import gameModal from '~/utils/gameModal'
 import { createGameSetupModalId } from '../../utils/modalUtils'
 export const config = createCommandConfig({
   description: 'Set up a new game with associated role',
-  defaultMemberPermissions: PermissionFlagsBits.Administrator, 
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [
     {
       name: 'role',
@@ -17,7 +18,7 @@ export const config = createCommandConfig({
       required: true
     }
   ]
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   const roleInput = interaction.options.getString('role', true)
   const existingRole = interaction.guild?.roles.cache.find(

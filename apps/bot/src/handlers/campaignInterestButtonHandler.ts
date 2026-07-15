@@ -1,14 +1,17 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import { MessageFlags, type ButtonInteraction } from 'discord.js'
-import { getOrCreateUser } from '../models/user'
-import { getCampaign } from '../models/campaign'
-import { getOrCreatePlayer, getPlayersByCampaign } from '../models/player'
-import { getSchedulingChannel } from '../models/discordServer'
+import {
+  getOrCreateUser,
+  getCampaign,
+  getOrCreatePlayer,
+  getPlayersByCampaign,
+  type Campaign
+} from '@hermuz/db'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { createCampaignMessageEmbed } from '../utils/campaignMessageUtils'
 import { ButtonData, isCampaignInterestButton } from '../utils/buttonUtils'
 import { isUUID, isDiscordId } from '../utils/typeGuards'
 import { PlayerStatus } from '../types/enums'
-import { Campaign } from '../utils/supabase'
 import { ButtonHandler } from '../utils/buttonRegistry'
 import {
   generateCampaignInterestStatusMessage,
@@ -96,12 +99,12 @@ async function updateCampaignMessage(
   campaign: Campaign
 ) {
   try {
-    if (!campaign.announcement_message_id) {
+    if (!campaign.announcementMessageId) {
       return
     }
 
     // Get the scheduling channel from the guild
-    const schedulingChannel = await getSchedulingChannel(interaction.guildId!)
+    const schedulingChannel = await getSchedulingChannel(interaction.client)
     if (!schedulingChannel) {
       return
     }
@@ -114,9 +117,7 @@ async function updateCampaignMessage(
       return
     }
 
-    const message = await channel.messages.fetch(
-      campaign.announcement_message_id
-    )
+    const message = await channel.messages.fetch(campaign.announcementMessageId)
     if (!message) {
       return
     }

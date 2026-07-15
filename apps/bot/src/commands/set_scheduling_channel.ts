@@ -1,17 +1,15 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   PermissionFlagsBits,
   ChannelType,
   MessageFlags
 } from 'discord.js'
-import {
-  getOrCreateDiscordServer,
-  updateDiscordServer
-} from '../models/discordServer'
+import { setSchedulingChannelId } from '@hermuz/db'
 export const config = createCommandConfig({
   description: 'Set the channel for game day scheduling',
-  defaultMemberPermissions: PermissionFlagsBits.Administrator, 
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [
     {
       name: 'channel',
@@ -21,7 +19,7 @@ export const config = createCommandConfig({
       channelTypes: [ChannelType.GuildText]
     }
   ]
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
@@ -31,16 +29,8 @@ export default async (interaction: ChatInputCommandInteraction) => {
         'The scheduling channel must be a text channel.'
       )
     }
-    const server = await getOrCreateDiscordServer(interaction.guildId!)
-    if (!server) {
-      return interaction.editReply(
-        'Failed to retrieve server record. Please try again later.'
-      )
-    }
-    const updatedServer = await updateDiscordServer(server.id, {
-      scheduling_channel_id: schedulingChannel.id
-    })
-    if (!updatedServer) {
+    const success = await setSchedulingChannelId(schedulingChannel.id)
+    if (!success) {
       return interaction.editReply(
         'Failed to update server settings. Please try again later.'
       )

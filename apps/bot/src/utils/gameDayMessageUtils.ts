@@ -1,6 +1,16 @@
 import { EmbedBuilder, Colors } from 'discord.js'
-import type { GameDay, Game, Attendance } from '../utils/supabase'
-import { formatDate } from './formatters'
+import type { GameDay, Game, Attendance } from '@hermuz/db'
+/** Human-readable date/time for a game day's ISO timestamp. */
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 export function createGameDayMessageEmbed(
   gameDay: GameDay,
   attendances: Attendance[],
@@ -27,24 +37,24 @@ export function createGameDayMessageEmbed(
   }
   embed.setDescription(gameDay.description || 'No description provided')
   if (game) {
-    const minPlayers = game.min_players?.toString() || 'Not specified'
-    const maxPlayers = game.max_players?.toString() || 'Not specified'
+    const minPlayers = game.minPlayers?.toString() || 'Not specified'
+    const maxPlayers = game.maxPlayers?.toString() || 'Not specified'
     embed.addFields({
       name: 'Game',
-      value: `${game.name} (${game.short_name}) | Players: ${minPlayers}-${maxPlayers}`,
+      value: `${game.name} (${game.shortName}) | Players: ${minPlayers}-${maxPlayers}`,
       inline: false
     })
   }
   embed.addFields(
     {
       name: 'Date & Time',
-      value: formatDate(gameDay.date_time),
+      value: formatDate(gameDay.dateTime),
       inline: false
     },
     {
       name: 'Location',
       value: gameDay.location
-        ? `${gameDay.location}${gameDay.host_user_id ? ` (Host: <@${gameDay.host_user_id}>)` : ''}`
+        ? `${gameDay.location}${gameDay.hostUserId ? ` (Host: <@${gameDay.hostUserId}>)` : ''}`
         : 'No location specified',
       inline: false
     }
@@ -69,7 +79,7 @@ function createGameDayAttendanceEmbed(attendances: Attendance[]) {
       value:
         availableAttendances.length > 0
           ? availableAttendances
-              .map((a) => (a.user_id ? `<@${a.user_id}>` : 'Unknown User'))
+              .map((a) => (a.userId ? `<@${a.userId}>` : 'Unknown User'))
               .join(' ')
           : 'No one yet',
       inline: true
@@ -79,7 +89,7 @@ function createGameDayAttendanceEmbed(attendances: Attendance[]) {
       value:
         interestedAttendances.length > 0
           ? interestedAttendances
-              .map((a) => (a.user_id ? `<@${a.user_id}>` : 'Unknown User'))
+              .map((a) => (a.userId ? `<@${a.userId}>` : 'Unknown User'))
               .join(' ')
           : 'No one yet',
       inline: true
@@ -89,7 +99,7 @@ function createGameDayAttendanceEmbed(attendances: Attendance[]) {
       value:
         notAvailableAttendances.length > 0
           ? notAvailableAttendances
-              .map((a) => (a.user_id ? `<@${a.user_id}>` : 'Unknown User'))
+              .map((a) => (a.userId ? `<@${a.userId}>` : 'Unknown User'))
               .join(' ')
           : 'No one yet',
       inline: true

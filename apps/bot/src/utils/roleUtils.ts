@@ -1,11 +1,6 @@
-import { logger } from 'robo.js'
-import { 
-  Guild, 
-  GuildMember, 
-  PermissionFlagsBits, 
-  type Role 
-} from 'discord.js'
-import { GameDay, Campaign } from './supabase'
+import { logger } from '~/utils/logger'
+import { Guild, GuildMember, PermissionFlagsBits, type Role } from 'discord.js'
+import type { GameDay, Campaign } from '@hermuz/db'
 import { AttendanceStatus } from '../types/enums'
 
 /**
@@ -20,29 +15,29 @@ export async function handleGameDayRoleAssignment(
   gameDay: GameDay,
   status: AttendanceStatus
 ): Promise<boolean> {
-  if (!gameDay.discord_role_id) {
+  if (!gameDay.discordRoleId) {
     return false
   }
 
   try {
     if (status === 'AVAILABLE') {
       await member.roles.add(
-        gameDay.discord_role_id,
+        gameDay.discordRoleId,
         'User marked as available for game day'
       )
       logger.info(
-        `Added role ${gameDay.discord_role_id} to user ${member.id} for game day ${gameDay.id}`
+        `Added role ${gameDay.discordRoleId} to user ${member.id} for game day ${gameDay.id}`
       )
       return true
     }
-    
+
     await member.roles.remove(
-      gameDay.discord_role_id,
+      gameDay.discordRoleId,
       'User no longer available for game day'
     )
-    
+
     logger.info(
-      `Removed role ${gameDay.discord_role_id} from user ${member.id} for game day ${gameDay.id}`
+      `Removed role ${gameDay.discordRoleId} from user ${member.id} for game day ${gameDay.id}`
     )
     return true
   } catch (error) {
@@ -61,17 +56,17 @@ export async function handleCampaignRoleAssignment(
   member: GuildMember,
   campaign: Campaign
 ): Promise<boolean> {
-  if (!campaign.discord_role_id) {
+  if (!campaign.discordRoleId) {
     return false
   }
 
   try {
     await member.roles.add(
-      campaign.discord_role_id,
+      campaign.discordRoleId,
       'User interested in campaign'
     )
     logger.info(
-      `Added role ${campaign.discord_role_id} to user ${member.id} for campaign ${campaign.id}`
+      `Added role ${campaign.discordRoleId} to user ${member.id} for campaign ${campaign.id}`
     )
     return true
   } catch (error) {

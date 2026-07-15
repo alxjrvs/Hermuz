@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 export interface AttendanceButtonData {
   command: 'attendance'
   status: 'AVAILABLE' | 'INTERESTED' | 'NOT_AVAILABLE'

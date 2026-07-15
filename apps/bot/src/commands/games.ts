@@ -1,24 +1,18 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
   MessageFlags
 } from 'discord.js'
-import { getAllGames } from '../models/game'
-import { getDiscordServerByDiscordId } from '../models/discordServer'
+import { getAllGames } from '@hermuz/db'
 export const config = createCommandConfig({
   description: 'List all games set up in this server'
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply()
-    const server = await getDiscordServerByDiscordId(interaction.guildId!)
-    if (!server) {
-      return interaction.editReply(
-        'Failed to retrieve server record. Please try again later.'
-      )
-    }
-    const serverGames = await getAllGames(server.id)
+    const serverGames = await getAllGames()
     if (serverGames.length === 0) {
       return interaction.editReply(
         'No games have been set up in this server yet. Use `/game setup` to add a game.'
@@ -33,11 +27,11 @@ export default async (interaction: ChatInputCommandInteraction) => {
       .setTimestamp()
     serverGames.forEach((game) => {
       embed.addFields({
-        name: `${game.name} (${game.short_name})`,
+        name: `${game.name} (${game.shortName})`,
         value:
           `**Description:** ${game.description || 'No description'}\n` +
-          `**Players:** ${game.min_players || '?'}-${game.max_players || '?'}\n` +
-          `**Role:** <@&${game.discord_role_id}>`
+          `**Players:** ${game.minPlayers || '?'}-${game.maxPlayers || '?'}\n` +
+          `**Role:** <@&${game.discordRoleId}>`
       })
     })
     await interaction.editReply({ embeds: [embed] })

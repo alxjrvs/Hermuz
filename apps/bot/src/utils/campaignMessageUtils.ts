@@ -1,5 +1,5 @@
 import { EmbedBuilder, Colors } from 'discord.js'
-import { Campaign, Player } from '../utils/supabase'
+import type { Campaign, Player } from '@hermuz/db'
 import { formatRegularGameTime, getCampaignDisplayName } from './campaignUtils'
 export function createCampaignMessageEmbed(
   campaign: Campaign,
@@ -11,15 +11,15 @@ export function createCampaignMessageEmbed(
     .setColor(Colors.Blue)
     .addFields({
       name: 'Regular Game Time',
-      value: formatRegularGameTime(campaign.regular_game_time),
+      value: formatRegularGameTime(campaign.regularGameTime),
       inline: true
     })
     .setFooter({ text: `Campaign ID: ${campaign.id}` })
     .setTimestamp()
-  if (campaign.game_name) {
+  if (campaign.gameName) {
     embed.addFields({
       name: 'Game',
-      value: campaign.game_name,
+      value: campaign.gameName,
       inline: true
     })
   }

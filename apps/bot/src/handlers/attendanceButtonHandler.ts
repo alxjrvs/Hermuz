@@ -1,16 +1,16 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import { MessageFlags, type ButtonInteraction } from 'discord.js'
-import { getOrCreateUser } from '../models/user'
 import {
+  getOrCreateUser,
   updateUserAttendance,
-  getGameDayAttendances
-} from '../models/attendance'
-import { getGameDay } from '../models/gameDay'
-import { getGame } from '../models/game'
-import { getSchedulingChannel } from '../models/discordServer'
+  getGameDayAttendances,
+  getGameDay,
+  getGame,
+  type GameDay
+} from '@hermuz/db'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { AttendanceStatus } from '../types/enums'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
-import { GameDay } from '../utils/supabase'
 import { ButtonData, isAttendanceButton } from '../utils/buttonUtils'
 import { isAttendanceStatus, isDiscordId, isUUID } from '../utils/typeGuards'
 import { ButtonHandler } from '../utils/buttonRegistry'
@@ -109,12 +109,12 @@ async function updateGameDayMessage(
   gameDayId: string
 ) {
   try {
-    if (!gameDay.announcement_message_id) {
+    if (!gameDay.announcementMessageId) {
       return
     }
 
     // Get the scheduling channel from the guild
-    const schedulingChannel = await getSchedulingChannel(interaction.guildId!)
+    const schedulingChannel = await getSchedulingChannel(interaction.client)
     if (!schedulingChannel) {
       return
     }
@@ -127,15 +127,13 @@ async function updateGameDayMessage(
       return
     }
 
-    const message = await channel.messages.fetch(
-      gameDay.announcement_message_id
-    )
+    const message = await channel.messages.fetch(gameDay.announcementMessageId)
     if (!message) {
       return
     }
 
     const attendances = await getGameDayAttendances(gameDayId)
-    const game = gameDay.game_id ? await getGame(gameDay.game_id) : null
+    const game = gameDay.gameId ? await getGame(gameDay.gameId) : null
 
     const embed = createGameDayMessageEmbed(gameDay, attendances, game)
 

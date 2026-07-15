@@ -1,15 +1,15 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   PermissionFlagsBits,
   MessageFlags
 } from 'discord.js'
-import { getDiscordServerByDiscordId } from '../../models/discordServer'
 import { createCampaignModalId } from '../../utils/modalUtils'
 import campaignModal from '../../utils/campaignModal'
 export const config = createCommandConfig({
   description: 'Create a new campaign with associated role and channels',
-  defaultMemberPermissions: PermissionFlagsBits.Administrator, 
+  defaultMemberPermissions: PermissionFlagsBits.Administrator,
   options: [
     {
       name: 'game',
@@ -25,21 +25,13 @@ export const config = createCommandConfig({
       required: true
     }
   ]
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     const gameInput = interaction.options.getString('game', true)
     const roleInput = interaction.options.getString('role', true)
-    const server = await getDiscordServerByDiscordId(interaction.guildId!)
-    if (!server) {
-      return interaction.reply({
-        content:
-          'This server is not properly set up. Please reinstall the bot to continue.',
-        flags: MessageFlags.Ephemeral
-      })
-    }
     const modalData = {
-      command: 'campaign_create',
+      command: 'campaign_create' as const,
       gameInfo: {
         input: gameInput
       },

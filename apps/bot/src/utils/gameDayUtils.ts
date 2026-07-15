@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import { PermissionFlagsBits, type Guild } from 'discord.js'
 export function parseDateTime(dateTimeStr: string): Date | null {
   const regex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/
@@ -8,7 +8,7 @@ export function parseDateTime(dateTimeStr: string): Date | null {
   }
   const [, yearStr, monthStr, dayStr, hourStr, minuteStr] = match
   const year = parseInt(yearStr, 10)
-  const month = parseInt(monthStr, 10) - 1 
+  const month = parseInt(monthStr, 10) - 1
   const day = parseInt(dayStr, 10)
   const hour = parseInt(hourStr, 10)
   const minute = parseInt(minuteStr, 10)
@@ -47,7 +47,7 @@ export async function createGameDayRole(
 }
 export function generateRoleName(title: string, dateTime: Date): string {
   const titlePart = title
-    .replace(/[^a-zA-Z0-9]/g, '') 
+    .replace(/[^a-zA-Z0-9]/g, '')
     .substring(0, 10)
     .toLowerCase()
   const month = (dateTime.getMonth() + 1).toString().padStart(2, '0')

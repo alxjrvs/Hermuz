@@ -1,4 +1,5 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   MessageFlags,
@@ -6,8 +7,8 @@ import {
   Colors,
   EmbedBuilder
 } from 'discord.js'
-import { getGameDayByRoleId, updateGameDay } from '../../models/gameDay'
-import { getSchedulingChannel } from '../../models/discordServer'
+import { getGameDayByRoleId, updateGameDay } from '@hermuz/db'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { deleteGameDayChannels } from '../../utils/channelUtils'
 import {
   safelyDeleteEvent,
@@ -25,7 +26,7 @@ export const config = createCommandConfig({
     }
   ],
   defaultMemberPermissions: PermissionFlagsBits.Administrator
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
@@ -53,7 +54,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         flags: MessageFlags.Ephemeral
       })
     }
-    const schedulingChannel = await getSchedulingChannel(interaction.guildId!)
+    const schedulingChannel = await getSchedulingChannel(interaction.client)
     if (!schedulingChannel) {
       logger.error('Failed to get scheduling channel for announcement update')
       return interaction.reply({
@@ -77,18 +78,18 @@ export default async (interaction: ChatInputCommandInteraction) => {
           .setFooter({ text: `Game Day ID: ${gameDay.id}` })
           .setTimestamp()
         await announcementMessage.edit({
-          content: null, 
+          content: null,
           embeds: [cancelledEmbed],
-          components: [] 
+          components: []
         })
         logger.info(
           `Updated announcement message for cancelled game day: ${gameDay.id}`
         )
         let channelsDeleted = false
-        if (gameDay.discord_category_id) {
+        if (gameDay.discordCategoryId) {
           channelsDeleted = await deleteGameDayChannels(
             interaction.guild!,
-            gameDay.discord_category_id
+            gameDay.discordCategoryId
           )
           if (channelsDeleted) {
             logger.info(
@@ -102,12 +103,12 @@ export default async (interaction: ChatInputCommandInteraction) => {
         }
         let eventDeleted = false
         let eventErrorMessage = ''
-        if (gameDay.discord_event_id) {
+        if (gameDay.discordEventId) {
           try {
             const guild = interaction.guild!
             eventDeleted = await safelyDeleteEvent(
               guild,
-              gameDay.discord_event_id
+              gameDay.discordEventId
             )
             if (eventDeleted) {
               logger.info(
@@ -138,7 +139,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         let replyContent = `Game day "${gameDay.title}" has been cancelled and the announcement has been updated.${
           channelsDeleted ? ' All associated channels have been deleted.' : ''
         }`
-        if (gameDay.discord_event_id) {
+        if (gameDay.discordEventId) {
           if (eventDeleted) {
             replyContent += ' The Discord scheduled event has been deleted.'
           } else if (eventErrorMessage) {

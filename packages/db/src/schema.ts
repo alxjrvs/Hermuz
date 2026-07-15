@@ -11,7 +11,7 @@ export const PLAYER_STATUS = ['INTERESTED', 'CONFIRMED'] as const
 export const ATTENDANCE_STATUS = [
   'AVAILABLE',
   'INTERESTED',
-  'NOT_AVAILABLE',
+  'NOT_AVAILABLE'
 ] as const
 
 /** New UUID text primary key (replaces Postgres `gen_random_uuid()`). */
@@ -31,7 +31,7 @@ const isoTimestamp = (name: string) =>
  */
 export const users = sqliteTable('users', {
   discordId: text('discord_id').primaryKey(),
-  username: text('username').notNull(),
+  username: text('username').notNull()
 })
 
 /** `games` — a board/RPG game. Multi-tenant `server_id` dropped. */
@@ -42,7 +42,7 @@ export const games = sqliteTable('games', {
   description: text('description'),
   discordRoleId: text('discord_role_id'),
   minPlayers: integer('min_players'),
-  maxPlayers: integer('max_players'),
+  maxPlayers: integer('max_players')
 })
 
 /** `game_days` — a scheduled play session for a game. */
@@ -60,7 +60,7 @@ export const gameDays = sqliteTable('game_days', {
   discordEventId: text('discord_event_id'),
   announcementMessageId: text('announcement_message_id'),
   createdAt: isoTimestamp('created_at'),
-  updatedAt: isoTimestamp('updated_at'),
+  updatedAt: isoTimestamp('updated_at')
 })
 
 /** `campaigns` — an ongoing campaign with interest sign-ups. `server_id` dropped. */
@@ -73,7 +73,7 @@ export const campaigns = sqliteTable('campaigns', {
   gameId: text('game_id').references(() => games.id),
   gameName: text('game_name'),
   announcementMessageId: text('announcement_message_id'),
-  createdAt: isoTimestamp('created_at'),
+  createdAt: isoTimestamp('created_at')
 })
 
 /** `players` — a user's membership/interest in a campaign. */
@@ -89,7 +89,7 @@ export const players = sqliteTable('players', {
   status: text('status', { enum: PLAYER_STATUS })
     .notNull()
     .default('INTERESTED'),
-  createdAt: isoTimestamp('created_at'),
+  createdAt: isoTimestamp('created_at')
 })
 
 /** `attendances` — a user's RSVP status for a game day. */
@@ -97,5 +97,20 @@ export const attendances = sqliteTable('attendances', {
   id: uuidPk(),
   gameDayId: text('game_day_id').references(() => gameDays.id),
   userId: text('user_id').references(() => users.discordId),
-  status: text('status', { enum: ATTENDANCE_STATUS }).notNull(),
+  status: text('status', { enum: ATTENDANCE_STATUS }).notNull()
 })
+
+/**
+ * `settings` — single-server key/value config. Replaces the old per-server
+ * `discord_servers` columns (e.g. `scheduling_channel_id`) now that Hermuz
+ * serves exactly one guild. Both the bot and the web GUI read/write these.
+ */
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull()
+})
+
+/** Well-known setting keys. */
+export const SETTING_KEYS = {
+  schedulingChannelId: 'scheduling_channel_id'
+} as const

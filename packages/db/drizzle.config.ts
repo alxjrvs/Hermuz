@@ -5,6 +5,6 @@ export default defineConfig({
   schema: './src/schema.ts',
   out: './migrations',
   dbCredentials: {
-    url: process.env.DATABASE_PATH ?? './hermuz.db',
-  },
+    url: process.env.DATABASE_PATH ?? './hermuz.db'
+  }
 })

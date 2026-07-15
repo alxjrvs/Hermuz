@@ -1,5 +1,6 @@
 export * from './schema'
 export { db, sqlite, schema, runMigrations } from './client'
+export * from './repositories'
 
 import {
   users,
@@ -10,7 +11,7 @@ import {
   attendances,
   GAME_DAY_STATUS,
   PLAYER_STATUS,
-  ATTENDANCE_STATUS,
+  ATTENDANCE_STATUS
 } from './schema'
 
 // Row types (replace the Supabase-generated `Tables<>` / `TablesInsert<>`).

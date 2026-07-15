@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import { ChannelType, Guild, PermissionFlagsBits, Role } from 'discord.js'
 import type { CategoryChannel, TextChannel, VoiceChannel } from 'discord.js'
 export const createGameDayChannels = async (

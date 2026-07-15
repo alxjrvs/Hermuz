@@ -1,4 +1,5 @@
-import { createCommandConfig, logger } from 'robo.js'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   ModalBuilder,
@@ -7,7 +8,7 @@ import {
   ActionRowBuilder,
   MessageFlags
 } from 'discord.js'
-import { getDiscordServerByDiscordId } from '../../models/discordServer'
+import { getSchedulingChannelId } from '@hermuz/db'
 import { createGameDayScheduleModalId } from '../../utils/modalUtils'
 export const config = createCommandConfig({
   description: 'Schedule a new game day event',
@@ -19,10 +20,10 @@ export const config = createCommandConfig({
       required: false
     }
   ]
-} as const)
+})
 export default async (interaction: ChatInputCommandInteraction) => {
-  const server = await getDiscordServerByDiscordId(interaction.guildId!)
-  if (!server || !server.scheduling_channel_id) {
+  const channelId = await getSchedulingChannelId()
+  if (!channelId) {
     return interaction.reply({
       content:
         'This server does not have a scheduling channel set. Please ask an administrator to use the `/set_scheduling_channel` command to set one up before scheduling game days.',

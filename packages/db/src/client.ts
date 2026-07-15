@@ -32,7 +32,7 @@ export function runMigrations(): void {
   const migrationsFolder = join(
     dirname(fileURLToPath(import.meta.url)),
     '..',
-    'migrations',
+    'migrations'
   )
   migrate(db, { migrationsFolder })
 }

@@ -1,6 +1,6 @@
 import { AttendanceStatus } from '../types/enums'
 import { PlayerStatus } from '../types/enums'
-import { GameDay, Campaign } from './supabase'
+import type { GameDay, Campaign } from '@hermuz/db'
 
 /**
  * Generate a status message for attendance updates

@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import { type Guild, type GuildScheduledEvent } from 'discord.js'
 export enum EventErrorCode {
   MISSING_PERMISSIONS = 'MISSING_PERMISSIONS',

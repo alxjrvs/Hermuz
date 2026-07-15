@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import {
   MessageFlags,
   type ModalSubmitInteraction,
@@ -10,10 +10,13 @@ import {
   getUserFriendlyEventErrorMessage
 } from '../utils/eventUtils'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
-import { getGameByRoleId } from '../models/game'
-import { createGameDayDraft, updateGameDay } from '../models/gameDay'
-import { getOrCreateUser } from '../models/user'
-import { createAttendance } from '../models/attendance'
+import {
+  getGameByRoleId,
+  createGameDayDraft,
+  updateGameDay,
+  getOrCreateUser,
+  createAttendance
+} from '@hermuz/db'
 import { createGameDayChannels } from '../utils/channelUtils'
 import { GameDayScheduleModalData } from '../utils/modalUtils'
 import { parseDateTime, createGameDayRole } from '../utils/gameDayUtils'
@@ -59,14 +62,19 @@ export async function handleGameDayScheduleModalSubmit(
       title,
       dateTime
     )
+    if (!gameDayRole) {
+      return interaction.editReply(
+        'Failed to create the game day role. Please try again later.'
+      )
+    }
     const gameDay = await createGameDayDraft({
       title,
       description,
-      date_time: dateTime.toISOString(),
+      dateTime: dateTime.toISOString(),
       location,
-      host_user_id: userId,
-      game_id: gameId,
-      discord_role_id: gameDayRole.id
+      hostUserId: userId,
+      gameId,
+      discordRoleId: gameDayRole.id
     })
     if (!gameDay) {
       try {
@@ -99,7 +107,7 @@ export async function handleGameDayScheduleModalSubmit(
         name: title,
         description: description || `Game day for ${title}`,
         scheduledStartTime: dateTime,
-        scheduledEndTime: new Date(dateTime.getTime() + 4 * 60 * 60 * 1000), 
+        scheduledEndTime: new Date(dateTime.getTime() + 4 * 60 * 60 * 1000),
         privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
         entityType: GuildScheduledEventEntityType.External,
         entityMetadata: {
@@ -108,8 +116,8 @@ export async function handleGameDayScheduleModalSubmit(
       })
       logger.info(`Created Discord scheduled event: ${scheduledEvent.id}`)
       await updateGameDay(gameDay.id, {
-        discord_event_id: scheduledEvent.id,
-        discord_category_id: channels?.category.id
+        discordEventId: scheduledEvent.id,
+        discordCategoryId: channels?.category.id
       })
       logger.info(`Updated game day with event ID: ${scheduledEvent.id}`)
     } catch (error) {
@@ -142,8 +150,8 @@ export async function handleGameDayScheduleModalSubmit(
       )
     }
     const hostAttendance = await createAttendance({
-      game_day_id: gameDay.id,
-      user_id: userId,
+      gameDayId: gameDay.id,
+      userId,
       status: 'AVAILABLE'
     })
     if (hostAttendance) {

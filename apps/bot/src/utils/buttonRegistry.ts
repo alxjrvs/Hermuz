@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '~/utils/logger'
 import type { ButtonInteraction } from 'discord.js'
 import { ButtonData, deserializeButtonData } from './buttonUtils'
 
@@ -29,13 +29,13 @@ export async function dispatchButtonInteraction(
   try {
     // Try to deserialize the button data
     const buttonData = deserializeButtonData(interaction.customId)
-    
+
     // If we couldn't deserialize the data, it might be a legacy button
     if (!buttonData) {
       logger.debug(`Could not deserialize button data: ${interaction.customId}`)
       return false
     }
-    
+
     // Find a handler that can handle this button
     for (const handler of buttonHandlers) {
       if (handler.canHandle(buttonData)) {
@@ -43,7 +43,7 @@ export async function dispatchButtonInteraction(
         return true
       }
     }
-    
+
     logger.warn(`No handler found for button: ${JSON.stringify(buttonData)}`)
     return false
   } catch (error) {

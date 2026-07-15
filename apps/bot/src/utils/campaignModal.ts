@@ -4,7 +4,7 @@ import {
   TextInputStyle,
   ActionRowBuilder
 } from 'discord.js'
-import { Campaign } from '~/utils/supabase'
+import type { Campaign } from '@hermuz/db'
 export default function campaignModal(
   customId: string,
   defaultValues?: Campaign
@@ -39,8 +39,8 @@ export default function campaignModal(
     .setPlaceholder('e.g., Fridays 8PM-11PM EST')
     .setRequired(true)
     .setMaxLength(100)
-  if (defaultValues?.regular_game_time) {
-    regularGameTimeInput.setValue(defaultValues.regular_game_time)
+  if (defaultValues?.regularGameTime) {
+    regularGameTimeInput.setValue(defaultValues.regularGameTime)
   }
   const titleActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
     titleInput
