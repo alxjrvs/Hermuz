@@ -75,6 +75,10 @@ async function main(): Promise<void> {
           return
         }
         await leaf.handler(interaction)
+      } else if (interaction.isAutocomplete()) {
+        const leaf = resolveCommand(interaction)
+        if (leaf?.autocomplete) await leaf.autocomplete(interaction)
+        else await interaction.respond([])
       } else if (interaction.isButton()) {
         const handled = await dispatchButtonInteraction(interaction)
         if (!handled) logger.warn(`Unhandled button: ${interaction.customId}`)

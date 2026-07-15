@@ -1,11 +1,97 @@
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
-import { updatePlayer, deletePlayer, type NewPlayer } from '@hermuz/db'
+import {
+  updatePlayer,
+  deletePlayer,
+  PLAYER_STATUS,
+  type NewPlayer,
+  type PlayerStatus
+} from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
+import {
+  joinCampaign,
+  leaveCampaign,
+  setPlayerStatus,
+  setCharacterName
+} from '~/services/playerService'
 import { readJson } from './helpers'
 
-export function playersRoutes(_client: Client): Hono {
+const isPlayerStatus = (v: unknown): v is PlayerStatus =>
+  typeof v === 'string' && (PLAYER_STATUS as readonly string[]).includes(v)
+
+export function playersRoutes(client: Client): Hono {
   const app = new Hono()
+
+  // --- Self-service (member-level): manage your OWN membership. Mirrors the
+  // /campaign join|leave|confirm and /character set commands via one service. ---
+
+  app.put('/campaign/:campaignId/me', async (c) => {
+    const user = c.get('user')
+    const result = await joinCampaign(
+      client,
+      c.req.param('campaignId'),
+      user.id,
+      user.username
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
+
+  app.delete('/campaign/:campaignId/me', async (c) => {
+    const user = c.get('user')
+    const result = await leaveCampaign(
+      client,
+      c.req.param('campaignId'),
+      user.id
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
+
+  app.put('/campaign/:campaignId/me/status', async (c) => {
+    const user = c.get('user')
+    const body = await readJson<{ status?: unknown }>(c)
+    if (!body || !isPlayerStatus(body.status)) {
+      return c.json(
+        { error: 'status must be one of ' + PLAYER_STATUS.join(', ') },
+        400
+      )
+    }
+    const result = await setPlayerStatus(
+      client,
+      c.req.param('campaignId'),
+      user.id,
+      body.status
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
+
+  app.put('/campaign/:campaignId/me/character', async (c) => {
+    const user = c.get('user')
+    const body = await readJson<{ characterName?: unknown }>(c)
+    if (!body || typeof body.characterName !== 'string') {
+      return c.json({ error: 'characterName is required' }, 400)
+    }
+    const result = await setCharacterName(
+      client,
+      c.req.param('campaignId'),
+      user.id,
+      body.characterName
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
+
+  // --- Admin overrides ---
 
   app.patch('/:id', requireAdmin, async (c) => {
     const body = await readJson<Partial<NewPlayer>>(c)

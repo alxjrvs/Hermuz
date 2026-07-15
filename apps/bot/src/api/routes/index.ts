@@ -2,6 +2,7 @@ import type { Client } from 'discord.js'
 import { Hono } from 'hono'
 import { authMiddleware } from '~/api/middleware'
 import { meRoutes } from './me'
+import { usersRoutes } from './users'
 import { gamesRoutes } from './games'
 import { gameDaysRoutes } from './gameDays'
 import { campaignsRoutes } from './campaigns'
@@ -20,6 +21,7 @@ export function createApiApp(client: Client): Hono {
   app.use('*', authMiddleware)
 
   app.route('/me', meRoutes(client))
+  app.route('/users', usersRoutes(client))
   app.route('/games', gamesRoutes(client))
   app.route('/game-days', gameDaysRoutes(client))
   app.route('/campaigns', campaignsRoutes(client))

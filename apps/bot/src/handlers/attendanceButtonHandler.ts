@@ -1,16 +1,7 @@
 import { logger } from '~/utils/logger'
 import { MessageFlags, type ButtonInteraction } from 'discord.js'
-import {
-  getOrCreateUser,
-  updateUserAttendance,
-  getGameDayAttendances,
-  getGameDay,
-  getGame,
-  type GameDay
-} from '@hermuz/db'
-import { getSchedulingChannel } from '~/utils/schedulingChannel'
+import { getGameDay } from '@hermuz/db'
 import { AttendanceStatus } from '../types/enums'
-import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
 import { ButtonData, isAttendanceButton } from '../utils/buttonUtils'
 import { isAttendanceStatus, isDiscordId, isUUID } from '../utils/typeGuards'
 import { ButtonHandler } from '../utils/buttonRegistry'
@@ -18,7 +9,7 @@ import {
   generateAttendanceStatusMessage,
   generateAttendanceErrorMessage
 } from '../utils/messageUtils'
-import { handleGameDayRoleAssignment } from '../utils/roleUtils'
+import { setUserAttendance } from '~/services/attendanceService'
 
 async function processAttendanceUpdate(
   interaction: ButtonInteraction,
@@ -44,105 +35,28 @@ async function processAttendanceUpdate(
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-  const gameDay = await getGameDay(gameDayId)
-  if (!gameDay) {
-    return interaction.editReply({
-      content: generateAttendanceErrorMessage('not_found')
-    })
-  }
-
-  const user = await getOrCreateUser(
-    interaction.user.id,
-    interaction.user.username
-  )
-
-  if (!user) {
-    return interaction.editReply({
-      content: generateAttendanceErrorMessage('user_error')
-    })
-  }
-
-  const attendance = await updateUserAttendance(
+  // The shared service does the DB write, role sync, and announcement refresh —
+  // the exact same path as the `/rsvp` command and the web endpoint.
+  const result = await setUserAttendance(
+    interaction.client,
     gameDayId,
     interaction.user.id,
+    interaction.user.username,
     status
   )
-
-  if (!attendance) {
+  if (!result.ok) {
     return interaction.editReply({
       content: generateAttendanceErrorMessage('attendance_error')
     })
   }
 
-  await handleRoleAssignment(interaction, gameDay, status)
-
-  const statusMessage = generateAttendanceStatusMessage(status, gameDay)
-
-  await updateGameDayMessage(interaction, gameDay, gameDayId)
-
+  const gameDay = await getGameDay(gameDayId)
+  const statusMessage = gameDay
+    ? generateAttendanceStatusMessage(status, gameDay)
+    : ''
   return interaction.editReply({
     content: `Attendance updated successfully! ${statusMessage}`
   })
-}
-
-async function handleRoleAssignment(
-  interaction: ButtonInteraction,
-  gameDay: GameDay,
-  status: AttendanceStatus
-) {
-  try {
-    const member = await interaction.guild?.members.fetch(interaction.user.id)
-    if (member) {
-      await handleGameDayRoleAssignment(member, gameDay, status)
-    }
-  } catch (error) {
-    logger.error(
-      `Error fetching member for role assignment: ${interaction.user.id}`,
-      error
-    )
-  }
-}
-
-async function updateGameDayMessage(
-  interaction: ButtonInteraction,
-  gameDay: GameDay,
-  gameDayId: string
-) {
-  try {
-    if (!gameDay.announcementMessageId) {
-      return
-    }
-
-    // Get the scheduling channel from the guild
-    const schedulingChannel = await getSchedulingChannel(interaction.client)
-    if (!schedulingChannel) {
-      return
-    }
-
-    const channel = await interaction.guild?.channels.fetch(
-      schedulingChannel.id
-    )
-
-    if (!channel?.isTextBased()) {
-      return
-    }
-
-    const message = await channel.messages.fetch(gameDay.announcementMessageId)
-    if (!message) {
-      return
-    }
-
-    const attendances = await getGameDayAttendances(gameDayId)
-    const game = gameDay.gameId ? await getGame(gameDay.gameId) : null
-
-    const embed = createGameDayMessageEmbed(gameDay, attendances, game)
-
-    await message.edit({
-      embeds: [embed]
-    })
-  } catch (error) {
-    logger.error('Error updating game day message:', error)
-  }
 }
 
 async function handleInteractionError(
