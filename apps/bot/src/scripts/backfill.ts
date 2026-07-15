@@ -1,11 +1,14 @@
 import {
   getAllGames,
   createGame,
+  updateGame,
   getAllCampaigns,
   createCampaign,
+  updateCampaign,
   getGameDayByRoleId,
   createGameDay,
-  runMigrations
+  runMigrations,
+  type SchedulingKind
 } from '@hermuz/db'
 import { logger } from '~/utils/logger'
 
@@ -22,6 +25,7 @@ interface SeedGame {
   shortName: string
   description?: string
   discordRoleId?: string | null
+  defaultSchedulingKind: SchedulingKind
 }
 
 interface SeedCampaign {
@@ -45,18 +49,32 @@ const GAMES: SeedGame[] = [
     name: 'Twilight Imperium',
     shortName: 'TI4',
     discordRoleId: '1372440056551178240', // @TWIMPer
-    description: 'Played as single game days.'
+    description: 'Played as single game days.',
+    defaultSchedulingKind: 'SCHEDULED'
   },
   {
     name: 'Arcs',
     shortName: 'Arcs',
     discordRoleId: '1372442551650615306', // @ARCbound
-    description: 'Single game days and campaigns.'
+    description: 'Single game days and campaigns.',
+    defaultSchedulingKind: 'SCHEDULED'
   },
-  { name: 'Dungeons & Dragons', shortName: 'D&D' },
-  { name: 'Blades in the Dark', shortName: 'BitD' },
-  { name: 'Salvage Union', shortName: 'SU' },
-  { name: 'Daggerheart', shortName: 'DH' }
+  {
+    name: 'Dungeons & Dragons',
+    shortName: 'D&D',
+    defaultSchedulingKind: 'REPEATING'
+  },
+  {
+    name: 'Blades in the Dark',
+    shortName: 'BitD',
+    defaultSchedulingKind: 'REPEATING'
+  },
+  {
+    name: 'Salvage Union',
+    shortName: 'SU',
+    defaultSchedulingKind: 'REPEATING'
+  },
+  { name: 'Daggerheart', shortName: 'DH', defaultSchedulingKind: 'REPEATING' }
 ]
 
 const CAMPAIGNS: SeedCampaign[] = [
@@ -114,16 +132,33 @@ export async function runBackfill(): Promise<void> {
   logger.info('Backfill: seeding games / campaigns / game days from Discord…')
 
   const gameIdByShort = new Map<string, string>()
-  const existingGames = await getAllGames()
-  for (const g of existingGames) gameIdByShort.set(g.shortName, g.id)
+  const kindByShort = new Map<string, SchedulingKind>()
+  const existingByShort = new Map(
+    (await getAllGames()).map((g) => [g.shortName, g])
+  )
 
   for (const g of GAMES) {
-    if (gameIdByShort.has(g.shortName)) continue
+    kindByShort.set(g.shortName, g.defaultSchedulingKind)
+    const existing = existingByShort.get(g.shortName)
+    if (existing) {
+      gameIdByShort.set(g.shortName, existing.id)
+      // Idempotently set the scheduling default on rows seeded before this field existed.
+      if (existing.defaultSchedulingKind !== g.defaultSchedulingKind) {
+        await updateGame(existing.id, {
+          defaultSchedulingKind: g.defaultSchedulingKind
+        })
+        logger.info(
+          `Backfill: ~game ${g.name} defaultSchedulingKind=${g.defaultSchedulingKind}`
+        )
+      }
+      continue
+    }
     const created = await createGame({
       name: g.name,
       shortName: g.shortName,
       description: g.description ?? null,
-      discordRoleId: g.discordRoleId ?? null
+      discordRoleId: g.discordRoleId ?? null,
+      defaultSchedulingKind: g.defaultSchedulingKind
     })
     if (created) {
       gameIdByShort.set(g.shortName, created.id)
@@ -131,18 +166,27 @@ export async function runBackfill(): Promise<void> {
     }
   }
 
-  const existingCampaignRoleIds = new Set(
-    (await getAllCampaigns()).map((c) => c.discordRoleId)
+  const campaignByRole = new Map(
+    (await getAllCampaigns()).map((c) => [c.discordRoleId, c])
   )
   for (const c of CAMPAIGNS) {
-    if (existingCampaignRoleIds.has(c.discordRoleId)) continue
+    const kind = kindByShort.get(c.gameShortName) ?? 'SCHEDULED'
+    const existing = campaignByRole.get(c.discordRoleId)
+    if (existing) {
+      if (existing.schedulingKind !== kind) {
+        await updateCampaign(existing.id, { schedulingKind: kind })
+        logger.info(`Backfill: ~campaign ${c.title} schedulingKind=${kind}`)
+      }
+      continue
+    }
     await createCampaign({
       title: c.title,
       gameId: gameIdByShort.get(c.gameShortName) ?? null,
       gameName: c.gameName,
       discordRoleId: c.discordRoleId,
       regularGameTime: 'TBD',
-      description: c.description ?? null
+      description: c.description ?? null,
+      schedulingKind: kind
     })
     logger.info(`Backfill: +campaign ${c.title}`)
   }

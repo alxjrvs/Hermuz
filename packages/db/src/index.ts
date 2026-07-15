@@ -11,7 +11,8 @@ import {
   attendances,
   GAME_DAY_STATUS,
   PLAYER_STATUS,
-  ATTENDANCE_STATUS
+  ATTENDANCE_STATUS,
+  SCHEDULING_KIND
 } from './schema'
 
 // Row types (replace the Supabase-generated `Tables<>` / `TablesInsert<>`).
@@ -32,3 +33,4 @@ export type NewAttendance = typeof attendances.$inferInsert
 export type GameDayStatus = (typeof GAME_DAY_STATUS)[number]
 export type PlayerStatus = (typeof PLAYER_STATUS)[number]
 export type AttendanceStatus = (typeof ATTENDANCE_STATUS)[number]
+export type SchedulingKind = (typeof SCHEDULING_KIND)[number]

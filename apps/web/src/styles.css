@@ -663,6 +663,66 @@ table.data td.tnum {
   }
 }
 
+/* ---- Discord side-effect indicator ---- */
+.discord-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.discord-glyph {
+  display: block;
+}
+.discord-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: #5865f2;
+  cursor: help;
+}
+.discord-mark:focus-visible {
+  outline: 2px solid #5865f2;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+/* Styled hover tooltip; the native `title` is the baseline where an overflow
+   ancestor (panels/tables) would clip this one. */
+.discord-mark::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--sidebar);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 60;
+}
+.discord-mark:hover::after,
+.discord-mark:focus-visible::after {
+  opacity: 1;
+}
+.discord-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.discord-legend .discord-glyph {
+  color: #5865f2;
+}
+
 /* ---- Calendar (Phase 3) ---- */
 .cal {
   display: flex;

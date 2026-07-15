@@ -6,6 +6,8 @@ export interface User {
   isAdmin: boolean
 }
 
+export type SchedulingKind = 'SCHEDULED' | 'REPEATING'
+
 export interface Game {
   id: string
   name: string
@@ -14,6 +16,8 @@ export interface Game {
   discordRoleId: string | null
   minPlayers: number | null
   maxPlayers: number | null
+  defaultSchedulingKind: SchedulingKind
+  maxSessions: number | null
 }
 
 export type GameInput = Omit<Game, 'id'>
@@ -30,6 +34,8 @@ export interface GameDay {
   gameId: string | null
   hostUserId: string | null
   discordRoleId: string | null
+  campaignId: string | null
+  sessionNumber: number | null
 }
 
 export interface GameDayInput {
@@ -57,6 +63,11 @@ export interface Campaign {
   discordRoleId: string | null
   gameId: string | null
   gameName: string | null
+  schedulingKind: SchedulingKind
+  maxSessions: number | null
+  recurrenceWeekday: number | null // 0=Sun..6=Sat
+  recurrenceTime: string | null // 'HH:MM'
+  recurrenceIntervalWeeks: number | null
 }
 
 export interface CampaignInput {
@@ -64,6 +75,11 @@ export interface CampaignInput {
   description?: string | null
   regularGameTime?: string | null
   gameId?: string | null
+  schedulingKind?: SchedulingKind
+  maxSessions?: number | null
+  recurrenceWeekday?: number | null
+  recurrenceTime?: string | null
+  recurrenceIntervalWeeks?: number | null
 }
 
 export type PlayerStatus = 'INTERESTED' | 'CONFIRMED'

@@ -3,9 +3,12 @@ import { Hono } from 'hono'
 import {
   getAllCampaigns,
   getCampaign,
+  getGame,
   getPlayersByCampaign,
+  getGameDaysByCampaign,
   updateCampaign,
   deleteCampaign,
+  cancelGameDay,
   type NewCampaign
 } from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
@@ -13,6 +16,10 @@ import {
   createCampaignWithDiscord,
   type CreateCampaignInput
 } from '~/services/campaignService'
+import {
+  materializeSessions,
+  scheduleNextSession
+} from '~/services/sessionService'
 import { announceCampaign } from '~/services/announceService'
 import { logger } from '~/utils/logger'
 import { sendResult, resolveGuild, readJson } from './helpers'
@@ -35,13 +42,72 @@ export function campaignsRoutes(client: Client): Hono {
   })
 
   app.post('/', requireAdmin, async (c) => {
-    const body = await readJson<CreateCampaignInput>(c)
+    const body = await readJson<
+      CreateCampaignInput &
+        Partial<
+          Pick<
+            NewCampaign,
+            | 'schedulingKind'
+            | 'maxSessions'
+            | 'recurrenceWeekday'
+            | 'recurrenceTime'
+            | 'recurrenceIntervalWeeks'
+          >
+        >
+    >(c)
     if (!body?.title || !body?.regularGameTime) {
       return c.json({ error: 'title and regularGameTime are required' }, 400)
     }
     try {
       const guild = await resolveGuild(client)
-      return sendResult(c, await createCampaignWithDiscord(guild, body))
+      const result = await createCampaignWithDiscord(guild, body)
+      if (!result.ok) return sendResult(c, result)
+
+      // Scheduling defaults to the game's when omitted; the create service
+      // doesn't set these, so apply them as a follow-up update.
+      let schedulingKind = body.schedulingKind
+      let maxSessions = body.maxSessions
+      if (
+        (schedulingKind === undefined || maxSessions === undefined) &&
+        body.gameId
+      ) {
+        const game = await getGame(body.gameId)
+        if (game) {
+          if (schedulingKind === undefined) {
+            schedulingKind = game.defaultSchedulingKind
+          }
+          if (maxSessions === undefined) maxSessions = game.maxSessions
+        }
+      }
+
+      const patch: Partial<NewCampaign> = {}
+      if (schedulingKind !== undefined) patch.schedulingKind = schedulingKind
+      if (maxSessions !== undefined) patch.maxSessions = maxSessions
+      if (body.recurrenceWeekday !== undefined) {
+        patch.recurrenceWeekday = body.recurrenceWeekday
+      }
+      if (body.recurrenceTime !== undefined) {
+        patch.recurrenceTime = body.recurrenceTime
+      }
+      if (body.recurrenceIntervalWeeks !== undefined) {
+        patch.recurrenceIntervalWeeks = body.recurrenceIntervalWeeks
+      }
+
+      let campaign = result.data
+      if (Object.keys(patch).length > 0) {
+        const updated = await updateCampaign(campaign.id, patch)
+        if (updated) campaign = updated
+      }
+
+      if (
+        campaign.schedulingKind === 'REPEATING' &&
+        campaign.recurrenceWeekday != null &&
+        campaign.recurrenceTime
+      ) {
+        await materializeSessions(campaign.id)
+      }
+
+      return c.json(campaign)
     } catch (err) {
       logger.error('POST /campaigns failed:', err)
       return c.json({ error: 'internal error' }, 500)
@@ -53,6 +119,13 @@ export function campaignsRoutes(client: Client): Hono {
     if (!body) return c.json({ error: 'invalid body' }, 400)
     const updated = await updateCampaign(c.req.param('id'), body)
     if (!updated) return c.json({ error: 'not found or update failed' }, 404)
+    if (
+      updated.schedulingKind === 'REPEATING' &&
+      updated.recurrenceWeekday != null &&
+      updated.recurrenceTime
+    ) {
+      await materializeSessions(updated.id)
+    }
     return c.json(updated)
   })
 
@@ -67,6 +140,53 @@ export function campaignsRoutes(client: Client): Hono {
       return sendResult(c, await announceCampaign(client, c.req.param('id')))
     } catch (err) {
       logger.error('POST /campaigns/:id/announce failed:', err)
+      return c.json({ error: 'internal error' }, 500)
+    }
+  })
+
+  app.get('/:id/sessions', async (c) => {
+    const campaign = await getCampaign(c.req.param('id'))
+    if (!campaign) return c.json({ error: 'not found' }, 404)
+    return c.json(await getGameDaysByCampaign(campaign.id))
+  })
+
+  app.post('/:id/generate', requireAdmin, async (c) => {
+    try {
+      const campaign = await getCampaign(c.req.param('id'))
+      if (!campaign) return c.json({ error: 'not found' }, 404)
+      await materializeSessions(campaign.id)
+      return c.json(await getGameDaysByCampaign(campaign.id))
+    } catch (err) {
+      logger.error('POST /campaigns/:id/generate failed:', err)
+      return c.json({ error: 'internal error' }, 500)
+    }
+  })
+
+  app.post('/:id/schedule-next', requireAdmin, async (c) => {
+    const body = await readJson<{ dateTime?: string }>(c)
+    try {
+      const session = await scheduleNextSession(
+        c.req.param('id'),
+        body?.dateTime
+      )
+      if (!session) return c.json({ error: 'session cap reached' }, 409)
+      return c.json(session)
+    } catch (err) {
+      logger.error('POST /campaigns/:id/schedule-next failed:', err)
+      return c.json({ error: 'internal error' }, 500)
+    }
+  })
+
+  app.post('/:id/sessions/:gameDayId/cancel', requireAdmin, async (c) => {
+    try {
+      const gameDay = await cancelGameDay(c.req.param('gameDayId'))
+      if (!gameDay) return c.json({ error: 'not found' }, 404)
+      return c.json(gameDay)
+    } catch (err) {
+      logger.error(
+        'POST /campaigns/:id/sessions/:gameDayId/cancel failed:',
+        err
+      )
       return c.json({ error: 'internal error' }, 500)
     }
   })

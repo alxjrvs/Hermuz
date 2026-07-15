@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { gameDaysApi, gamesApi } from '../api'
+import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { GameDayStatusChip } from '../components/StatusChip'
@@ -57,6 +58,8 @@ export function GameDays() {
         )}
       </div>
 
+      {isAdmin && <DiscordLegend />}
+
       <Panel title="All game days">
         {loading ? (
           <Loading />
@@ -99,35 +102,39 @@ export function GameDays() {
                       </Link>
                       {isAdmin && gd.status !== 'CANCELLED' && (
                         <>
-                          <button
-                            className="btn sm"
-                            disabled={busyId === gd.id}
-                            onClick={() =>
-                              act(gd.id, () => gameDaysApi.announce(gd.id))
-                            }
-                          >
-                            Announce
-                          </button>
+                          <DiscordAction tip="Posts to Discord">
+                            <button
+                              className="btn sm"
+                              disabled={busyId === gd.id}
+                              onClick={() =>
+                                act(gd.id, () => gameDaysApi.announce(gd.id))
+                              }
+                            >
+                              Announce
+                            </button>
+                          </DiscordAction>
                           <button
                             className="btn sm"
                             onClick={() => setEditing(gd)}
                           >
                             Edit
                           </button>
-                          <button
-                            className="btn sm danger"
-                            disabled={busyId === gd.id}
-                            onClick={() => {
-                              if (
-                                window.confirm(
-                                  `Cancel "${gd.title}"? Attendees will be notified.`
+                          <DiscordAction tip="Deletes Discord channels + event">
+                            <button
+                              className="btn sm danger"
+                              disabled={busyId === gd.id}
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `Cancel "${gd.title}"? Attendees will be notified.`
+                                  )
                                 )
-                              )
-                                act(gd.id, () => gameDaysApi.cancel(gd.id))
-                            }}
-                          >
-                            Cancel
-                          </button>
+                                  act(gd.id, () => gameDaysApi.cancel(gd.id))
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </DiscordAction>
                         </>
                       )}
                     </td>
@@ -219,13 +226,15 @@ function GameDayForm({
           <button className="btn ghost" onClick={onClose} disabled={saving}>
             Cancel
           </button>
-          <button
-            className="btn primary"
-            onClick={submit}
-            disabled={saving || !form.title.trim() || !form.dateTimeLocal}
-          >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
+          <DiscordAction tip="Creates a Discord event + channel">
+            <button
+              className="btn primary"
+              onClick={submit}
+              disabled={saving || !form.title.trim() || !form.dateTimeLocal}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </DiscordAction>
         </>
       }
     >

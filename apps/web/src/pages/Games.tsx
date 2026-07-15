@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { gamesApi } from '../api'
+import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { useAuth } from '../context/AuthContext'
 import { toMessage, useAsync } from '../lib/useAsync'
-import type { Game, GameInput } from '../types'
+import type { Game, GameInput, SchedulingKind } from '../types'
+
+const SCHEDULING_KINDS: SchedulingKind[] = ['SCHEDULED', 'REPEATING']
 
 const EMPTY_FORM: GameInput = {
   name: '',
@@ -12,7 +15,9 @@ const EMPTY_FORM: GameInput = {
   description: '',
   discordRoleId: '',
   minPlayers: null,
-  maxPlayers: null
+  maxPlayers: null,
+  defaultSchedulingKind: 'SCHEDULED',
+  maxSessions: null
 }
 
 export function Games() {
@@ -46,6 +51,8 @@ export function Games() {
           </button>
         )}
       </div>
+
+      {isAdmin && <DiscordLegend />}
 
       <Panel title="All games">
         {loading ? (
@@ -145,7 +152,9 @@ function GameForm({ title, initial, onClose, onSubmit }: GameFormProps) {
     description: initial.description ?? '',
     discordRoleId: initial.discordRoleId ?? '',
     minPlayers: initial.minPlayers ?? null,
-    maxPlayers: initial.maxPlayers ?? null
+    maxPlayers: initial.maxPlayers ?? null,
+    defaultSchedulingKind: initial.defaultSchedulingKind ?? 'SCHEDULED',
+    maxSessions: initial.maxSessions ?? null
   })
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -176,13 +185,15 @@ function GameForm({ title, initial, onClose, onSubmit }: GameFormProps) {
           <button className="btn ghost" onClick={onClose} disabled={saving}>
             Cancel
           </button>
-          <button
-            className="btn primary"
-            onClick={submit}
-            disabled={saving || !form.name.trim() || !form.shortName.trim()}
-          >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
+          <DiscordAction tip="Creates a Discord role + channels">
+            <button
+              className="btn primary"
+              onClick={submit}
+              disabled={saving || !form.name.trim() || !form.shortName.trim()}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </DiscordAction>
         </>
       }
     >
@@ -238,6 +249,41 @@ function GameForm({ title, initial, onClose, onSubmit }: GameFormProps) {
             value={form.maxPlayers ?? ''}
             onChange={(e) =>
               setForm({ ...form, maxPlayers: numOrNull(e.target.value) })
+            }
+          />
+        </div>
+      </div>
+      <div className="field-row">
+        <div className="field">
+          <label htmlFor="g-kind">Default scheduling</label>
+          <select
+            id="g-kind"
+            className="select"
+            value={form.defaultSchedulingKind}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                defaultSchedulingKind: e.target.value as SchedulingKind
+              })
+            }
+          >
+            {SCHEDULING_KINDS.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="g-maxsessions">Max sessions</label>
+          <input
+            id="g-maxsessions"
+            className="input tnum"
+            type="number"
+            min={0}
+            value={form.maxSessions ?? ''}
+            onChange={(e) =>
+              setForm({ ...form, maxSessions: numOrNull(e.target.value) })
             }
           />
         </div>

@@ -95,6 +95,21 @@ export const getGameDaysByGame = async (gameId: string): Promise<GameDay[]> => {
   }
 }
 
+export const getGameDaysByCampaign = async (
+  campaignId: string
+): Promise<GameDay[]> => {
+  try {
+    return await db
+      .select()
+      .from(gameDays)
+      .where(eq(gameDays.campaignId, campaignId))
+      .orderBy(asc(gameDays.sessionNumber), asc(gameDays.dateTime))
+  } catch (err) {
+    console.error('Error fetching game days by campaign', err)
+    return []
+  }
+}
+
 export const getGameDaysByHost = async (
   hostUserId: string
 ): Promise<GameDay[]> => {
