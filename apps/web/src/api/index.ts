@@ -15,6 +15,8 @@ import type {
   AttendanceStatus,
   ResolvedUser,
   Settings,
+  TaskTemplate,
+  GameDayTask,
   User
 } from '../types'
 
@@ -39,7 +41,17 @@ export const gamesApi = {
   update: (id: string, body: Partial<GameInput>) =>
     apiFetch<Game>(`/api/games/${id}`, { method: 'PATCH', body }),
   remove: (id: string) =>
-    apiFetch<void>(`/api/games/${id}`, { method: 'DELETE' })
+    apiFetch<void>(`/api/games/${id}`, { method: 'DELETE' }),
+  taskTemplates: (id: string) =>
+    apiFetch<TaskTemplate[]>(`/api/games/${id}/task-templates`),
+  setTaskTemplates: (
+    id: string,
+    items: { label: string; description?: string | null }[]
+  ) =>
+    apiFetch<TaskTemplate[]>(`/api/games/${id}/task-templates`, {
+      method: 'PUT',
+      body: { items }
+    })
 }
 
 export const gameDaysApi = {
@@ -54,7 +66,36 @@ export const gameDaysApi = {
   announce: (id: string) =>
     apiFetch<GameDay>(`/api/game-days/${id}/announce`, { method: 'POST' }),
   cancel: (id: string) =>
-    apiFetch<GameDay>(`/api/game-days/${id}/cancel`, { method: 'POST' })
+    apiFetch<GameDay>(`/api/game-days/${id}/cancel`, { method: 'POST' }),
+  tasks: (id: string) =>
+    apiFetch<GameDayTask[]>(`/api/game-days/${id}/tasks`),
+  addTask: (id: string, label: string, description?: string | null) =>
+    apiFetch<GameDayTask>(`/api/game-days/${id}/tasks`, {
+      method: 'POST',
+      body: { label, description }
+    }),
+  updateTask: (
+    id: string,
+    taskId: string,
+    body: {
+      done?: boolean
+      assigneeUserId?: string | null
+      label?: string
+      description?: string | null
+    }
+  ) =>
+    apiFetch<GameDayTask>(`/api/game-days/${id}/tasks/${taskId}`, {
+      method: 'PATCH',
+      body
+    }),
+  deleteTask: (id: string, taskId: string) =>
+    apiFetch<void>(`/api/game-days/${id}/tasks/${taskId}`, {
+      method: 'DELETE'
+    }),
+  saveTasksAsDefault: (id: string) =>
+    apiFetch<TaskTemplate[]>(`/api/game-days/${id}/tasks/save-as-default`, {
+      method: 'POST'
+    })
 }
 
 export const campaignsApi = {

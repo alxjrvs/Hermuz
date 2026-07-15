@@ -112,3 +112,23 @@ export interface Player {
 export interface Settings {
   schedulingChannelId: string | null
 }
+
+export interface TaskTemplate {
+  id: string
+  gameId: string
+  label: string
+  description: string | null
+  sortOrder: number
+}
+
+export interface GameDayTask {
+  id: string
+  gameDayId: string
+  templateId: string | null
+  label: string
+  description: string | null
+  assigneeUserId: string | null
+  done: number // 0/1
+  doneAt: string | null
+  sortOrder: number
+}

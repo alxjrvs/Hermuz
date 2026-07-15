@@ -2,7 +2,8 @@ import type { AutocompleteInteraction } from 'discord.js'
 import {
   getAllGameDays,
   getAllCampaigns,
-  getPlayersByUser
+  getPlayersByUser,
+  getGameDayTasks
 } from '@hermuz/db'
 import { logger } from '~/utils/logger'
 
@@ -52,6 +53,36 @@ export async function respondCampaignAutocomplete(
     )
   } catch (err) {
     logger.error('Campaign autocomplete failed:', err)
+    await interaction.respond([])
+  }
+}
+
+/**
+ * Autocomplete for the `/task` commands: the `game_day` option lists game days,
+ * and the `task` option lists tasks scoped to the already-chosen game day.
+ */
+export async function respondTaskAutocomplete(
+  interaction: AutocompleteInteraction
+): Promise<void> {
+  try {
+    const focused = interaction.options.getFocused(true)
+    if (focused.name === 'game_day') {
+      return respondGameDayAutocomplete(interaction)
+    }
+    // focused.name === 'task'
+    const gameDayId = interaction.options.getString('game_day', false)
+    if (!gameDayId) return interaction.respond([])
+    const tasks = (await getGameDayTasks(gameDayId))
+      .filter((t) => matches(t.label, String(focused.value)))
+      .slice(0, MAX_CHOICES)
+    await interaction.respond(
+      tasks.map((t) => ({
+        name: short(`${t.done ? '✅ ' : ''}${t.label}`),
+        value: t.id
+      }))
+    )
+  } catch (err) {
+    logger.error('Task autocomplete failed:', err)
     await interaction.respond([])
   }
 }

@@ -4,6 +4,7 @@ import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { LocationTypeChip } from '../components/StatusChip'
+import { TaskTemplateEditor } from '../components/TaskTemplateEditor'
 import { useAuth } from '../context/AuthContext'
 import { toMessage, useAsync } from '../lib/useAsync'
 import type { Game, GameInput, LocationType, SchedulingKind } from '../types'
@@ -28,6 +29,7 @@ export function Games() {
   const { data, loading, error, reload } = useAsync(() => gamesApi.list(), [])
   const [editing, setEditing] = useState<Game | null>(null)
   const [creating, setCreating] = useState(false)
+  const [tasksFor, setTasksFor] = useState<Game | null>(null)
 
   const games = data ?? []
 
@@ -102,6 +104,12 @@ export function Games() {
                           Edit
                         </button>
                         <button
+                          className="btn sm"
+                          onClick={() => setTasksFor(g)}
+                        >
+                          Tasks
+                        </button>
+                        <button
                           className="btn sm danger"
                           onClick={() => onDelete(g)}
                         >
@@ -139,6 +147,13 @@ export function Games() {
             setEditing(null)
             reload()
           }}
+        />
+      )}
+      {tasksFor && (
+        <TaskTemplateEditor
+          gameId={tasksFor.id}
+          gameName={tasksFor.name}
+          onClose={() => setTasksFor(null)}
         />
       )}
     </>

@@ -5,6 +5,8 @@ import {
   getGame,
   updateGame,
   deleteGame,
+  getTaskTemplatesByGame,
+  replaceTaskTemplatesForGame,
   type NewGame
 } from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
@@ -76,6 +78,25 @@ export function gamesRoutes(client: Client): Hono {
     const okDeleted = await deleteGame(c.req.param('id'))
     if (!okDeleted) return c.json({ error: 'delete failed' }, 500)
     return c.json({ ok: true })
+  })
+
+  // --- Setup-task templates (the reusable default checklist for a game) ---
+
+  app.get('/:id/task-templates', async (c) =>
+    c.json(await getTaskTemplatesByGame(c.req.param('id')))
+  )
+
+  app.put('/:id/task-templates', requireAdmin, async (c) => {
+    const body = await readJson<{
+      items?: { label: string; description?: string | null }[]
+    }>(c)
+    if (!body || !Array.isArray(body.items)) {
+      return c.json({ error: 'items[] is required' }, 400)
+    }
+    const clean = body.items
+      .filter((it) => typeof it?.label === 'string' && it.label.trim())
+      .map((it) => ({ label: it.label.trim(), description: it.description ?? null }))
+    return c.json(await replaceTaskTemplatesForGame(c.req.param('id'), clean))
   })
 
   return app

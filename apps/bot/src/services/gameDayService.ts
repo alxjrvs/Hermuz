@@ -19,6 +19,10 @@ import {
 } from '~/utils/channelUtils'
 import { createGameDayRole } from '~/utils/gameDayUtils'
 import { safelyDeleteEvent, EventError } from '~/utils/eventUtils'
+import {
+  materializeTasksFromTemplates,
+  renderChecklist
+} from './taskService'
 import { logger } from '~/utils/logger'
 import { ok, fail, type ServiceResult } from './result'
 
@@ -127,6 +131,15 @@ export async function createGameDayWithDiscord(
         discordCategoryId: channels.category.id
       })
     }
+  }
+
+  // Seed the setup checklist from the game's task templates, then mirror it into
+  // the logistics channel (best-effort — never blocks game-day creation).
+  try {
+    const seeded = await materializeTasksFromTemplates(gameDay.id)
+    if (seeded.length > 0) await renderChecklist(guild.client, gameDay.id)
+  } catch (err) {
+    logger.error('Error seeding setup checklist:', err)
   }
 
   const hostAttendance = await createAttendance({

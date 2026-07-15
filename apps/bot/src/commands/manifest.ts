@@ -30,6 +30,9 @@ import * as campaignConfirm from './campaign/confirm'
 import * as characterSet from './character/set'
 import * as mySchedule from './my/schedule'
 import * as myCampaigns from './my/campaigns'
+import * as taskList from './task/list'
+import * as taskDone from './task/done'
+import * as taskClaim from './task/claim'
 
 type CommandModule = {
   config: CommandConfig
@@ -94,6 +97,14 @@ const groups: Record<string, CommandGroup> = {
     subcommands: {
       schedule: leaf(mySchedule),
       campaigns: leaf(myCampaigns)
+    }
+  },
+  task: {
+    description: 'Game day setup checklist',
+    subcommands: {
+      list: leaf(taskList),
+      done: leaf(taskDone),
+      claim: leaf(taskClaim)
     }
   }
 }

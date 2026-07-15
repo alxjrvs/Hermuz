@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { gameDaysApi } from '../api'
 import { AttendanceTable } from '../components/AttendanceTable'
+import { Checklist } from '../components/Checklist'
 import { Kpi } from '../components/Kpi'
 import { ErrorBanner, Loading, Panel } from '../components/Panel'
 import { GameDayStatusChip, LocationTypeChip } from '../components/StatusChip'
@@ -76,6 +77,8 @@ export function GameDayDetail() {
           />
         )}
       </Panel>
+
+      <Checklist gameDayId={gd.data.id} hasGame={!!gd.data.gameId} />
     </>
   )
 }
