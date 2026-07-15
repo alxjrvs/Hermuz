@@ -3,6 +3,7 @@ import { Layout } from './components/Layout'
 import { RequireAuth } from './components/RequireAuth'
 import { Attendance } from './pages/Attendance'
 import { AuthCallback } from './pages/AuthCallback'
+import { Calendar } from './pages/Calendar'
 import { CampaignDetail } from './pages/CampaignDetail'
 import { Campaigns } from './pages/Campaigns'
 import { GameDayDetail } from './pages/GameDayDetail'
@@ -26,6 +27,7 @@ export function App() {
         }
       >
         <Route path="/" element={<Overview />} />
+        <Route path="/calendar" element={<Calendar />} />
         <Route path="/games" element={<Games />} />
         <Route path="/game-days" element={<GameDays />} />
         <Route path="/game-days/:id" element={<GameDayDetail />} />

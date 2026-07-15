@@ -8,6 +8,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/', label: 'Overview' },
+  { to: '/calendar', label: 'Calendar' },
   { to: '/games', label: 'Games' },
   { to: '/game-days', label: 'Game Days' },
   { to: '/campaigns', label: 'Campaigns' },
