@@ -1,9 +1,9 @@
 // Typed API surface grouped by resource. Every method returns a Promise and
 // throws ApiError on failure (see client.ts).
 
-import { apiFetch } from './client'
 import type {
   Attendance,
+  AttendanceStatus,
   Campaign,
   CampaignInput,
   Game,
@@ -12,10 +12,10 @@ import type {
   GameInput,
   Player,
   PlayerStatus,
-  AttendanceStatus,
   Settings,
   User
 } from '../types'
+import { apiFetch } from './client'
 
 export const meApi = {
   get: () => apiFetch<User>('/api/me')

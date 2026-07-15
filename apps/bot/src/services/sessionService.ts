@@ -1,9 +1,9 @@
 import {
-  getCampaign,
-  getGameDaysByCampaign,
+  type Campaign,
   createGameDay,
   type GameDay,
-  type Campaign
+  getCampaign,
+  getGameDaysByCampaign
 } from '@hermuz/db'
 
 /** Sessions to keep materialized for a repeating campaign with no explicit cap. */
@@ -69,7 +69,7 @@ export async function materializeSessions(
   campaignId: string
 ): Promise<GameDay[]> {
   const campaign = await getCampaign(campaignId)
-  if (!campaign || campaign.schedulingKind !== 'REPEATING') return []
+  if (campaign?.schedulingKind !== 'REPEATING') return []
   const base = recurrenceBase(campaign)
   if (!base) return []
 

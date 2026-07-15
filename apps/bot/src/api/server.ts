@@ -1,10 +1,10 @@
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { config } from '~/config'
-import { logger } from '~/utils/logger'
 import { createAuthApp } from '~/api/auth'
 import { createApiApp } from '~/api/routes'
+import { config } from '~/config'
+import { logger } from '~/utils/logger'
 
 /**
  * Start the JSON API in the same process as the bot, sharing the one SQLite

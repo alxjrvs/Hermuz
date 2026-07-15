@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { API_ORIGIN } from '../api/client'
-import { useAuth } from '../context/AuthContext'
 import { OrreryMark } from '../components/OrreryMark'
+import { useAuth } from '../context/AuthContext'
 
 const ERROR_MESSAGES: Record<string, string> = {
   not_a_member:

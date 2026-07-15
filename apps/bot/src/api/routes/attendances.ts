@@ -1,11 +1,11 @@
+import {
+  ATTENDANCE_STATUS,
+  type AttendanceStatus,
+  updateAttendance,
+  updateUserAttendance
+} from '@hermuz/db'
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
-import {
-  updateAttendance,
-  updateUserAttendance,
-  ATTENDANCE_STATUS,
-  type AttendanceStatus
-} from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
 import { readJson } from './helpers'
 
@@ -20,7 +20,7 @@ export function attendancesRoutes(_client: Client): Hono {
     const body = await readJson<{ status?: unknown }>(c)
     if (!body || !isStatus(body.status)) {
       return c.json(
-        { error: 'status must be one of ' + ATTENDANCE_STATUS.join(', ') },
+        { error: `status must be one of ${ATTENDANCE_STATUS.join(', ')}` },
         400
       )
     }
@@ -36,7 +36,7 @@ export function attendancesRoutes(_client: Client): Hono {
     const body = await readJson<{ status?: unknown }>(c)
     if (!body || !isStatus(body.status)) {
       return c.json(
-        { error: 'status must be one of ' + ATTENDANCE_STATUS.join(', ') },
+        { error: `status must be one of ${ATTENDANCE_STATUS.join(', ')}` },
         400
       )
     }

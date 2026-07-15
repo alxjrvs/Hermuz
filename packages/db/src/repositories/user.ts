@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../client'
+import type { NewUser, User } from '../index'
 import { users } from '../schema'
-import type { User, NewUser } from '../index'
 
 export const getUser = async (discordId: string): Promise<User | null> => {
   try {

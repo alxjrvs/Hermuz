@@ -1,7 +1,7 @@
-import { EmbedBuilder } from 'discord.js'
 import type { Campaign, Player } from '@hermuz/db'
-import { formatRegularGameTime, getCampaignDisplayName } from './campaignUtils'
+import { EmbedBuilder } from 'discord.js'
 import { BRAND, BRAND_AUTHOR } from './brand'
+import { formatRegularGameTime, getCampaignDisplayName } from './campaignUtils'
 export function createCampaignMessageEmbed(
   campaign: Campaign,
   players?: Player[]

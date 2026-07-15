@@ -1,19 +1,19 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
+import { getGameDayByRoleId, updateGameDay } from '@hermuz/db'
 import {
   type ChatInputCommandInteraction,
+  EmbedBuilder,
   MessageFlags,
-  PermissionFlagsBits,
-  EmbedBuilder
+  PermissionFlagsBits
 } from 'discord.js'
-import { getGameDayByRoleId, updateGameDay } from '@hermuz/db'
+import { createCommandConfig } from '~/framework/command'
 import { BRAND, BRAND_AUTHOR } from '~/utils/brand'
+import { logger } from '~/utils/logger'
 import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { deleteGameDayChannels } from '../../utils/channelUtils'
 import {
-  safelyDeleteEvent,
   EventError,
-  getUserFriendlyEventErrorMessage
+  getUserFriendlyEventErrorMessage,
+  safelyDeleteEvent
 } from '../../utils/eventUtils'
 export const config = createCommandConfig({
   description: 'Cancel a scheduled game day',

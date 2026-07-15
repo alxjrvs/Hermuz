@@ -1,12 +1,12 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
+import { getGame, getUpcomingGameDaysByStatus } from '@hermuz/db'
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
   MessageFlags
 } from 'discord.js'
-import { getUpcomingGameDaysByStatus, getGame } from '@hermuz/db'
+import { createCommandConfig } from '~/framework/command'
 import { BRAND, BRAND_AUTHOR } from '~/utils/brand'
+import { logger } from '~/utils/logger'
 export const config = createCommandConfig({
   description: 'List all scheduled or scheduling game days in the future'
 })

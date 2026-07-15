@@ -1,7 +1,7 @@
-import { eq, and, asc } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { db } from '../client'
+import type { NewPlayer, Player, PlayerStatus } from '../index'
 import { players } from '../schema'
-import type { Player, NewPlayer, PlayerStatus } from '../index'
 
 export const getPlayer = async (id: string): Promise<Player | null> => {
   try {

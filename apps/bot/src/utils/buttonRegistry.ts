@@ -1,6 +1,6 @@
-import { logger } from '~/utils/logger'
 import type { ButtonInteraction } from 'discord.js'
-import { ButtonData, deserializeButtonData } from './buttonUtils'
+import { logger } from '~/utils/logger'
+import { type ButtonData, deserializeButtonData } from './buttonUtils'
 
 export interface ButtonHandler {
   canHandle: (data: ButtonData) => boolean

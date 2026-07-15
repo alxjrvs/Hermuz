@@ -1,7 +1,12 @@
+import type { Campaign, GameDay } from '@hermuz/db'
+import {
+  type Guild,
+  type GuildMember,
+  PermissionFlagsBits,
+  type Role
+} from 'discord.js'
 import { logger } from '~/utils/logger'
-import { Guild, GuildMember, PermissionFlagsBits, type Role } from 'discord.js'
-import type { GameDay, Campaign } from '@hermuz/db'
-import { AttendanceStatus } from '../types/enums'
+import type { AttendanceStatus } from '../types/enums'
 
 /**
  * Assign or remove a role from a member based on attendance status

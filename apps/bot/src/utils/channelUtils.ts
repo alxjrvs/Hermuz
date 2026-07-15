@@ -1,6 +1,11 @@
-import { logger } from '~/utils/logger'
-import { ChannelType, Guild, PermissionFlagsBits, Role } from 'discord.js'
 import type { CategoryChannel, TextChannel, VoiceChannel } from 'discord.js'
+import {
+  ChannelType,
+  type Guild,
+  PermissionFlagsBits,
+  type Role
+} from 'discord.js'
+import { logger } from '~/utils/logger'
 export const createGameDayChannels = async (
   guild: Guild,
   categoryName: string,

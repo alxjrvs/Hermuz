@@ -5,7 +5,7 @@ import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { useAuth } from '../context/AuthContext'
-import { toDateTimeLocal, fromDateTimeLocal } from '../lib/format'
+import { fromDateTimeLocal, toDateTimeLocal } from '../lib/format'
 import { toMessage, useAsync } from '../lib/useAsync'
 import type { Campaign, CampaignInput, Game, SchedulingKind } from '../types'
 

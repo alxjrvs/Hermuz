@@ -3,8 +3,8 @@ import { attendancesApi } from '../api'
 import { useAuth } from '../context/AuthContext'
 import { toMessage } from '../lib/useAsync'
 import type { Attendance, AttendanceStatus } from '../types'
-import { AttendanceStatusChip } from './StatusChip'
 import { Empty } from './Panel'
+import { AttendanceStatusChip } from './StatusChip'
 
 const STATUSES: AttendanceStatus[] = [
   'AVAILABLE',

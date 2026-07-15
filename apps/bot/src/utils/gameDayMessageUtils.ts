@@ -1,6 +1,7 @@
+import type { Attendance, Game, GameDay } from '@hermuz/db'
 import { EmbedBuilder } from 'discord.js'
-import type { GameDay, Game, Attendance } from '@hermuz/db'
 import { BRAND, BRAND_AUTHOR } from './brand'
+
 /** Human-readable date/time for a game day's ISO timestamp. */
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {

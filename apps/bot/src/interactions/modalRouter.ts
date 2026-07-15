@@ -1,17 +1,17 @@
 import { MessageFlags, type ModalSubmitInteraction } from 'discord.js'
+import { handleCampaignCreateModalSubmit } from '~/handlers/campaignCreateModalHandler'
+import { handleGameDayScheduleModalSubmit } from '~/handlers/gameDayScheduleModalHandler'
+import { handleGameSetupModalSubmit } from '~/handlers/gameSetupModalHandler'
+import { logger } from '~/utils/logger'
 import {
   deserializeModalData,
-  isGameSetupModal,
-  isGameDayScheduleModal,
   isCampaignCreateModal,
-  isGameSetupModalId,
+  isCampaignCreateModalId,
+  isGameDayScheduleModal,
   isGameDayScheduleModalId,
-  isCampaignCreateModalId
+  isGameSetupModal,
+  isGameSetupModalId
 } from '~/utils/modalUtils'
-import { handleGameSetupModalSubmit } from '~/handlers/gameSetupModalHandler'
-import { handleGameDayScheduleModalSubmit } from '~/handlers/gameDayScheduleModalHandler'
-import { handleCampaignCreateModalSubmit } from '~/handlers/campaignCreateModalHandler'
-import { logger } from '~/utils/logger'
 
 async function handleInteractionError(
   interaction: ModalSubmitInteraction,

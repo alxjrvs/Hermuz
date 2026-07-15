@@ -1,24 +1,24 @@
-import { logger } from '~/utils/logger'
-import { MessageFlags, type ButtonInteraction } from 'discord.js'
 import {
-  getOrCreateUser,
-  updateUserAttendance,
-  getGameDayAttendances,
-  getGameDay,
+  type GameDay,
   getGame,
-  type GameDay
+  getGameDay,
+  getGameDayAttendances,
+  getOrCreateUser,
+  updateUserAttendance
 } from '@hermuz/db'
+import { type ButtonInteraction, MessageFlags } from 'discord.js'
+import { logger } from '~/utils/logger'
 import { getSchedulingChannel } from '~/utils/schedulingChannel'
-import { AttendanceStatus } from '../types/enums'
+import type { AttendanceStatus } from '../types/enums'
+import type { ButtonHandler } from '../utils/buttonRegistry'
+import { type ButtonData, isAttendanceButton } from '../utils/buttonUtils'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
-import { ButtonData, isAttendanceButton } from '../utils/buttonUtils'
-import { isAttendanceStatus, isDiscordId, isUUID } from '../utils/typeGuards'
-import { ButtonHandler } from '../utils/buttonRegistry'
 import {
-  generateAttendanceStatusMessage,
-  generateAttendanceErrorMessage
+  generateAttendanceErrorMessage,
+  generateAttendanceStatusMessage
 } from '../utils/messageUtils'
 import { handleGameDayRoleAssignment } from '../utils/roleUtils'
+import { isAttendanceStatus, isDiscordId, isUUID } from '../utils/typeGuards'
 
 async function processAttendanceUpdate(
   interaction: ButtonInteraction,
@@ -91,7 +91,7 @@ async function handleRoleAssignment(
   status: AttendanceStatus
 ) {
   try {
-    const member = await interaction.guild?.members.fetch(interaction.user.id)
+    const member = await interaction.guild!.members.fetch(interaction.user.id)
     if (member) {
       await handleGameDayRoleAssignment(member, gameDay, status)
     }
@@ -119,7 +119,7 @@ async function updateGameDayMessage(
       return
     }
 
-    const channel = await interaction.guild?.channels.fetch(
+    const channel = await interaction.guild!.channels.fetch(
       schedulingChannel.id
     )
 

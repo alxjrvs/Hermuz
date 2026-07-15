@@ -1,6 +1,6 @@
+import type { ChatInputCommandInteraction } from 'discord.js'
 import { createCommandConfig } from '~/framework/command'
 import { logger } from '~/utils/logger'
-import type { ChatInputCommandInteraction } from 'discord.js'
 export const config = createCommandConfig({
   description: 'Replies with Pong!'
 })

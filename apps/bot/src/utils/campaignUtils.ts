@@ -1,5 +1,5 @@
-import { logger } from '~/utils/logger'
 import type { Campaign } from '@hermuz/db'
+import { logger } from '~/utils/logger'
 export function formatRegularGameTime(regularGameTime: string): string {
   try {
     return regularGameTime
