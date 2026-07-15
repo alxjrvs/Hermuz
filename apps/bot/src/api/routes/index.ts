@@ -8,6 +8,7 @@ import { gamesRoutes } from './games'
 import { meRoutes } from './me'
 import { playersRoutes } from './players'
 import { settingsRoutes } from './settings'
+import { usersRoutes } from './users'
 
 /**
  * Compose the `/api` app. Every route requires a valid Bearer JWT
@@ -20,6 +21,7 @@ export function createApiApp(client: Client): Hono {
   app.use('*', authMiddleware)
 
   app.route('/me', meRoutes(client))
+  app.route('/users', usersRoutes(client))
   app.route('/games', gamesRoutes(client))
   app.route('/game-days', gameDaysRoutes(client))
   app.route('/campaigns', campaignsRoutes(client))

@@ -53,6 +53,20 @@ export const getGameDayAttendances = async (
   }
 }
 
+export const getAttendancesByUser = async (
+  userId: string
+): Promise<Attendance[]> => {
+  try {
+    return await db
+      .select()
+      .from(attendances)
+      .where(eq(attendances.userId, userId))
+  } catch (err) {
+    console.error('Error fetching attendances by user', err)
+    return []
+  }
+}
+
 export const getAttendancesByStatus = async (
   gameDayId: string,
   status: AttendanceStatus

@@ -4,7 +4,7 @@ import { gameDaysApi, gamesApi } from '../api'
 import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
-import { GameDayStatusChip } from '../components/StatusChip'
+import { GameDayStatusChip, LocationTypeChip } from '../components/StatusChip'
 import { useAuth } from '../context/AuthContext'
 import {
   formatDateTime,
@@ -12,7 +12,7 @@ import {
   toDateTimeLocal
 } from '../lib/format'
 import { toMessage, useAsync } from '../lib/useAsync'
-import type { Game, GameDay, GameDayInput } from '../types'
+import type { Game, GameDay, GameDayInput, LocationType } from '../types'
 
 export function GameDays() {
   const { isAdmin } = useAuth()
@@ -77,6 +77,7 @@ export function GameDays() {
                   <th>Title</th>
                   <th>When</th>
                   <th>Game</th>
+                  <th>Type</th>
                   <th>Location</th>
                   <th>Status</th>
                   <th />
@@ -91,6 +92,9 @@ export function GameDays() {
                     <td className="tnum">{formatDateTime(gd.dateTime)}</td>
                     <td>
                       {gameName(gd.gameId) || <span className="muted">—</span>}
+                    </td>
+                    <td>
+                      <LocationTypeChip type={gd.locationType} />
                     </td>
                     <td>{gd.location || <span className="muted">—</span>}</td>
                     <td>
@@ -195,7 +199,9 @@ function GameDayForm({
     dateTimeLocal: toDateTimeLocal(initial?.dateTime),
     description: initial?.description ?? '',
     location: initial?.location ?? '',
-    gameId: initial?.gameId ?? ''
+    gameId: initial?.gameId ?? '',
+    // '' = inherit from the game's default.
+    locationType: (initial?.locationType ?? '') as LocationType | ''
   })
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -209,6 +215,7 @@ function GameDayForm({
         dateTime: fromDateTimeLocal(form.dateTimeLocal),
         description: form.description || null,
         location: form.location || null,
+        locationType: form.locationType || null,
         gameId: form.gameId || null
       })
     } catch (e) {
@@ -278,14 +285,36 @@ function GameDayForm({
           </select>
         </div>
       </div>
-      <div className="field">
-        <label htmlFor="gd-loc">Location</label>
-        <input
-          id="gd-loc"
-          className="input"
-          value={form.location}
-          onChange={(e) => setForm({ ...form, location: e.target.value })}
-        />
+      <div className="field-row">
+        <div className="field">
+          <label htmlFor="gd-loctype">Type</label>
+          <select
+            id="gd-loctype"
+            className="select"
+            value={form.locationType}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                locationType: e.target.value as LocationType | ''
+              })
+            }
+          >
+            <option value="">Inherit from game</option>
+            <option value="IN_PERSON">In Person</option>
+            <option value="VIRTUAL">Virtual</option>
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="gd-loc">
+            {form.locationType === 'VIRTUAL' ? 'Join link' : 'Location'}
+          </label>
+          <input
+            id="gd-loc"
+            className="input"
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+          />
+        </div>
       </div>
       <div className="field">
         <label htmlFor="gd-desc">Description</label>

@@ -9,16 +9,31 @@ import type {
   Game,
   GameDay,
   GameDayInput,
+  GameDayTask,
   GameInput,
+  Meal,
+  MealKind,
+  MealResponse,
   Player,
   PlayerStatus,
+  ResolvedUser,
   Settings,
+  TaskTemplate,
   User
 } from '../types'
 import { apiFetch } from './client'
 
 export const meApi = {
   get: () => apiFetch<User>('/api/me')
+}
+
+export const usersApi = {
+  resolve: (ids: string[]) =>
+    ids.length === 0
+      ? Promise.resolve([] as ResolvedUser[])
+      : apiFetch<ResolvedUser[]>(
+          `/api/users?ids=${encodeURIComponent(ids.join(','))}`
+        )
 }
 
 export const gamesApi = {
@@ -29,7 +44,17 @@ export const gamesApi = {
   update: (id: string, body: Partial<GameInput>) =>
     apiFetch<Game>(`/api/games/${id}`, { method: 'PATCH', body }),
   remove: (id: string) =>
-    apiFetch<void>(`/api/games/${id}`, { method: 'DELETE' })
+    apiFetch<void>(`/api/games/${id}`, { method: 'DELETE' }),
+  taskTemplates: (id: string) =>
+    apiFetch<TaskTemplate[]>(`/api/games/${id}/task-templates`),
+  setTaskTemplates: (
+    id: string,
+    items: { label: string; description?: string | null }[]
+  ) =>
+    apiFetch<TaskTemplate[]>(`/api/games/${id}/task-templates`, {
+      method: 'PUT',
+      body: { items }
+    })
 }
 
 export const gameDaysApi = {
@@ -44,7 +69,60 @@ export const gameDaysApi = {
   announce: (id: string) =>
     apiFetch<GameDay>(`/api/game-days/${id}/announce`, { method: 'POST' }),
   cancel: (id: string) =>
-    apiFetch<GameDay>(`/api/game-days/${id}/cancel`, { method: 'POST' })
+    apiFetch<GameDay>(`/api/game-days/${id}/cancel`, { method: 'POST' }),
+  tasks: (id: string) => apiFetch<GameDayTask[]>(`/api/game-days/${id}/tasks`),
+  addTask: (id: string, label: string, description?: string | null) =>
+    apiFetch<GameDayTask>(`/api/game-days/${id}/tasks`, {
+      method: 'POST',
+      body: { label, description }
+    }),
+  updateTask: (
+    id: string,
+    taskId: string,
+    body: {
+      done?: boolean
+      assigneeUserId?: string | null
+      label?: string
+      description?: string | null
+    }
+  ) =>
+    apiFetch<GameDayTask>(`/api/game-days/${id}/tasks/${taskId}`, {
+      method: 'PATCH',
+      body
+    }),
+  deleteTask: (id: string, taskId: string) =>
+    apiFetch<void>(`/api/game-days/${id}/tasks/${taskId}`, {
+      method: 'DELETE'
+    }),
+  saveTasksAsDefault: (id: string) =>
+    apiFetch<TaskTemplate[]>(`/api/game-days/${id}/tasks/save-as-default`, {
+      method: 'POST'
+    }),
+  meals: (id: string) => apiFetch<Meal[]>(`/api/game-days/${id}/meals`),
+  addMeal: (
+    id: string,
+    kind: MealKind,
+    plan?: string | null,
+    dueAt?: string | null
+  ) =>
+    apiFetch<Meal>(`/api/game-days/${id}/meals`, {
+      method: 'POST',
+      body: { kind, plan, dueAt }
+    }),
+  respondMeal: (
+    id: string,
+    mealId: string,
+    attending: boolean,
+    note?: string | null
+  ) =>
+    apiFetch<MealResponse>(`/api/game-days/${id}/meals/${mealId}/me`, {
+      method: 'PUT',
+      body: { attending, note }
+    }),
+  closeMeal: (id: string, mealId: string) =>
+    apiFetch<Meal>(`/api/game-days/${id}/meals/${mealId}/close`, {
+      method: 'POST'
+    })
 }
 
 export const campaignsApi = {
@@ -84,7 +162,13 @@ export const attendancesApi = {
     apiFetch<Attendance>(
       `/api/attendances/game-day/${gameDayId}/user/${userId}`,
       { method: 'PUT', body: { status } }
-    )
+    ),
+  // Self-service: the logged-in member sets their own RSVP.
+  setMine: (gameDayId: string, status: AttendanceStatus) =>
+    apiFetch<Attendance>(`/api/attendances/game-day/${gameDayId}/me`, {
+      method: 'PUT',
+      body: { status }
+    })
 }
 
 export const playersApi = {
@@ -93,14 +177,43 @@ export const playersApi = {
     body: { status?: PlayerStatus; characterName?: string | null }
   ) => apiFetch<Player>(`/api/players/${id}`, { method: 'PATCH', body }),
   remove: (id: string) =>
-    apiFetch<void>(`/api/players/${id}`, { method: 'DELETE' })
+    apiFetch<void>(`/api/players/${id}`, { method: 'DELETE' }),
+  // Self-service: the logged-in member manages their own membership.
+  joinMine: (campaignId: string) =>
+    apiFetch<Player>(`/api/players/campaign/${campaignId}/me`, {
+      method: 'PUT'
+    }),
+  leaveMine: (campaignId: string) =>
+    apiFetch<void>(`/api/players/campaign/${campaignId}/me`, {
+      method: 'DELETE'
+    }),
+  setMyStatus: (campaignId: string, status: PlayerStatus) =>
+    apiFetch<Player>(`/api/players/campaign/${campaignId}/me/status`, {
+      method: 'PUT',
+      body: { status }
+    }),
+  setMyCharacter: (campaignId: string, characterName: string) =>
+    apiFetch<Player>(`/api/players/campaign/${campaignId}/me/character`, {
+      method: 'PUT',
+      body: { characterName }
+    })
 }
 
 export const settingsApi = {
   get: () => apiFetch<Settings>('/api/settings'),
   setSchedulingChannel: (channelId: string) =>
-    apiFetch<Settings>('/api/settings/scheduling-channel', {
+    apiFetch<Pick<Settings, 'schedulingChannelId'>>(
+      '/api/settings/scheduling-channel',
+      { method: 'PUT', body: { channelId } }
+    ),
+  setTimezone: (timezone: string) =>
+    apiFetch<Pick<Settings, 'timezone'>>('/api/settings/timezone', {
       method: 'PUT',
-      body: { channelId }
-    })
+      body: { timezone }
+    }),
+  setSessionLead: (days: number) =>
+    apiFetch<Pick<Settings, 'sessionOpenLeadDays'>>(
+      '/api/settings/session-lead',
+      { method: 'PUT', body: { days } }
+    )
 }

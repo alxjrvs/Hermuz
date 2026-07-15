@@ -8,7 +8,15 @@ export interface CampaignInterestButtonData {
   command: 'campaign_interest'
   campaignId: string
 }
-export type ButtonData = AttendanceButtonData | CampaignInterestButtonData
+export interface MealButtonData {
+  command: 'meal'
+  response: 'IN' | 'OUT'
+  mealId: string
+}
+export type ButtonData =
+  | AttendanceButtonData
+  | CampaignInterestButtonData
+  | MealButtonData
 export function serializeButtonData(data: ButtonData): string {
   try {
     return JSON.stringify(data)
@@ -34,6 +42,15 @@ export function isCampaignInterestButton(
   data: ButtonData
 ): data is CampaignInterestButtonData {
   return data.command === 'campaign_interest'
+}
+export function isMealButton(data: ButtonData): data is MealButtonData {
+  return data.command === 'meal'
+}
+export function createMealButtonId(
+  response: 'IN' | 'OUT',
+  mealId: string
+): string {
+  return serializeButtonData({ command: 'meal', response, mealId })
 }
 export function createAttendanceButtonId(
   status: 'AVAILABLE' | 'INTERESTED' | 'NOT_AVAILABLE',

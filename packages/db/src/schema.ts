@@ -21,6 +21,18 @@ export const ATTENDANCE_STATUS = [
  */
 export const SCHEDULING_KIND = ['SCHEDULED', 'REPEATING'] as const
 
+/** Where play happens. Games carry a default; campaigns/game days may override. */
+export const LOCATION_TYPE = ['VIRTUAL', 'IN_PERSON'] as const
+
+/** Meal slots a game day can coordinate. */
+export const MEAL_KIND = ['LUNCH', 'DINNER'] as const
+
+/** A meal poll's lifecycle. */
+export const MEAL_STATUS = ['OPEN', 'CLOSED'] as const
+
+/** Durable scheduler-job lifecycle (see `jobs`). */
+export const JOB_STATUS = ['PENDING', 'DONE', 'FAILED', 'CANCELLED'] as const
+
 /** New UUID text primary key (replaces Postgres `gen_random_uuid()`). */
 const uuidPk = () =>
   text('id')
@@ -57,7 +69,11 @@ export const games = sqliteTable('games', {
     .notNull()
     .default('SCHEDULED'),
   /** Default cap on a campaign's sessions (null = uncapped). Campaigns may override. */
-  maxSessions: integer('max_sessions')
+  maxSessions: integer('max_sessions'),
+  /** Default location type new campaigns/game days of this game inherit. */
+  defaultLocationType: text('default_location_type', { enum: LOCATION_TYPE })
+    .notNull()
+    .default('IN_PERSON')
 })
 
 /** `game_days` — a scheduled play session for a game. */
@@ -66,7 +82,10 @@ export const gameDays = sqliteTable('game_days', {
   title: text('title').notNull(),
   dateTime: text('date_time').notNull(),
   description: text('description'),
+  /** Free text: a physical place, or (for VIRTUAL) a join link/URL. */
   location: text('location'),
+  /** null = inherit from campaign/game at read time. */
+  locationType: text('location_type', { enum: LOCATION_TYPE }),
   status: text('status', { enum: GAME_DAY_STATUS }).notNull(),
   gameId: text('game_id').references(() => games.id),
   hostUserId: text('host_user_id').references(() => users.discordId),
@@ -98,6 +117,8 @@ export const campaigns = sqliteTable('campaigns', {
     .default('SCHEDULED'),
   /** Cap on total sessions (null = uncapped). Inherited from the game, overridable. */
   maxSessions: integer('max_sessions'),
+  /** null = inherit from the game. Sessions inherit this unless they override. */
+  locationType: text('location_type', { enum: LOCATION_TYPE }),
   /**
    * Recurrence for REPEATING campaigns. `recurrenceAnchor` is the FIRST session's
    * date/time (ISO) — the series start, which may be in the past — and is the
@@ -138,6 +159,100 @@ export const attendances = sqliteTable('attendances', {
 })
 
 /**
+ * `jobs` — durable scheduler queue. The bot process polls this on a timer
+ * (Tier 0) and runs each row whose `runAt` is due. `payload` is a JSON string
+ * scoped to the `kind`. Rows are idempotent by design: a handler re-derives
+ * state from the domain tables, so a duplicate run is a no-op.
+ */
+export const jobs = sqliteTable('jobs', {
+  id: uuidPk(),
+  kind: text('kind').notNull(),
+  runAt: text('run_at').notNull(),
+  payload: text('payload'),
+  status: text('status', { enum: JOB_STATUS }).notNull().default('PENDING'),
+  attempts: integer('attempts').notNull().default(0),
+  lastError: text('last_error'),
+  createdAt: isoTimestamp('created_at'),
+  updatedAt: isoTimestamp('updated_at')
+})
+
+/**
+ * `meals` — a lunch/dinner coordination slot on a game day. Each slot polls the
+ * relevant players and tracks their responses in `meal_responses`; the scheduler
+ * nudges non-responders. `channelId`/`messageId` point at the live summary the
+ * bot edits in the game day's `food` channel.
+ */
+export const meals = sqliteTable('meals', {
+  id: uuidPk(),
+  gameDayId: text('game_day_id')
+    .notNull()
+    .references(() => gameDays.id),
+  kind: text('kind', { enum: MEAL_KIND }).notNull(),
+  /** Free text plan, e.g. "ordering pizza" or "potluck". */
+  plan: text('plan'),
+  status: text('status', { enum: MEAL_STATUS }).notNull().default('OPEN'),
+  channelId: text('channel_id'),
+  messageId: text('message_id'),
+  /** Respond-by time (ISO). Drives nudge scheduling and auto-close. */
+  dueAt: text('due_at'),
+  createdAt: isoTimestamp('created_at')
+})
+
+/** `meal_responses` — one user's answer to a meal poll. */
+export const mealResponses = sqliteTable('meal_responses', {
+  id: uuidPk(),
+  mealId: text('meal_id')
+    .notNull()
+    .references(() => meals.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.discordId),
+  /** 0/1 boolean — is this user in for this meal. */
+  attending: integer('attending').notNull().default(0),
+  /** What they're eating/bringing/ordering. */
+  note: text('note'),
+  respondedAt: isoTimestamp('responded_at')
+})
+
+/**
+ * `task_templates` — a reusable pre-game setup task owned by a game (the default
+ * checklist a new game day of that game inherits). Editable in the GUI; a game
+ * day's checklist can be saved back here as the new default.
+ */
+export const taskTemplates = sqliteTable('task_templates', {
+  id: uuidPk(),
+  gameId: text('game_id')
+    .notNull()
+    .references(() => games.id),
+  label: text('label').notNull(),
+  description: text('description'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: isoTimestamp('created_at')
+})
+
+/**
+ * `game_day_tasks` — a concrete checklist item on a game day (materialized from
+ * a template or added ad-hoc). Assignable to a user and checkable; the bot
+ * mirrors the list into the game day's `logistics` channel.
+ */
+export const gameDayTasks = sqliteTable('game_day_tasks', {
+  id: uuidPk(),
+  gameDayId: text('game_day_id')
+    .notNull()
+    .references(() => gameDays.id),
+  /** Source template, when materialized from one (null for ad-hoc items). */
+  templateId: text('template_id').references(() => taskTemplates.id),
+  label: text('label').notNull(),
+  description: text('description'),
+  assigneeUserId: text('assignee_user_id').references(() => users.discordId),
+  /** 0/1 boolean. */
+  done: integer('done').notNull().default(0),
+  doneAt: text('done_at'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: isoTimestamp('created_at')
+})
+
+/**
  * `settings` — single-server key/value config. Replaces the old per-server
  * `discord_servers` columns (e.g. `scheduling_channel_id`) now that Hermuz
  * serves exactly one guild. Both the bot and the web GUI read/write these.
@@ -149,5 +264,9 @@ export const settings = sqliteTable('settings', {
 
 /** Well-known setting keys. */
 export const SETTING_KEYS = {
-  schedulingChannelId: 'scheduling_channel_id'
+  schedulingChannelId: 'scheduling_channel_id',
+  /** IANA timezone (e.g. 'America/New_York') used for recurrence + reminders. */
+  timezone: 'timezone',
+  /** Days before a session the scheduler auto-opens/announces it. */
+  sessionOpenLeadDays: 'session_open_lead_days'
 } as const
