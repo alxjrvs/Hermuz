@@ -7,13 +7,38 @@ import {
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
 import { requireAdmin } from '~/api/middleware'
+import { setUserAttendance } from '~/services/attendanceService'
 import { readJson } from './helpers'
 
 const isStatus = (v: unknown): v is AttendanceStatus =>
   typeof v === 'string' && (ATTENDANCE_STATUS as readonly string[]).includes(v)
 
-export function attendancesRoutes(_client: Client): Hono {
+export function attendancesRoutes(client: Client): Hono {
   const app = new Hono()
+
+  // Self-service: the authenticated member sets their OWN RSVP (no admin gate).
+  // Same shared service the /rsvp command and RSVP buttons use.
+  app.put('/game-day/:gameDayId/me', async (c) => {
+    const user = c.get('user')
+    const body = await readJson<{ status?: unknown }>(c)
+    if (!body || !isStatus(body.status)) {
+      return c.json(
+        { error: 'status must be one of ' + ATTENDANCE_STATUS.join(', ') },
+        400
+      )
+    }
+    const result = await setUserAttendance(
+      client,
+      c.req.param('gameDayId'),
+      user.id,
+      user.username,
+      body.status
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
 
   // Admin override of a single attendance row's status.
   app.patch('/:id', requireAdmin, async (c) => {

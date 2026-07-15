@@ -1,9 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
 import { gameDaysApi } from '../api'
 import { AttendanceTable } from '../components/AttendanceTable'
+import { Checklist } from '../components/Checklist'
 import { Kpi } from '../components/Kpi'
+import { Meals } from '../components/Meals'
 import { ErrorBanner, Loading, Panel } from '../components/Panel'
-import { GameDayStatusChip } from '../components/StatusChip'
+import { GameDayStatusChip, LocationTypeChip } from '../components/StatusChip'
 import { formatDateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
@@ -28,6 +30,7 @@ export function GameDayDetail() {
           <p>{formatDateTime(gd.data.dateTime)}</p>
         </div>
         <div className="row">
+          <LocationTypeChip type={gd.data.locationType} />
           <GameDayStatusChip status={gd.data.status} />
           <Link className="btn" to="/game-days">
             Back
@@ -68,9 +71,17 @@ export function GameDayDetail() {
             <ErrorBanner message={attendances.error} />
           </div>
         ) : (
-          <AttendanceTable attendances={rows} onChanged={attendances.reload} />
+          <AttendanceTable
+            gameDayId={gd.data.id}
+            attendances={rows}
+            onChanged={attendances.reload}
+          />
         )}
       </Panel>
+
+      <Checklist gameDayId={gd.data.id} hasGame={!!gd.data.gameId} />
+
+      <Meals gameDayId={gd.data.id} />
     </>
   )
 }

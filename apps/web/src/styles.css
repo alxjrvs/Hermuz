@@ -839,3 +839,27 @@ table.data td.tnum {
     display: none;
   }
 }
+
+/* Resolved Discord identity (avatar + name). */
+.user-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.user-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Self-service RSVP control block above the attendance table. */
+.self-rsvp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+}

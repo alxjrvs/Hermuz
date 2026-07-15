@@ -2,6 +2,7 @@ import type { Campaign, Player } from '@hermuz/db'
 import { EmbedBuilder } from 'discord.js'
 import { BRAND, BRAND_AUTHOR } from './brand'
 import { formatRegularGameTime, getCampaignDisplayName } from './campaignUtils'
+import { locationTypeLabel } from './locationUtils'
 export function createCampaignMessageEmbed(
   campaign: Campaign,
   players?: Player[]
@@ -11,11 +12,18 @@ export function createCampaignMessageEmbed(
     .setTitle(getCampaignDisplayName(campaign))
     .setDescription(campaign.description || 'No description provided')
     .setColor(BRAND.accent)
-    .addFields({
-      name: 'Regular Game Time',
-      value: formatRegularGameTime(campaign.regularGameTime),
-      inline: true
-    })
+    .addFields(
+      {
+        name: 'Regular Game Time',
+        value: formatRegularGameTime(campaign.regularGameTime),
+        inline: true
+      },
+      {
+        name: 'Type',
+        value: locationTypeLabel(campaign.locationType),
+        inline: true
+      }
+    )
     .setFooter({ text: `Campaign ID: ${campaign.id}` })
     .setTimestamp()
   if (campaign.gameName) {

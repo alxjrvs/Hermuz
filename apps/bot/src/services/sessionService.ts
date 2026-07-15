@@ -39,6 +39,28 @@ function sessionDate(
 }
 
 /**
+ * The 1-based number of the first session at or after `now`, for a series based
+ * at `base` with `intervalWeeks` spacing. Lets materialization keep a rolling
+ * window of *upcoming* sessions even when the anchor is in the past.
+ */
+function firstUpcomingSessionNumber(
+  base: Date,
+  intervalWeeks: number,
+  now: Date
+): number {
+  const periodMs = intervalWeeks * 7 * 24 * 60 * 60 * 1000
+  const diffMs = now.getTime() - base.getTime()
+  let n = diffMs <= 0 ? 1 : Math.ceil(diffMs / periodMs) + 1
+  while (
+    n > 1 &&
+    sessionDate(base, n - 1, intervalWeeks).getTime() >= now.getTime()
+  )
+    n--
+  while (sessionDate(base, n, intervalWeeks).getTime() < now.getTime()) n++
+  return n
+}
+
+/**
  * The series base date (first session). Prefers the explicit `recurrenceAnchor`
  * (the source of truth — may be in the past), falling back to the legacy
  * weekday/time anchored at the campaign's creation. Returns null if unconfigured.
@@ -59,11 +81,13 @@ function recurrenceBase(campaign: Campaign): Date | null {
 }
 
 /**
- * Ensure a REPEATING campaign has its upcoming session series materialized as
- * `game_days` (calendar entries only — no Discord role/channel/event is created).
- * Idempotent: only fills in session numbers that don't already exist, up to the
- * campaign's `maxSessions` (or an 8-session horizon when uncapped). No-op for
- * SCHEDULED campaigns or when recurrence isn't configured.
+ * Ensure a REPEATING campaign keeps a rolling window of its *upcoming* sessions
+ * materialized as `game_days` (calendar entries only — no Discord
+ * role/channel/event is created). Idempotent: fills in only the missing session
+ * numbers in the window `[firstUpcoming, firstUpcoming + horizon)`, capped by
+ * `maxSessions`. Because the window advances with time, an uncapped series keeps
+ * generating sessions instead of stopping after the first `DEFAULT_HORIZON`.
+ * No-op for SCHEDULED campaigns or when recurrence isn't configured.
  */
 export async function materializeSessions(
   campaignId: string
@@ -74,14 +98,20 @@ export async function materializeSessions(
   if (!base) return []
 
   const interval = campaign.recurrenceIntervalWeeks ?? 1
-  const target = campaign.maxSessions ?? DEFAULT_HORIZON
+  // Rolling window: DEFAULT_HORIZON sessions starting from the first one at or
+  // after now (the anchor may be in the past), capped by maxSessions.
+  const first = firstUpcomingSessionNumber(base, interval, new Date())
+  const upper =
+    campaign.maxSessions != null
+      ? Math.min(first + DEFAULT_HORIZON - 1, campaign.maxSessions)
+      : first + DEFAULT_HORIZON - 1
   const existing = await getGameDaysByCampaign(campaignId)
   const existingNumbers = new Set(
     existing.map((g) => g.sessionNumber).filter((n): n is number => n != null)
   )
 
   const created: GameDay[] = []
-  for (let n = 1; n <= target; n++) {
+  for (let n = first; n <= upper; n++) {
     if (existingNumbers.has(n)) continue
     const gd = await createGameDay({
       title: `${campaign.title} — Session ${n}`,
@@ -90,6 +120,7 @@ export async function materializeSessions(
       gameId: campaign.gameId,
       campaignId: campaign.id,
       sessionNumber: n,
+      locationType: campaign.locationType,
       discordRoleId: campaign.discordRoleId
     })
     if (gd) created.push(gd)
@@ -139,6 +170,7 @@ export async function scheduleNextSession(
     gameId: campaign.gameId,
     campaignId: campaign.id,
     sessionNumber: nextNum,
+    locationType: campaign.locationType,
     discordRoleId: campaign.discordRoleId
   })
 }

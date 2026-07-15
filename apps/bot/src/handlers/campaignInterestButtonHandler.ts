@@ -1,22 +1,14 @@
-import {
-  type Campaign,
-  getCampaign,
-  getOrCreatePlayer,
-  getOrCreateUser,
-  getPlayersByCampaign
-} from '@hermuz/db'
+import { getCampaign } from '@hermuz/db'
 import { type ButtonInteraction, MessageFlags } from 'discord.js'
+import { joinCampaign } from '~/services/playerService'
 import { logger } from '~/utils/logger'
-import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import type { PlayerStatus } from '../types/enums'
 import type { ButtonHandler } from '../utils/buttonRegistry'
 import { type ButtonData, isCampaignInterestButton } from '../utils/buttonUtils'
-import { createCampaignMessageEmbed } from '../utils/campaignMessageUtils'
 import {
   generateCampaignInterestErrorMessage,
   generateCampaignInterestStatusMessage
 } from '../utils/messageUtils'
-import { handleCampaignRoleAssignment } from '../utils/roleUtils'
 import { isDiscordId, isUUID } from '../utils/typeGuards'
 
 async function processCampaignInterest(
@@ -37,100 +29,28 @@ async function processCampaignInterest(
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-  const campaign = await getCampaign(campaignId)
-  if (!campaign) {
-    return interaction.editReply({
-      content: generateCampaignInterestErrorMessage('not_found')
-    })
-  }
-
-  const user = await getOrCreateUser(
-    interaction.user.id,
-    interaction.user.username
-  )
-
-  if (!user) {
-    return interaction.editReply({
-      content: generateCampaignInterestErrorMessage('user_error')
-    })
-  }
-
+  // Delegates to the shared player service — same path as `/campaign join` and
+  // the web endpoint (join as INTERESTED, sync role, refresh announcement).
   const status: PlayerStatus = 'INTERESTED'
-  const player = await getOrCreatePlayer(
-    interaction.user.id,
+  const result = await joinCampaign(
+    interaction.client,
     campaignId,
-    undefined,
+    interaction.user.id,
+    interaction.user.username,
     status
   )
-
-  if (!player) {
+  if (!result.ok) {
     return interaction.editReply({
       content: generateCampaignInterestErrorMessage('player_error')
     })
   }
 
-  await handleRoleAssignment(interaction, campaign)
-  await updateCampaignMessage(interaction, campaign)
-
+  const campaign = await getCampaign(campaignId)
   return interaction.editReply({
-    content: generateCampaignInterestStatusMessage(status, campaign)
+    content: campaign
+      ? generateCampaignInterestStatusMessage(status, campaign)
+      : 'You are now interested in this campaign.'
   })
-}
-
-async function handleRoleAssignment(
-  interaction: ButtonInteraction,
-  campaign: Campaign
-) {
-  try {
-    const member = await interaction.guild!.members.fetch(interaction.user.id)
-    if (member) {
-      await handleCampaignRoleAssignment(member, campaign)
-    }
-  } catch (error) {
-    logger.error(
-      `Error fetching member for role assignment: ${interaction.user.id}`,
-      error
-    )
-  }
-}
-
-async function updateCampaignMessage(
-  interaction: ButtonInteraction,
-  campaign: Campaign
-) {
-  try {
-    if (!campaign.announcementMessageId) {
-      return
-    }
-
-    // Get the scheduling channel from the guild
-    const schedulingChannel = await getSchedulingChannel(interaction.client)
-    if (!schedulingChannel) {
-      return
-    }
-
-    const channel = await interaction.guild!.channels.fetch(
-      schedulingChannel.id
-    )
-
-    if (!channel?.isTextBased()) {
-      return
-    }
-
-    const message = await channel.messages.fetch(campaign.announcementMessageId)
-    if (!message) {
-      return
-    }
-
-    const players = await getPlayersByCampaign(campaign.id)
-    const embed = createCampaignMessageEmbed(campaign, players)
-
-    await message.edit({
-      embeds: [embed]
-    })
-  } catch (error) {
-    logger.error('Error updating campaign message:', error)
-  }
 }
 
 async function handleInteractionError(

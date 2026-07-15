@@ -39,3 +39,20 @@ export const getSchedulingChannelId = (): Promise<string | null> =>
 
 export const setSchedulingChannelId = (channelId: string): Promise<boolean> =>
   setSetting(SETTING_KEYS.schedulingChannelId, channelId)
+
+/** Guild timezone (IANA). Defaults to UTC when unset. */
+export const getTimezone = async (): Promise<string> =>
+  (await getSetting(SETTING_KEYS.timezone)) ?? 'UTC'
+
+export const setTimezone = (tz: string): Promise<boolean> =>
+  setSetting(SETTING_KEYS.timezone, tz)
+
+/** Lead time (days) before a session auto-opens. Defaults to 7. */
+export const getSessionOpenLeadDays = async (): Promise<number> => {
+  const raw = await getSetting(SETTING_KEYS.sessionOpenLeadDays)
+  const n = raw == null ? NaN : parseInt(raw, 10)
+  return Number.isFinite(n) && n >= 0 ? n : 7
+}
+
+export const setSessionOpenLeadDays = (days: number): Promise<boolean> =>
+  setSetting(SETTING_KEYS.sessionOpenLeadDays, String(days))

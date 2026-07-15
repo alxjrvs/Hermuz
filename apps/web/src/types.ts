@@ -6,7 +6,17 @@ export interface User {
   isAdmin: boolean
 }
 
+/** A Discord identity resolved via GET /api/users (for names + avatars). */
+export interface ResolvedUser {
+  id: string
+  username: string
+  displayName: string
+  avatarUrl: string | null
+}
+
 export type SchedulingKind = 'SCHEDULED' | 'REPEATING'
+
+export type LocationType = 'VIRTUAL' | 'IN_PERSON'
 
 export interface Game {
   id: string
@@ -18,6 +28,7 @@ export interface Game {
   maxPlayers: number | null
   defaultSchedulingKind: SchedulingKind
   maxSessions: number | null
+  defaultLocationType: LocationType
 }
 
 export type GameInput = Omit<Game, 'id'>
@@ -31,6 +42,7 @@ export interface GameDay {
   description: string | null
   location: string | null
   status: GameDayStatus
+  locationType: LocationType | null
   gameId: string | null
   hostUserId: string | null
   discordRoleId: string | null
@@ -43,6 +55,7 @@ export interface GameDayInput {
   dateTime: string
   description?: string | null
   location?: string | null
+  locationType?: LocationType | null
   gameId?: string | null
 }
 
@@ -65,6 +78,7 @@ export interface Campaign {
   gameName: string | null
   schedulingKind: SchedulingKind
   maxSessions: number | null
+  locationType: LocationType | null
   recurrenceAnchor: string | null // ISO datetime of the first session (series start)
   recurrenceWeekday: number | null // 0=Sun..6=Sat (legacy fallback)
   recurrenceTime: string | null // 'HH:MM' (legacy fallback)
@@ -78,6 +92,7 @@ export interface CampaignInput {
   gameId?: string | null
   schedulingKind?: SchedulingKind
   maxSessions?: number | null
+  locationType?: LocationType | null
   recurrenceAnchor?: string | null
   recurrenceWeekday?: number | null
   recurrenceTime?: string | null
@@ -96,4 +111,49 @@ export interface Player {
 
 export interface Settings {
   schedulingChannelId: string | null
+  timezone: string
+  sessionOpenLeadDays: number
+}
+
+export interface TaskTemplate {
+  id: string
+  gameId: string
+  label: string
+  description: string | null
+  sortOrder: number
+}
+
+export interface GameDayTask {
+  id: string
+  gameDayId: string
+  templateId: string | null
+  label: string
+  description: string | null
+  assigneeUserId: string | null
+  done: number // 0/1
+  doneAt: string | null
+  sortOrder: number
+}
+
+export type MealKind = 'LUNCH' | 'DINNER'
+
+export interface MealResponse {
+  id: string
+  mealId: string
+  userId: string
+  attending: number // 0/1
+  note: string | null
+  respondedAt: string | null
+}
+
+export interface Meal {
+  id: string
+  gameDayId: string
+  kind: MealKind
+  plan: string | null
+  status: 'OPEN' | 'CLOSED'
+  channelId: string | null
+  messageId: string | null
+  dueAt: string | null
+  responses: MealResponse[]
 }

@@ -1,6 +1,7 @@
 import type {
   AttendanceStatus,
   GameDayStatus,
+  LocationType,
   PlayerStatus,
   SchedulingKind
 } from '../types'
@@ -52,4 +53,20 @@ const SCHEDULING_TONE: Record<SchedulingKind, ChipTone> = {
 
 export function SchedulingKindChip({ kind }: { kind: SchedulingKind }) {
   return <Chip tone={SCHEDULING_TONE[kind] ?? 'muted'} label={kind} />
+}
+
+const LOCATION_LABEL: Record<LocationType, string> = {
+  VIRTUAL: '💻 Virtual',
+  IN_PERSON: '📍 In Person'
+}
+
+const LOCATION_TONE: Record<LocationType, ChipTone> = {
+  VIRTUAL: 'accent',
+  IN_PERSON: 'good'
+}
+
+/** `type` may be null on a game day/campaign that inherits; falls back to In Person. */
+export function LocationTypeChip({ type }: { type: LocationType | null }) {
+  const t: LocationType = type ?? 'IN_PERSON'
+  return <Chip tone={LOCATION_TONE[t]} label={LOCATION_LABEL[t]} />
 }

@@ -12,8 +12,11 @@ import { resolveCommand } from '~/commands/manifest'
 import { config } from '~/config'
 import { attendanceButtonHandler } from '~/handlers/attendanceButtonHandler'
 import { campaignInterestButtonHandler } from '~/handlers/campaignInterestButtonHandler'
+import { mealButtonHandler } from '~/handlers/mealButtonHandler'
 import { routeModalSubmit } from '~/interactions/modalRouter'
 import { registerCommands } from '~/register'
+import { ensureHeartbeatJob } from '~/services/jobHandlers'
+import { startScheduler } from '~/services/schedulerService'
 import {
   dispatchButtonInteraction,
   registerButtonHandler
@@ -23,6 +26,7 @@ import { logger } from '~/utils/logger'
 // Register button handlers once at module load.
 registerButtonHandler(attendanceButtonHandler)
 registerButtonHandler(campaignInterestButtonHandler)
+registerButtonHandler(mealButtonHandler)
 
 async function main(): Promise<void> {
   // Migrations run before anything opens the gateway or serves the API.
@@ -76,6 +80,10 @@ async function main(): Promise<void> {
           return
         }
         await leaf.handler(interaction)
+      } else if (interaction.isAutocomplete()) {
+        const leaf = resolveCommand(interaction)
+        if (leaf?.autocomplete) await leaf.autocomplete(interaction)
+        else await interaction.respond([])
       } else if (interaction.isButton()) {
         const handled = await dispatchButtonInteraction(interaction)
         if (!handled) logger.warn(`Unhandled button: ${interaction.customId}`)
@@ -89,6 +97,10 @@ async function main(): Promise<void> {
 
   // Same process serves the JSON API (shares the one SQLite connection).
   startApiServer(client)
+
+  // Background job loop (reminders, meal nudges, auto-opening sessions).
+  await ensureHeartbeatJob()
+  startScheduler(client)
 
   await client.login(config.discordToken)
 }

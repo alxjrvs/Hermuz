@@ -1,4 +1,5 @@
 import type {
+  AutocompleteInteraction,
   ChannelType,
   ChatInputCommandInteraction,
   SlashCommandBuilder,
@@ -14,6 +15,10 @@ export interface CommandOption {
   type: CommandOptionType
   required?: boolean
   channelTypes?: readonly ChannelType[]
+  /** String options only: enable Discord's live autocomplete. */
+  autocomplete?: boolean
+  /** String options only: a fixed set of choices (mutually exclusive with autocomplete). */
+  choices?: readonly { name: string; value: string }[]
 }
 
 export interface CommandConfig {
@@ -36,11 +41,18 @@ export type CommandHandler = (
   interaction: ChatInputCommandInteraction
 ) => unknown
 
+/** Resolves choices for an autocomplete option on a command. */
+export type AutocompleteHandler = (
+  interaction: AutocompleteInteraction
+) => Promise<void> | void
+
 /** A registerable leaf: its slash config, its handler, and whether it's admin-gated. */
 export interface CommandLeaf {
   config: CommandConfig
   handler: CommandHandler
   adminOnly?: boolean
+  /** Optional resolver for the command's autocomplete option(s). */
+  autocomplete?: AutocompleteHandler
 }
 
 /** Apply Hermuz command options onto a (sub)command builder. */
@@ -52,12 +64,14 @@ export function applyOptions(
   for (const opt of options) {
     switch (opt.type) {
       case 'string':
-        builder.addStringOption((o) =>
-          o
-            .setName(opt.name)
+        builder.addStringOption((o) => {
+          o.setName(opt.name)
             .setDescription(opt.description)
             .setRequired(opt.required ?? false)
-        )
+          if (opt.choices) o.addChoices(...opt.choices)
+          else o.setAutocomplete(opt.autocomplete ?? false)
+          return o
+        })
         break
       case 'role':
         builder.addRoleOption((o) =>

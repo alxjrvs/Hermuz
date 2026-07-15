@@ -9,12 +9,18 @@ export function Settings() {
   const { data, loading, error, reload } = useAsync(() => settingsApi.get(), [])
 
   const [channelId, setChannelId] = useState('')
+  const [timezone, setTimezone] = useState('UTC')
+  const [leadDays, setLeadDays] = useState(7)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    if (data) setChannelId(data.schedulingChannelId ?? '')
+    if (data) {
+      setChannelId(data.schedulingChannelId ?? '')
+      setTimezone(data.timezone ?? 'UTC')
+      setLeadDays(data.sessionOpenLeadDays ?? 7)
+    }
   }, [data])
 
   const save = async () => {
@@ -23,6 +29,22 @@ export function Settings() {
     setSaved(false)
     try {
       await settingsApi.setSchedulingChannel(channelId.trim())
+      setSaved(true)
+      reload()
+    } catch (err) {
+      setSaveError(toMessage(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const saveAutomation = async () => {
+    setSaving(true)
+    setSaveError(null)
+    setSaved(false)
+    try {
+      await settingsApi.setTimezone(timezone.trim())
+      await settingsApi.setSessionLead(leadDays)
       setSaved(true)
       reload()
     } catch (err) {
@@ -83,6 +105,60 @@ export function Settings() {
             ) : (
               <div className="readonly-note">
                 Only admins can change settings.
+              </div>
+            )}
+          </div>
+        )}
+      </Panel>
+
+      <Panel title="Automation" padded>
+        {loading ? (
+          <Loading />
+        ) : (
+          <div className="stack" style={{ maxWidth: 460 }}>
+            <p className="muted" style={{ margin: 0 }}>
+              Timezone is used for reminder wording; game-day times display in
+              each viewer's local zone automatically. Session lead controls how
+              many days before a repeating session it auto-opens for RSVPs.
+            </p>
+            <div className="field" style={{ margin: 0 }}>
+              <label htmlFor="tz">Guild timezone (IANA)</label>
+              <input
+                id="tz"
+                className="input"
+                value={timezone}
+                placeholder="e.g. America/New_York"
+                disabled={!isAdmin || saving}
+                onChange={(e) => {
+                  setTimezone(e.target.value)
+                  setSaved(false)
+                }}
+              />
+            </div>
+            <div className="field" style={{ margin: 0 }}>
+              <label htmlFor="lead">Session open lead (days)</label>
+              <input
+                id="lead"
+                className="input tnum"
+                type="number"
+                min={0}
+                value={leadDays}
+                disabled={!isAdmin || saving}
+                onChange={(e) => {
+                  setLeadDays(Number(e.target.value))
+                  setSaved(false)
+                }}
+              />
+            </div>
+            {isAdmin && (
+              <div className="row">
+                <button
+                  className="btn primary"
+                  onClick={saveAutomation}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving…' : 'Save automation'}
+                </button>
               </div>
             )}
           </div>

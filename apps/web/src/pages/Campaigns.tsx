@@ -7,7 +7,13 @@ import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { useAuth } from '../context/AuthContext'
 import { fromDateTimeLocal, toDateTimeLocal } from '../lib/format'
 import { toMessage, useAsync } from '../lib/useAsync'
-import type { Campaign, CampaignInput, Game, SchedulingKind } from '../types'
+import type {
+  Campaign,
+  CampaignInput,
+  Game,
+  LocationType,
+  SchedulingKind
+} from '../types'
 
 const SCHEDULING_KINDS: SchedulingKind[] = ['SCHEDULED', 'REPEATING']
 
@@ -183,6 +189,7 @@ function CampaignForm({
     gameId: initial?.gameId ?? '',
     schedulingKind: initial?.schedulingKind ?? ('SCHEDULED' as SchedulingKind),
     maxSessions: initial?.maxSessions ?? null,
+    locationType: (initial?.locationType ?? '') as LocationType | '',
     recurrenceAnchor: (initial?.recurrenceAnchor ?? null) as string | null,
     recurrenceIntervalWeeks: (initial?.recurrenceIntervalWeeks ?? 1) as
       | number
@@ -201,7 +208,8 @@ function CampaignForm({
       ...f,
       gameId,
       schedulingKind: game?.defaultSchedulingKind ?? f.schedulingKind,
-      maxSessions: game ? game.maxSessions : f.maxSessions
+      maxSessions: game ? game.maxSessions : f.maxSessions,
+      locationType: game?.defaultLocationType ?? f.locationType
     }))
   }
 
@@ -218,6 +226,7 @@ function CampaignForm({
         gameId: form.gameId || null,
         schedulingKind: form.schedulingKind,
         maxSessions: form.maxSessions,
+        locationType: form.locationType || null,
         recurrenceAnchor: repeating ? form.recurrenceAnchor : null,
         recurrenceWeekday: null,
         recurrenceTime: null,
@@ -300,6 +309,24 @@ function CampaignForm({
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
+      </div>
+      <div className="field">
+        <label htmlFor="c-loctype">Type</label>
+        <select
+          id="c-loctype"
+          className="select"
+          value={form.locationType}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              locationType: e.target.value as LocationType | ''
+            })
+          }
+        >
+          <option value="">Inherit from game</option>
+          <option value="IN_PERSON">In Person</option>
+          <option value="VIRTUAL">Virtual</option>
+        </select>
       </div>
       <div className="field-row">
         <div className="field">
