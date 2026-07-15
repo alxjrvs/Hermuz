@@ -73,6 +73,15 @@ export const getUpcomingGameDaysByStatus = async (
   }
 }
 
+export const getAllGameDays = async (): Promise<GameDay[]> => {
+  try {
+    return await db.select().from(gameDays).orderBy(desc(gameDays.dateTime))
+  } catch (err) {
+    console.error('Error fetching all game days', err)
+    return []
+  }
+}
+
 export const getGameDaysByGame = async (gameId: string): Promise<GameDay[]> => {
   try {
     return await db

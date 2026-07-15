@@ -34,10 +34,14 @@ services:
         sync: false
       - key: GUILD_ID
         sync: false
-      # --- Phase 2 (web GUI / Discord OAuth2) ---
-      # - key: DISCORD_OAUTH_CLIENT_SECRET
-      #   sync: false
-      # - key: SESSION_SECRET
-      #   generateValue: true
+      # --- Web GUI / Discord OAuth2 ---
+      - key: DISCORD_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: API_ORIGIN
+        sync: false # e.g. https://hermuz.onrender.com
+      - key: WEB_ORIGIN
+        sync: false # e.g. https://hermuz.netlify.app
 # TODO (Phase 1/2): add a periodic backup of /var/data/hermuz.db (e.g. a Render
 # cron job snapshotting the .db file) so a lost disk doesn't lose campaign history.

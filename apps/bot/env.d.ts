@@ -8,6 +8,10 @@ declare global {
       GUILD_ID: string
       DATABASE_PATH: string
       PORT: string
+      DISCORD_OAUTH_CLIENT_SECRET: string
+      JWT_SECRET: string
+      API_ORIGIN: string
+      WEB_ORIGIN: string
     }
   }
 }

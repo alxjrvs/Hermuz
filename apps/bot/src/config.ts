@@ -20,5 +20,23 @@ export const config = {
   },
   get port(): number {
     return Number(process.env.PORT ?? 3000)
+  },
+  // --- Web GUI / Discord OAuth2 (Phase 2) ---
+  get discordClientSecret(): string {
+    return required('DISCORD_OAUTH_CLIENT_SECRET')
+  },
+  get jwtSecret(): string {
+    return required('JWT_SECRET')
+  },
+  /** Public origin of the API itself (used to build the OAuth redirect URI). */
+  get apiOrigin(): string {
+    return process.env.API_ORIGIN ?? `http://localhost:${this.port}`
+  },
+  /** Netlify SPA origin — CORS allow-list + post-login redirect target. */
+  get webOrigin(): string {
+    return process.env.WEB_ORIGIN ?? 'http://localhost:5173'
+  },
+  get oauthRedirectUri(): string {
+    return `${this.apiOrigin}/auth/callback`
   }
 }

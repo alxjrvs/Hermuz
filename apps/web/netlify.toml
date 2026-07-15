@@ -1,0 +1,17 @@
+# Netlify configuration for the Hermuz web console (@hermuz/web).
+#
+# IMPORTANT: Set VITE_API_ORIGIN in the Netlify site environment to the
+# Render API URL (e.g. https://hermuz-api.onrender.com). It is baked into the
+# client bundle at build time. Without it the app falls back to
+# http://localhost:3000, which only works for local development.
+
+[build]
+  base = "apps/web"
+  command = "bun run build"
+  publish = "apps/web/dist"
+
+# SPA fallback: let react-router handle client-side routes.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
