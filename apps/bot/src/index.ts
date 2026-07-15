@@ -28,6 +28,12 @@ async function main(): Promise<void> {
   logger.info('Running database migrations...')
   runMigrations()
 
+  // One-off seed of existing server data (idempotent). Set RUN_BACKFILL=1 once.
+  if (process.env.RUN_BACKFILL === '1') {
+    const { runBackfill } = await import('~/scripts/backfill')
+    await runBackfill()
+  }
+
   const client = new Client({
     intents: [
       GatewayIntentBits.Guilds,

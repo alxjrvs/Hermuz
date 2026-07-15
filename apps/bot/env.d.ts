@@ -12,6 +12,7 @@ declare global {
       JWT_SECRET: string
       API_ORIGIN: string
       WEB_ORIGIN: string
+      RUN_BACKFILL?: string
     }
   }
 }
