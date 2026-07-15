@@ -132,3 +132,26 @@ export interface GameDayTask {
   doneAt: string | null
   sortOrder: number
 }
+
+export type MealKind = 'LUNCH' | 'DINNER'
+
+export interface MealResponse {
+  id: string
+  mealId: string
+  userId: string
+  attending: number // 0/1
+  note: string | null
+  respondedAt: string | null
+}
+
+export interface Meal {
+  id: string
+  gameDayId: string
+  kind: MealKind
+  plan: string | null
+  status: 'OPEN' | 'CLOSED'
+  channelId: string | null
+  messageId: string | null
+  dueAt: string | null
+  responses: MealResponse[]
+}

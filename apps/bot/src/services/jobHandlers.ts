@@ -48,6 +48,6 @@ export async function ensureHeartbeatJob(): Promise<void> {
   }
 }
 
-// Feature job kinds self-register on import (added by their tiers):
-// import './mealService'        — MEAL_NUDGE
-// import './sessionAutomation'  — SESSION_OPEN
+// Feature job kinds self-register on import:
+import './mealService' // registers MEAL_NUDGE
+// import './sessionAutomation'  — SESSION_OPEN (Tier 2.3)

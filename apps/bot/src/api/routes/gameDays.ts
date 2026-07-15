@@ -10,8 +10,12 @@ import {
   updateGameDayTask,
   deleteGameDayTask,
   replaceTaskTemplatesForGame,
+  getMealsByGameDay,
+  getMealResponses,
+  MEAL_KIND,
   type NewGameDay,
-  type NewGameDayTask
+  type NewGameDayTask,
+  type MealKind
 } from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
 import {
@@ -20,6 +24,11 @@ import {
   type CreateGameDayInput
 } from '~/services/gameDayService'
 import { renderChecklist } from '~/services/taskService'
+import {
+  createMealSlot,
+  respondToMeal,
+  closeMeal
+} from '~/services/mealService'
 import { announceGameDay } from '~/services/announceService'
 import { logger } from '~/utils/logger'
 import { sendResult, resolveGuild, readJson } from './helpers'
@@ -166,6 +175,75 @@ export function gameDaysRoutes(client: Client): Hono {
       tasks.map((t) => ({ label: t.label, description: t.description }))
     )
     return c.json(saved)
+  })
+
+  // --- Meal coordination (meals + meal_responses) ---
+
+  const isMealKind = (v: unknown): v is MealKind =>
+    typeof v === 'string' && (MEAL_KIND as readonly string[]).includes(v)
+
+  app.get('/:id/meals', async (c) => {
+    const meals = await getMealsByGameDay(c.req.param('id'))
+    // Attach responses so the web can show who's in/out in one call.
+    const withResponses = await Promise.all(
+      meals.map(async (m) => ({
+        ...m,
+        responses: await getMealResponses(m.id)
+      }))
+    )
+    return c.json(withResponses)
+  })
+
+  // Admin opens a meal slot (posts the poll to the food channel).
+  app.post('/:id/meals', requireAdmin, async (c) => {
+    const body = await readJson<{
+      kind?: unknown
+      plan?: unknown
+      dueAt?: unknown
+    }>(c)
+    if (!body || !isMealKind(body.kind)) {
+      return c.json({ error: 'kind must be LUNCH or DINNER' }, 400)
+    }
+    const result = await createMealSlot(
+      client,
+      c.req.param('id'),
+      body.kind,
+      typeof body.plan === 'string' ? body.plan : null,
+      typeof body.dueAt === 'string' ? body.dueAt : null
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
+
+  // Self-service: the member records their own meal response.
+  app.put('/:id/meals/:mealId/me', async (c) => {
+    const user = c.get('user')
+    const body = await readJson<{ attending?: unknown; note?: unknown }>(c)
+    if (!body || typeof body.attending !== 'boolean') {
+      return c.json({ error: 'attending (boolean) is required' }, 400)
+    }
+    const result = await respondToMeal(
+      client,
+      c.req.param('mealId'),
+      user.id,
+      user.username,
+      body.attending,
+      typeof body.note === 'string' ? body.note : null
+    )
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
+  })
+
+  app.post('/:id/meals/:mealId/close', requireAdmin, async (c) => {
+    const result = await closeMeal(client, c.req.param('mealId'))
+    if (!result.ok) {
+      return c.json({ error: result.error }, (result.status ?? 400) as 400)
+    }
+    return c.json(result.data)
   })
 
   return app

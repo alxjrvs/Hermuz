@@ -17,6 +17,9 @@ import type {
   Settings,
   TaskTemplate,
   GameDayTask,
+  Meal,
+  MealKind,
+  MealResponse,
   User
 } from '../types'
 
@@ -94,6 +97,31 @@ export const gameDaysApi = {
     }),
   saveTasksAsDefault: (id: string) =>
     apiFetch<TaskTemplate[]>(`/api/game-days/${id}/tasks/save-as-default`, {
+      method: 'POST'
+    }),
+  meals: (id: string) => apiFetch<Meal[]>(`/api/game-days/${id}/meals`),
+  addMeal: (
+    id: string,
+    kind: MealKind,
+    plan?: string | null,
+    dueAt?: string | null
+  ) =>
+    apiFetch<Meal>(`/api/game-days/${id}/meals`, {
+      method: 'POST',
+      body: { kind, plan, dueAt }
+    }),
+  respondMeal: (
+    id: string,
+    mealId: string,
+    attending: boolean,
+    note?: string | null
+  ) =>
+    apiFetch<MealResponse>(`/api/game-days/${id}/meals/${mealId}/me`, {
+      method: 'PUT',
+      body: { attending, note }
+    }),
+  closeMeal: (id: string, mealId: string) =>
+    apiFetch<Meal>(`/api/game-days/${id}/meals/${mealId}/close`, {
       method: 'POST'
     })
 }

@@ -16,6 +16,7 @@ import {
 } from '~/utils/buttonRegistry'
 import { attendanceButtonHandler } from '~/handlers/attendanceButtonHandler'
 import { campaignInterestButtonHandler } from '~/handlers/campaignInterestButtonHandler'
+import { mealButtonHandler } from '~/handlers/mealButtonHandler'
 import { routeModalSubmit } from '~/interactions/modalRouter'
 import { startApiServer } from '~/api/server'
 import { startScheduler } from '~/services/schedulerService'
@@ -24,6 +25,7 @@ import { ensureHeartbeatJob } from '~/services/jobHandlers'
 // Register button handlers once at module load.
 registerButtonHandler(attendanceButtonHandler)
 registerButtonHandler(campaignInterestButtonHandler)
+registerButtonHandler(mealButtonHandler)
 
 async function main(): Promise<void> {
   // Migrations run before anything opens the gateway or serves the API.
