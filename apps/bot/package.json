@@ -1,0 +1,10 @@
+{
+  "name": "@hermuz/bot",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@hermuz/db": "workspace:*",
+    "discord.js": "^14.19.3"
+  }
+}
