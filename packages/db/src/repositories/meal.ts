@@ -1,12 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm'
 import { db } from '../client'
-import { meals, mealResponses } from '../schema'
-import type {
-  Meal,
-  NewMeal,
-  MealResponse,
-  NewMealResponse
-} from '../index'
+import type { Meal, MealResponse, NewMeal, NewMealResponse } from '../index'
+import { mealResponses, meals } from '../schema'
 
 // --- meals ---
 
@@ -30,9 +25,7 @@ export const getMeal = async (id: string): Promise<Meal | null> => {
   }
 }
 
-export const getMealsByGameDay = async (
-  gameDayId: string
-): Promise<Meal[]> => {
+export const getMealsByGameDay = async (gameDayId: string): Promise<Meal[]> => {
   try {
     return await db
       .select()

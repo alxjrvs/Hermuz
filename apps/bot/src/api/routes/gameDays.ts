@@ -1,37 +1,37 @@
-import type { Client } from 'discord.js'
-import { Hono } from 'hono'
 import {
+  createGameDayTask,
+  deleteGameDayTask,
   getAllGameDays,
   getGameDay,
   getGameDayAttendances,
-  updateGameDay,
   getGameDayTasks,
-  createGameDayTask,
-  updateGameDayTask,
-  deleteGameDayTask,
-  replaceTaskTemplatesForGame,
-  getMealsByGameDay,
   getMealResponses,
+  getMealsByGameDay,
   MEAL_KIND,
+  type MealKind,
   type NewGameDay,
   type NewGameDayTask,
-  type MealKind
+  replaceTaskTemplatesForGame,
+  updateGameDay,
+  updateGameDayTask
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
+import { Hono } from 'hono'
 import { requireAdmin } from '~/api/middleware'
-import {
-  createGameDayWithDiscord,
-  cancelGameDayWithDiscord,
-  type CreateGameDayInput
-} from '~/services/gameDayService'
-import { renderChecklist } from '~/services/taskService'
-import {
-  createMealSlot,
-  respondToMeal,
-  closeMeal
-} from '~/services/mealService'
 import { announceGameDay } from '~/services/announceService'
+import {
+  type CreateGameDayInput,
+  cancelGameDayWithDiscord,
+  createGameDayWithDiscord
+} from '~/services/gameDayService'
+import {
+  closeMeal,
+  createMealSlot,
+  respondToMeal
+} from '~/services/mealService'
+import { renderChecklist } from '~/services/taskService'
 import { logger } from '~/utils/logger'
-import { sendResult, resolveGuild, readJson } from './helpers'
+import { readJson, resolveGuild, sendResult } from './helpers'
 
 export function gameDaysRoutes(client: Client): Hono {
   const app = new Hono()
@@ -113,7 +113,8 @@ export function gameDaysRoutes(client: Client): Hono {
     const created = await createGameDayTask({
       gameDayId: c.req.param('id'),
       label: body.label.trim(),
-      description: typeof body.description === 'string' ? body.description : null,
+      description:
+        typeof body.description === 'string' ? body.description : null,
       sortOrder: existing.length
     })
     if (!created) return c.json({ error: 'create failed' }, 500)

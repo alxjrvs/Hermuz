@@ -1,5 +1,5 @@
-import type { Client } from 'discord.js'
 import type { Job } from '@hermuz/db'
+import type { Client } from 'discord.js'
 import { logger } from '~/utils/logger'
 
 /**

@@ -1,14 +1,14 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
+import { getSchedulingChannelId } from '@hermuz/db'
 import {
+  ActionRowBuilder,
   type ChatInputCommandInteraction,
+  MessageFlags,
   ModalBuilder,
   TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder,
-  MessageFlags
+  TextInputStyle
 } from 'discord.js'
-import { getSchedulingChannelId } from '@hermuz/db'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 import { createGameDayScheduleModalId } from '../../utils/modalUtils'
 export const config = createCommandConfig({
   description: 'Schedule a new game day event',

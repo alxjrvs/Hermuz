@@ -1,13 +1,13 @@
 import {
-  type ChatInputCommandInteraction,
   type AutocompleteInteraction,
+  type ChatInputCommandInteraction,
   MessageFlags
 } from 'discord.js'
 import { createCommandConfig } from '~/framework/command'
 import { setUserAttendance } from '~/services/attendanceService'
 import { respondGameDayAutocomplete } from '~/utils/autocomplete'
-import { isAttendanceStatus } from '~/utils/typeGuards'
 import { logger } from '~/utils/logger'
+import { isAttendanceStatus } from '~/utils/typeGuards'
 
 export const config = createCommandConfig({
   description: 'RSVP to a game day',
@@ -52,7 +52,9 @@ export default async (interaction: ChatInputCommandInteraction) => {
       status
     )
     if (!result.ok) return interaction.editReply(result.error)
-    return interaction.editReply(`RSVP saved: **${status.replace(/_/g, ' ')}**.`)
+    return interaction.editReply(
+      `RSVP saved: **${status.replace(/_/g, ' ')}**.`
+    )
   } catch (err) {
     logger.error('/rsvp failed:', err)
     return interaction.editReply('Something went wrong saving your RSVP.')

@@ -1,13 +1,13 @@
-import type { Client } from 'discord.js'
-import { Hono } from 'hono'
 import {
   getSchedulingChannelId,
-  setSchedulingChannelId,
-  getTimezone,
-  setTimezone,
   getSessionOpenLeadDays,
-  setSessionOpenLeadDays
+  getTimezone,
+  setSchedulingChannelId,
+  setSessionOpenLeadDays,
+  setTimezone
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
+import { Hono } from 'hono'
 import { requireAdmin } from '~/api/middleware'
 import { readJson } from './helpers'
 

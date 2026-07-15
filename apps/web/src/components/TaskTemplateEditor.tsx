@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { gamesApi } from '../api'
 import { toMessage } from '../lib/useAsync'
-import { ErrorBanner } from './Panel'
 import { Modal } from './Modal'
+import { ErrorBanner } from './Panel'
 
 interface Props {
   gameId: string

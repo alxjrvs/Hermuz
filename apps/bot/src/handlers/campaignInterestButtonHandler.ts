@@ -1,15 +1,15 @@
-import { logger } from '~/utils/logger'
-import { MessageFlags, type ButtonInteraction } from 'discord.js'
 import { getCampaign } from '@hermuz/db'
-import { ButtonData, isCampaignInterestButton } from '../utils/buttonUtils'
-import { isUUID, isDiscordId } from '../utils/typeGuards'
-import { PlayerStatus } from '../types/enums'
-import { ButtonHandler } from '../utils/buttonRegistry'
-import {
-  generateCampaignInterestStatusMessage,
-  generateCampaignInterestErrorMessage
-} from '../utils/messageUtils'
+import { type ButtonInteraction, MessageFlags } from 'discord.js'
 import { joinCampaign } from '~/services/playerService'
+import { logger } from '~/utils/logger'
+import type { PlayerStatus } from '../types/enums'
+import type { ButtonHandler } from '../utils/buttonRegistry'
+import { type ButtonData, isCampaignInterestButton } from '../utils/buttonUtils'
+import {
+  generateCampaignInterestErrorMessage,
+  generateCampaignInterestStatusMessage
+} from '../utils/messageUtils'
+import { isDiscordId, isUUID } from '../utils/typeGuards'
 
 async function processCampaignInterest(
   interaction: ButtonInteraction,

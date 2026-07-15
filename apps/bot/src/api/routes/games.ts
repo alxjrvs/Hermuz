@@ -1,21 +1,21 @@
-import type { Client } from 'discord.js'
-import { Hono } from 'hono'
 import {
+  deleteGame,
   getAllGames,
   getGame,
-  updateGame,
-  deleteGame,
   getTaskTemplatesByGame,
+  type NewGame,
   replaceTaskTemplatesForGame,
-  type NewGame
+  updateGame
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
+import { Hono } from 'hono'
 import { requireAdmin } from '~/api/middleware'
 import {
-  createGameWithRole,
-  type CreateGameInput
+  type CreateGameInput,
+  createGameWithRole
 } from '~/services/gameService'
 import { logger } from '~/utils/logger'
-import { sendResult, resolveGuild, readJson } from './helpers'
+import { readJson, resolveGuild, sendResult } from './helpers'
 
 export function gamesRoutes(client: Client): Hono {
   const app = new Hono()
@@ -95,7 +95,10 @@ export function gamesRoutes(client: Client): Hono {
     }
     const clean = body.items
       .filter((it) => typeof it?.label === 'string' && it.label.trim())
-      .map((it) => ({ label: it.label.trim(), description: it.description ?? null }))
+      .map((it) => ({
+        label: it.label.trim(),
+        description: it.description ?? null
+      }))
     return c.json(await replaceTaskTemplatesForGame(c.req.param('id'), clean))
   })
 

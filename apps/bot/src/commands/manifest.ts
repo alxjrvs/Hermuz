@@ -1,38 +1,37 @@
 import {
-  PermissionFlagsBits,
-  SlashCommandBuilder,
   type AutocompleteInteraction,
   type ChatInputCommandInteraction,
-  type RESTPostAPIApplicationCommandsJSONBody
+  PermissionFlagsBits,
+  type RESTPostAPIApplicationCommandsJSONBody,
+  SlashCommandBuilder
 } from 'discord.js'
 import {
-  applyOptions,
   type AutocompleteHandler,
+  applyOptions,
   type CommandConfig,
   type CommandLeaf
 } from '~/framework/command'
-
-import * as ping from './ping'
-import * as games from './games'
-import * as setSchedulingChannel from './set_scheduling_channel'
+import * as campaignAnnounce from './campaign/announce'
+import * as campaignConfirm from './campaign/confirm'
+import * as campaignCreate from './campaign/create'
+import * as campaignJoin from './campaign/join'
+import * as campaignLeave from './campaign/leave'
+import * as characterSet from './character/set'
 import * as consoleLink from './console'
-import * as rsvp from './rsvp'
 import * as gameSetup from './game/setup'
-import * as gameDaySchedule from './game_day/schedule'
 import * as gameDayAnnounce from './game_day/announce'
 import * as gameDayCancel from './game_day/cancel'
 import * as gameDayList from './game_day/list'
-import * as campaignCreate from './campaign/create'
-import * as campaignAnnounce from './campaign/announce'
-import * as campaignJoin from './campaign/join'
-import * as campaignLeave from './campaign/leave'
-import * as campaignConfirm from './campaign/confirm'
-import * as characterSet from './character/set'
-import * as mySchedule from './my/schedule'
+import * as gameDaySchedule from './game_day/schedule'
+import * as games from './games'
 import * as myCampaigns from './my/campaigns'
-import * as taskList from './task/list'
-import * as taskDone from './task/done'
+import * as mySchedule from './my/schedule'
+import * as ping from './ping'
+import * as rsvp from './rsvp'
+import * as setSchedulingChannel from './set_scheduling_channel'
 import * as taskClaim from './task/claim'
+import * as taskDone from './task/done'
+import * as taskList from './task/list'
 
 type CommandModule = {
   config: CommandConfig

@@ -1,22 +1,22 @@
-import type { Client } from 'discord.js'
 import {
-  getCampaign,
-  getOrCreateUser,
-  getOrCreatePlayer,
-  getPlayerByUserAndCampaign,
-  updatePlayerByUserAndCampaign,
-  updatePlayerStatusByUserAndCampaign,
   deletePlayerByUserAndCampaign,
+  getCampaign,
+  getOrCreatePlayer,
+  getOrCreateUser,
+  getPlayerByUserAndCampaign,
   getPlayersByCampaign,
   type Player,
-  type PlayerStatus
+  type PlayerStatus,
+  updatePlayerByUserAndCampaign,
+  updatePlayerStatusByUserAndCampaign
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
 import { config } from '~/config'
-import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { createCampaignMessageEmbed } from '~/utils/campaignMessageUtils'
-import { handleCampaignRoleAssignment } from '~/utils/roleUtils'
 import { logger } from '~/utils/logger'
-import { ok, fail, type ServiceResult } from './result'
+import { handleCampaignRoleAssignment } from '~/utils/roleUtils'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
+import { fail, ok, type ServiceResult } from './result'
 
 /**
  * Campaign membership as self-service, shared by the "I'm Interested" button,
@@ -88,7 +88,7 @@ export async function setPlayerStatus(
 }
 
 export async function setCharacterName(
-  client: Client,
+  _client: Client,
   campaignId: string,
   userId: string,
   characterName: string

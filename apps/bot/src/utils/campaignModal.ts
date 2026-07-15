@@ -1,10 +1,10 @@
+import type { Campaign } from '@hermuz/db'
 import {
+  ActionRowBuilder,
   ModalBuilder,
   TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder
+  TextInputStyle
 } from 'discord.js'
-import type { Campaign } from '@hermuz/db'
 export default function campaignModal(
   customId: string,
   defaultValues?: Campaign

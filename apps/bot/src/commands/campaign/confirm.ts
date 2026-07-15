@@ -1,6 +1,6 @@
 import {
-  type ChatInputCommandInteraction,
   type AutocompleteInteraction,
+  type ChatInputCommandInteraction,
   MessageFlags
 } from 'discord.js'
 import { createCommandConfig } from '~/framework/command'

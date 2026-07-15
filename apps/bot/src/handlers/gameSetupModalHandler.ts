@@ -1,7 +1,7 @@
-import { logger } from '~/utils/logger'
-import { MessageFlags, type ModalSubmitInteraction } from 'discord.js'
 import { createGame } from '@hermuz/db'
-import { GameSetupModalData } from '../utils/modalUtils'
+import { MessageFlags, type ModalSubmitInteraction } from 'discord.js'
+import { logger } from '~/utils/logger'
+import type { GameSetupModalData } from '../utils/modalUtils'
 export async function handleGameSetupModalSubmit(
   interaction: ModalSubmitInteraction,
   modalData: GameSetupModalData
@@ -16,10 +16,10 @@ export async function handleGameSetupModalSubmit(
     const maxPlayersStr = interaction.fields.getTextInputValue('max_players')
     const minPlayers = parseInt(minPlayersStr, 10)
     const maxPlayers = parseInt(maxPlayersStr, 10)
-    if (isNaN(minPlayers) || minPlayers < 1) {
+    if (Number.isNaN(minPlayers) || minPlayers < 1) {
       return interaction.editReply('Minimum players must be a positive number.')
     }
-    if (isNaN(maxPlayers) || maxPlayers < minPlayers) {
+    if (Number.isNaN(maxPlayers) || maxPlayers < minPlayers) {
       return interaction.editReply(
         'Maximum players must be a number greater than or equal to minimum players.'
       )

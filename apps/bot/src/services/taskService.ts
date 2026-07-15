@@ -1,13 +1,13 @@
-import { EmbedBuilder, Colors, type Client } from 'discord.js'
 import {
+  createGameDayTasks,
+  type GameDayTask,
   getGameDay,
   getGameDayTasks,
-  createGameDayTasks,
-  getTaskTemplatesByGame,
-  type GameDayTask
+  getTaskTemplatesByGame
 } from '@hermuz/db'
-import { getGameDayChannel, upsertChannelMessage } from './notifyService'
+import { type Client, Colors, EmbedBuilder } from 'discord.js'
 import { logger } from '~/utils/logger'
+import { getGameDayChannel, upsertChannelMessage } from './notifyService'
 
 /**
  * Materialize a game day's checklist from its game's task templates. Idempotent:
@@ -47,7 +47,9 @@ function checklistEmbed(title: string, tasks: GameDayTask[]): EmbedBuilder {
     : 'No setup tasks yet.'
   return new EmbedBuilder()
     .setTitle(`🧰 Setup checklist — ${title}`)
-    .setColor(done === tasks.length && tasks.length > 0 ? Colors.Green : Colors.Yellow)
+    .setColor(
+      done === tasks.length && tasks.length > 0 ? Colors.Green : Colors.Yellow
+    )
     .setDescription(lines)
     .setFooter({ text: `${done}/${tasks.length} done` })
 }
@@ -74,7 +76,8 @@ export async function renderChecklist(
     // the checklist there, so we can safely reuse the newest bot message.
     const recent = await channel.messages.fetch({ limit: 20 }).catch(() => null)
     const mine = recent?.find(
-      (m) => m.author.id === client.user?.id && m.embeds[0]?.title?.startsWith('🧰')
+      (m) =>
+        m.author.id === client.user?.id && m.embeds[0]?.title?.startsWith('🧰')
     )
     await upsertChannelMessage(channel, mine?.id ?? null, { embeds: [embed] })
   } catch (err) {

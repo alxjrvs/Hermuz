@@ -1,27 +1,27 @@
-export * from './schema'
-export { db, sqlite, schema, runMigrations } from './client'
+export { db, runMigrations, schema, sqlite } from './client'
 export * from './repositories'
+export * from './schema'
 
-import {
-  users,
-  games,
-  gameDays,
-  campaigns,
-  players,
-  attendances,
-  jobs,
-  meals,
-  mealResponses,
-  taskTemplates,
-  gameDayTasks,
-  GAME_DAY_STATUS,
-  PLAYER_STATUS,
+import type {
   ATTENDANCE_STATUS,
-  SCHEDULING_KIND,
+  attendances,
+  campaigns,
+  GAME_DAY_STATUS,
+  gameDays,
+  gameDayTasks,
+  games,
+  JOB_STATUS,
+  jobs,
   LOCATION_TYPE,
   MEAL_KIND,
   MEAL_STATUS,
-  JOB_STATUS
+  mealResponses,
+  meals,
+  PLAYER_STATUS,
+  players,
+  SCHEDULING_KIND,
+  taskTemplates,
+  users
 } from './schema'
 
 // Row types (replace the Supabase-generated `Tables<>` / `TablesInsert<>`).

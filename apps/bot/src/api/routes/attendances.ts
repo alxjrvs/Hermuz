@@ -1,11 +1,11 @@
+import {
+  ATTENDANCE_STATUS,
+  type AttendanceStatus,
+  updateAttendance,
+  updateUserAttendance
+} from '@hermuz/db'
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
-import {
-  updateAttendance,
-  updateUserAttendance,
-  ATTENDANCE_STATUS,
-  type AttendanceStatus
-} from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
 import { setUserAttendance } from '~/services/attendanceService'
 import { readJson } from './helpers'

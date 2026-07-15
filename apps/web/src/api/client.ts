@@ -50,7 +50,7 @@ export async function apiFetch<T>(
   const token = getToken()
 
   const headers: Record<string, string> = {}
-  if (token) headers['Authorization'] = `Bearer ${token}`
+  if (token) headers.Authorization = `Bearer ${token}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
   let res: Response

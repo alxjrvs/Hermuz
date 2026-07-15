@@ -1,8 +1,8 @@
-import { MessageFlags, type ButtonInteraction } from 'discord.js'
-import { logger } from '~/utils/logger'
-import { ButtonData, isMealButton } from '../utils/buttonUtils'
-import { ButtonHandler } from '../utils/buttonRegistry'
+import { type ButtonInteraction, MessageFlags } from 'discord.js'
 import { respondToMeal } from '~/services/mealService'
+import { logger } from '~/utils/logger'
+import type { ButtonHandler } from '../utils/buttonRegistry'
+import { type ButtonData, isMealButton } from '../utils/buttonUtils'
 
 export const mealButtonHandler: ButtonHandler = {
   canHandle: (data: ButtonData) => isMealButton(data),

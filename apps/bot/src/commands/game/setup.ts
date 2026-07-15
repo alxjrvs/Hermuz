@@ -1,10 +1,10 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   PermissionFlagsBits
 } from 'discord.js'
+import { createCommandConfig } from '~/framework/command'
 import gameModal from '~/utils/gameModal'
+import { logger } from '~/utils/logger'
 import { createGameSetupModalId } from '../../utils/modalUtils'
 export const config = createCommandConfig({
   description: 'Set up a new game with associated role',

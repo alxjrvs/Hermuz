@@ -1,11 +1,11 @@
-import type { Client } from 'discord.js'
 import {
   getAllGameDays,
-  updateGameDay,
-  getSessionOpenLeadDays
+  getSessionOpenLeadDays,
+  updateGameDay
 } from '@hermuz/db'
-import { announceGameDay } from './announceService'
+import type { Client } from 'discord.js'
 import { logger } from '~/utils/logger'
+import { announceGameDay } from './announceService'
 
 /**
  * Open the campaign sessions that are coming up within the lead window. A
@@ -35,7 +35,8 @@ export async function openDueSessions(client: Client): Promise<number> {
       await updateGameDay(gd.id, { status: 'SCHEDULING' })
       const result = await announceGameDay(client, gd.id)
       if (result.ok) opened++
-      else logger.warn(`Auto-open announce failed for ${gd.id}: ${result.error}`)
+      else
+        logger.warn(`Auto-open announce failed for ${gd.id}: ${result.error}`)
     } catch (err) {
       logger.error(`Error auto-opening session ${gd.id}:`, err)
     }

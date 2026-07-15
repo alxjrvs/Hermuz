@@ -1,18 +1,18 @@
+import {
+  deletePlayer,
+  type NewPlayer,
+  PLAYER_STATUS,
+  type PlayerStatus,
+  updatePlayer
+} from '@hermuz/db'
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
-import {
-  updatePlayer,
-  deletePlayer,
-  PLAYER_STATUS,
-  type NewPlayer,
-  type PlayerStatus
-} from '@hermuz/db'
 import { requireAdmin } from '~/api/middleware'
 import {
   joinCampaign,
   leaveCampaign,
-  setPlayerStatus,
-  setCharacterName
+  setCharacterName,
+  setPlayerStatus
 } from '~/services/playerService'
 import { readJson } from './helpers'
 

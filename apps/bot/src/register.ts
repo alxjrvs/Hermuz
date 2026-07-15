@@ -1,6 +1,6 @@
 import { REST, Routes } from 'discord.js'
-import { config } from '~/config'
 import { buildCommandData } from '~/commands/manifest'
+import { config } from '~/config'
 import { logger } from '~/utils/logger'
 
 /** Register all slash commands to the single configured guild (instant, no propagation delay). */

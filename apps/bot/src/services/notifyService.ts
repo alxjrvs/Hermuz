@@ -1,3 +1,4 @@
+import type { GameDay } from '@hermuz/db'
 import {
   ChannelType,
   type Client,
@@ -6,7 +7,6 @@ import {
   type MessageEditOptions,
   type TextChannel
 } from 'discord.js'
-import type { GameDay } from '@hermuz/db'
 import { logger } from '~/utils/logger'
 
 /**

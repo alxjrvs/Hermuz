@@ -1,6 +1,6 @@
 import { type ChatInputCommandInteraction, MessageFlags } from 'discord.js'
-import { createCommandConfig } from '~/framework/command'
 import { config as runtimeConfig } from '~/config'
+import { createCommandConfig } from '~/framework/command'
 
 export const config = createCommandConfig({
   description: 'Get a link to the Hermuz web console'

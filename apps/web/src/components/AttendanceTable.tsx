@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { attendancesApi } from '../api'
 import { useAuth } from '../context/AuthContext'
-import { useUserNames } from '../lib/useUserNames'
 import { toMessage } from '../lib/useAsync'
+import { useUserNames } from '../lib/useUserNames'
 import type { Attendance, AttendanceStatus } from '../types'
+import { Empty } from './Panel'
 import { AttendanceStatusChip } from './StatusChip'
 import { UserName } from './UserName'
-import { Empty } from './Panel'
 
 const STATUSES: AttendanceStatus[] = [
   'AVAILABLE',

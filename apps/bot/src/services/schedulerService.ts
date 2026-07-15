@@ -1,11 +1,11 @@
-import type { Client } from 'discord.js'
 import {
   createJob,
   getDueJobs,
-  updateJob,
   type Job,
-  type NewJob
+  type NewJob,
+  updateJob
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
 import { logger } from '~/utils/logger'
 import { getJobHandler } from './jobRegistry'
 

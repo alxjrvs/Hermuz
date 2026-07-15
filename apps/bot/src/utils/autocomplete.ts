@@ -1,10 +1,10 @@
-import type { AutocompleteInteraction } from 'discord.js'
 import {
-  getAllGameDays,
   getAllCampaigns,
-  getPlayersByUser,
-  getGameDayTasks
+  getAllGameDays,
+  getGameDayTasks,
+  getPlayersByUser
 } from '@hermuz/db'
+import type { AutocompleteInteraction } from 'discord.js'
 import { logger } from '~/utils/logger'
 
 const MAX_CHOICES = 25
@@ -29,7 +29,9 @@ export async function respondGameDayAutocomplete(
       .slice(0, MAX_CHOICES)
     await interaction.respond(
       gameDays.map((gd) => ({
-        name: short(`${gd.title} — ${new Date(gd.dateTime).toLocaleDateString()}`),
+        name: short(
+          `${gd.title} — ${new Date(gd.dateTime).toLocaleDateString()}`
+        ),
         value: gd.id
       }))
     )

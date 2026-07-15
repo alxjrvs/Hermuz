@@ -1,27 +1,27 @@
 // Typed API surface grouped by resource. Every method returns a Promise and
 // throws ApiError on failure (see client.ts).
 
-import { apiFetch } from './client'
 import type {
   Attendance,
+  AttendanceStatus,
   Campaign,
   CampaignInput,
   Game,
   GameDay,
   GameDayInput,
-  GameInput,
-  Player,
-  PlayerStatus,
-  AttendanceStatus,
-  ResolvedUser,
-  Settings,
-  TaskTemplate,
   GameDayTask,
+  GameInput,
   Meal,
   MealKind,
   MealResponse,
+  Player,
+  PlayerStatus,
+  ResolvedUser,
+  Settings,
+  TaskTemplate,
   User
 } from '../types'
+import { apiFetch } from './client'
 
 export const meApi = {
   get: () => apiFetch<User>('/api/me')
@@ -70,8 +70,7 @@ export const gameDaysApi = {
     apiFetch<GameDay>(`/api/game-days/${id}/announce`, { method: 'POST' }),
   cancel: (id: string) =>
     apiFetch<GameDay>(`/api/game-days/${id}/cancel`, { method: 'POST' }),
-  tasks: (id: string) =>
-    apiFetch<GameDayTask[]>(`/api/game-days/${id}/tasks`),
+  tasks: (id: string) => apiFetch<GameDayTask[]>(`/api/game-days/${id}/tasks`),
   addTask: (id: string, label: string, description?: string | null) =>
     apiFetch<GameDayTask>(`/api/game-days/${id}/tasks`, {
       method: 'POST',

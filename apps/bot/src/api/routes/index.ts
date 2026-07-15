@@ -1,14 +1,14 @@
 import type { Client } from 'discord.js'
 import { Hono } from 'hono'
 import { authMiddleware } from '~/api/middleware'
-import { meRoutes } from './me'
-import { usersRoutes } from './users'
-import { gamesRoutes } from './games'
-import { gameDaysRoutes } from './gameDays'
-import { campaignsRoutes } from './campaigns'
 import { attendancesRoutes } from './attendances'
+import { campaignsRoutes } from './campaigns'
+import { gameDaysRoutes } from './gameDays'
+import { gamesRoutes } from './games'
+import { meRoutes } from './me'
 import { playersRoutes } from './players'
 import { settingsRoutes } from './settings'
+import { usersRoutes } from './users'
 
 /**
  * Compose the `/api` app. Every route requires a valid Bearer JWT

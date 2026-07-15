@@ -1,25 +1,25 @@
-import { logger } from '~/utils/logger'
 import {
-  MessageFlags,
-  type ModalSubmitInteraction,
+  createAttendance,
+  createGameDayDraft,
+  getGameByRoleId,
+  getOrCreateUser,
+  updateGameDay
+} from '@hermuz/db'
+import {
   GuildScheduledEventEntityType,
-  GuildScheduledEventPrivacyLevel
+  GuildScheduledEventPrivacyLevel,
+  MessageFlags,
+  type ModalSubmitInteraction
 } from 'discord.js'
+import { logger } from '~/utils/logger'
+import { createGameDayChannels } from '../utils/channelUtils'
 import {
   EventError,
   getUserFriendlyEventErrorMessage
 } from '../utils/eventUtils'
 import { createGameDayMessageEmbed } from '../utils/gameDayMessageUtils'
-import {
-  getGameByRoleId,
-  createGameDayDraft,
-  updateGameDay,
-  getOrCreateUser,
-  createAttendance
-} from '@hermuz/db'
-import { createGameDayChannels } from '../utils/channelUtils'
-import { GameDayScheduleModalData } from '../utils/modalUtils'
-import { parseDateTime, createGameDayRole } from '../utils/gameDayUtils'
+import { createGameDayRole, parseDateTime } from '../utils/gameDayUtils'
+import type { GameDayScheduleModalData } from '../utils/modalUtils'
 export async function handleGameDayScheduleModalSubmit(
   interaction: ModalSubmitInteraction,
   modalData: GameDayScheduleModalData

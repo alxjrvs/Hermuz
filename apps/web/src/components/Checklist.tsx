@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { gameDaysApi } from '../api'
 import { useAuth } from '../context/AuthContext'
-import { useAsync, toMessage } from '../lib/useAsync'
+import { toMessage, useAsync } from '../lib/useAsync'
 import { useUserNames } from '../lib/useUserNames'
 import { Empty, ErrorBanner, Loading, Panel } from './Panel'
 import { UserName } from './UserName'
@@ -154,9 +154,7 @@ export function Checklist({ gameDayId, hasGame }: Props) {
                       className="btn sm danger"
                       disabled={busyId === t.id}
                       onClick={() =>
-                        run(t.id, () =>
-                          gameDaysApi.deleteTask(gameDayId, t.id)
-                        )
+                        run(t.id, () => gameDaysApi.deleteTask(gameDayId, t.id))
                       }
                     >
                       ✕

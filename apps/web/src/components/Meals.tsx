@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { gameDaysApi } from '../api'
 import { useAuth } from '../context/AuthContext'
-import { useAsync, toMessage } from '../lib/useAsync'
+import { toMessage, useAsync } from '../lib/useAsync'
 import { useUserNames } from '../lib/useUserNames'
 import type { Meal, MealKind, ResolvedUser } from '../types'
 import { Empty, ErrorBanner, Loading, Panel } from './Panel'
@@ -134,7 +134,12 @@ function MealCard({
 
   const respond = (attending: boolean) =>
     onRun(() =>
-      gameDaysApi.respondMeal(gameDayId, meal.id, attending, note.trim() || null)
+      gameDaysApi.respondMeal(
+        gameDayId,
+        meal.id,
+        attending,
+        note.trim() || null
+      )
     )
 
   return (
@@ -150,7 +155,9 @@ function MealCard({
           <button
             className="btn sm"
             disabled={busy}
-            onClick={() => onRun(() => gameDaysApi.closeMeal(gameDayId, meal.id))}
+            onClick={() =>
+              onRun(() => gameDaysApi.closeMeal(gameDayId, meal.id))
+            }
           >
             Close
           </button>

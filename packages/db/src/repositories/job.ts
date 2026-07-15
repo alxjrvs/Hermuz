@@ -1,7 +1,7 @@
 import { and, asc, eq, lte } from 'drizzle-orm'
 import { db } from '../client'
-import { jobs } from '../schema'
 import type { Job, NewJob } from '../index'
+import { jobs } from '../schema'
 
 export const createJob = async (job: NewJob): Promise<Job | null> => {
   try {

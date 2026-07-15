@@ -1,3 +1,4 @@
+import { runMigrations } from '@hermuz/db'
 import {
   Client,
   Events,
@@ -5,22 +6,21 @@ import {
   MessageFlags,
   PermissionFlagsBits
 } from 'discord.js'
-import { runMigrations } from '@hermuz/db'
-import { config } from '~/config'
-import { logger } from '~/utils/logger'
-import { registerCommands } from '~/register'
+import { startApiServer } from '~/api/server'
 import { resolveCommand } from '~/commands/manifest'
-import {
-  registerButtonHandler,
-  dispatchButtonInteraction
-} from '~/utils/buttonRegistry'
+import { config } from '~/config'
 import { attendanceButtonHandler } from '~/handlers/attendanceButtonHandler'
 import { campaignInterestButtonHandler } from '~/handlers/campaignInterestButtonHandler'
 import { mealButtonHandler } from '~/handlers/mealButtonHandler'
 import { routeModalSubmit } from '~/interactions/modalRouter'
-import { startApiServer } from '~/api/server'
-import { startScheduler } from '~/services/schedulerService'
+import { registerCommands } from '~/register'
 import { ensureHeartbeatJob } from '~/services/jobHandlers'
+import { startScheduler } from '~/services/schedulerService'
+import {
+  dispatchButtonInteraction,
+  registerButtonHandler
+} from '~/utils/buttonRegistry'
+import { logger } from '~/utils/logger'
 
 // Register button handlers once at module load.
 registerButtonHandler(attendanceButtonHandler)

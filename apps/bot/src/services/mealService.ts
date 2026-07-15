@@ -1,35 +1,35 @@
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  Colors,
-  type Client
-} from 'discord.js'
-import {
-  getMeal,
-  getMealResponses,
-  upsertMealResponse,
   createMeal,
-  updateMeal,
   getGameDay,
   getGameDayAttendances,
+  getMeal,
+  getMealResponses,
   getOrCreateUser,
   type Meal,
   type MealKind,
-  type MealResponse
+  type MealResponse,
+  updateMeal,
+  upsertMealResponse
 } from '@hermuz/db'
 import {
-  getGameDayChannel,
-  upsertChannelMessage,
-  dmUsers
-} from './notifyService'
-import { createMealButtonId } from '~/utils/buttonUtils'
-import { registerJobHandler } from './jobRegistry'
-import { enqueueJob } from './schedulerService'
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type Client,
+  Colors,
+  EmbedBuilder
+} from 'discord.js'
 import { config } from '~/config'
-import { ok, fail, type ServiceResult } from './result'
+import { createMealButtonId } from '~/utils/buttonUtils'
 import { logger } from '~/utils/logger'
+import { registerJobHandler } from './jobRegistry'
+import {
+  dmUsers,
+  getGameDayChannel,
+  upsertChannelMessage
+} from './notifyService'
+import { fail, ok, type ServiceResult } from './result'
+import { enqueueJob } from './schedulerService'
 
 export const MEAL_NUDGE = 'MEAL_NUDGE'
 /** How often to re-nudge non-responders while a meal poll is open. */
@@ -96,7 +96,10 @@ function mealButtons(mealId: string): ActionRowBuilder<ButtonBuilder> {
 }
 
 /** Post or update a meal poll message in the game day's food channel. */
-export async function renderMeal(client: Client, mealId: string): Promise<void> {
+export async function renderMeal(
+  client: Client,
+  mealId: string
+): Promise<void> {
   try {
     const meal = await getMeal(mealId)
     if (!meal) return
@@ -130,7 +133,12 @@ export async function createMealSlot(
 ): Promise<ServiceResult<Meal>> {
   const gameDay = await getGameDay(gameDayId)
   if (!gameDay) return fail('Game day not found.', 404)
-  const meal = await createMeal({ gameDayId, kind, plan: plan ?? null, dueAt: dueAt ?? null })
+  const meal = await createMeal({
+    gameDayId,
+    kind,
+    plan: plan ?? null,
+    dueAt: dueAt ?? null
+  })
   if (!meal) return fail('Failed to create the meal.', 500)
 
   await renderMeal(client, meal.id)

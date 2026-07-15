@@ -1,19 +1,19 @@
-import type { Client } from 'discord.js'
 import {
-  getGameDay,
-  getGame,
-  getOrCreateUser,
-  updateUserAttendance,
-  getGameDayAttendances,
   type Attendance,
-  type AttendanceStatus
+  type AttendanceStatus,
+  getGame,
+  getGameDay,
+  getGameDayAttendances,
+  getOrCreateUser,
+  updateUserAttendance
 } from '@hermuz/db'
+import type { Client } from 'discord.js'
 import { config } from '~/config'
-import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { createGameDayMessageEmbed } from '~/utils/gameDayMessageUtils'
-import { handleGameDayRoleAssignment } from '~/utils/roleUtils'
 import { logger } from '~/utils/logger'
-import { ok, fail, type ServiceResult } from './result'
+import { handleGameDayRoleAssignment } from '~/utils/roleUtils'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
+import { fail, ok, type ServiceResult } from './result'
 
 /**
  * Set a user's RSVP for a game day, sync their game-day role, and re-render the

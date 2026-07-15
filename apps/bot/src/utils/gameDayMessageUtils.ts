@@ -1,6 +1,7 @@
-import { EmbedBuilder, Colors } from 'discord.js'
-import type { GameDay, Game, Attendance } from '@hermuz/db'
-import { locationTypeLabel, locationFieldName } from './locationUtils'
+import type { Attendance, Game, GameDay } from '@hermuz/db'
+import { Colors, EmbedBuilder } from 'discord.js'
+import { locationFieldName, locationTypeLabel } from './locationUtils'
+
 /** Human-readable date/time for a game day's ISO timestamp. */
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {

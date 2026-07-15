@@ -39,7 +39,6 @@ export function DiscordAction({ tip, children }: DiscordActionProps) {
         title={tip}
         data-tip={tip}
         aria-label={tip}
-        tabIndex={0}
         role="img"
       >
         <DiscordGlyph />

@@ -1,30 +1,27 @@
 import {
+  cancelGameDay as cancelGameDayRepo,
+  createAttendance,
+  createGameDayDraft,
+  type GameDay,
+  getGame,
+  getGameDay,
+  getOrCreateUser,
+  updateGameDay
+} from '@hermuz/db'
+import {
   type Guild,
   GuildScheduledEventEntityType,
   GuildScheduledEventPrivacyLevel
 } from 'discord.js'
 import {
-  getGame,
-  getGameDay,
-  createGameDayDraft,
-  updateGameDay,
-  cancelGameDay as cancelGameDayRepo,
-  getOrCreateUser,
-  createAttendance,
-  type GameDay
-} from '@hermuz/db'
-import {
   createGameDayChannels,
   deleteGameDayChannels
 } from '~/utils/channelUtils'
+import { EventError, safelyDeleteEvent } from '~/utils/eventUtils'
 import { createGameDayRole } from '~/utils/gameDayUtils'
-import { safelyDeleteEvent, EventError } from '~/utils/eventUtils'
-import {
-  materializeTasksFromTemplates,
-  renderChecklist
-} from './taskService'
 import { logger } from '~/utils/logger'
-import { ok, fail, type ServiceResult } from './result'
+import { fail, ok, type ServiceResult } from './result'
+import { materializeTasksFromTemplates, renderChecklist } from './taskService'
 
 export interface CreateGameDayInput {
   title: string
@@ -50,7 +47,7 @@ export async function createGameDayWithDiscord(
   input: CreateGameDayInput
 ): Promise<ServiceResult<GameDay>> {
   const dateTime = new Date(input.dateTime)
-  if (isNaN(dateTime.getTime())) {
+  if (Number.isNaN(dateTime.getTime())) {
     return fail('Invalid date/time. Provide an ISO-8601 timestamp.', 400)
   }
   if (dateTime <= new Date()) {

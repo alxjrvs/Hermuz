@@ -1,15 +1,15 @@
-import { logger } from '~/utils/logger'
-import { MessageFlags, type ButtonInteraction } from 'discord.js'
 import { getGameDay } from '@hermuz/db'
-import { AttendanceStatus } from '../types/enums'
-import { ButtonData, isAttendanceButton } from '../utils/buttonUtils'
-import { isAttendanceStatus, isDiscordId, isUUID } from '../utils/typeGuards'
-import { ButtonHandler } from '../utils/buttonRegistry'
-import {
-  generateAttendanceStatusMessage,
-  generateAttendanceErrorMessage
-} from '../utils/messageUtils'
+import { type ButtonInteraction, MessageFlags } from 'discord.js'
 import { setUserAttendance } from '~/services/attendanceService'
+import { logger } from '~/utils/logger'
+import type { AttendanceStatus } from '../types/enums'
+import type { ButtonHandler } from '../utils/buttonRegistry'
+import { type ButtonData, isAttendanceButton } from '../utils/buttonUtils'
+import {
+  generateAttendanceErrorMessage,
+  generateAttendanceStatusMessage
+} from '../utils/messageUtils'
+import { isAttendanceStatus, isDiscordId, isUUID } from '../utils/typeGuards'
 
 async function processAttendanceUpdate(
   interaction: ButtonInteraction,

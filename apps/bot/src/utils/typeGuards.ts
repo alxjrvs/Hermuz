@@ -1,4 +1,8 @@
-import { AttendanceStatus, GameDayStatus, PlayerStatus } from '../types/enums'
+import type {
+  AttendanceStatus,
+  GameDayStatus,
+  PlayerStatus
+} from '../types/enums'
 export function isAttendanceStatus(value: string): value is AttendanceStatus {
   return ['AVAILABLE', 'INTERESTED', 'NOT_AVAILABLE'].includes(
     value as AttendanceStatus
@@ -17,19 +21,19 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string'
 }
 export function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && !isNaN(value)
+  return typeof value === 'number' && !Number.isNaN(value)
 }
 export function isBoolean(value: unknown): value is boolean {
   return typeof value === 'boolean'
 }
 export function isDate(value: unknown): value is Date {
-  return value instanceof Date && !isNaN(value.getTime())
+  return value instanceof Date && !Number.isNaN(value.getTime())
 }
 export function isISODateString(value: unknown): value is string {
   if (!isString(value)) return false
   try {
     const date = new Date(value)
-    return !isNaN(date.getTime()) && value.includes('T')
+    return !Number.isNaN(date.getTime()) && value.includes('T')
   } catch {
     return false
   }

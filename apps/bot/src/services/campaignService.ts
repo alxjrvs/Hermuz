@@ -1,9 +1,9 @@
+import { type Campaign, createCampaign, getGame } from '@hermuz/db'
 import { type Guild, PermissionFlagsBits } from 'discord.js'
-import { getGame, createCampaign, type Campaign } from '@hermuz/db'
-import { createCampaignChannels } from '~/utils/channelUtils'
 import { generateCampaignRoleName } from '~/utils/campaignUtils'
+import { createCampaignChannels } from '~/utils/channelUtils'
 import { logger } from '~/utils/logger'
-import { ok, fail, type ServiceResult } from './result'
+import { fail, ok, type ServiceResult } from './result'
 
 export interface CreateCampaignInput {
   title: string

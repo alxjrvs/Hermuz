@@ -1,11 +1,11 @@
+import { getAttendancesByUser, getGameDay } from '@hermuz/db'
 import {
   type ChatInputCommandInteraction,
-  EmbedBuilder,
   Colors,
+  EmbedBuilder,
   MessageFlags
 } from 'discord.js'
 import { createCommandConfig } from '~/framework/command'
-import { getAttendancesByUser, getGameDay } from '@hermuz/db'
 import { logger } from '~/utils/logger'
 
 export const config = createCommandConfig({

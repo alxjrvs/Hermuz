@@ -1,5 +1,5 @@
-import { EmbedBuilder, Colors } from 'discord.js'
 import type { Campaign, Player } from '@hermuz/db'
+import { Colors, EmbedBuilder } from 'discord.js'
 import { formatRegularGameTime, getCampaignDisplayName } from './campaignUtils'
 import { locationTypeLabel } from './locationUtils'
 export function createCampaignMessageEmbed(

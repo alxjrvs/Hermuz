@@ -1,10 +1,10 @@
-import type { Client } from 'discord.js'
 import { getAllCampaigns, getPendingJobsByKind, type Job } from '@hermuz/db'
+import type { Client } from 'discord.js'
 import { logger } from '~/utils/logger'
 import { registerJobHandler } from './jobRegistry'
 import { enqueueJob } from './schedulerService'
-import { materializeSessions } from './sessionService'
 import { openDueSessions } from './sessionAutomation'
+import { materializeSessions } from './sessionService'
 
 /**
  * Central registration point for scheduled-job handlers. Imported for its side
@@ -30,7 +30,8 @@ registerJobHandler(HORIZON_REFRESH, async (client: Client, _job: Job) => {
     const sessions = await materializeSessions(c.id)
     created += sessions.length
   }
-  if (created > 0) logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
+  if (created > 0)
+    logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
   // Open (announce) any sessions now within the lead window.
   await openDueSessions(client)
   await enqueueJob(

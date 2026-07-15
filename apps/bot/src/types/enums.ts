@@ -1,1 +1,1 @@
-export type { GameDayStatus, AttendanceStatus, PlayerStatus } from '@hermuz/db'
+export type { AttendanceStatus, GameDayStatus, PlayerStatus } from '@hermuz/db'

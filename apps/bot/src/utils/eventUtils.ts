@@ -1,5 +1,5 @@
+import type { Guild, GuildScheduledEvent } from 'discord.js'
 import { logger } from '~/utils/logger'
-import { type Guild, type GuildScheduledEvent } from 'discord.js'
 export enum EventErrorCode {
   MISSING_PERMISSIONS = 'MISSING_PERMISSIONS',
   EVENT_NOT_FOUND = 'EVENT_NOT_FOUND',
@@ -87,7 +87,6 @@ export function getUserFriendlyEventErrorMessage(error: EventError): string {
       return 'Invalid event metadata provided.'
     case EventErrorCode.INVALID_SCHEDULED_TIME:
       return 'Invalid scheduled time provided. Events must be scheduled in the future.'
-    case EventErrorCode.UNKNOWN_ERROR:
     default:
       return 'An unknown error occurred while managing the scheduled event. Please check the logs for more details.'
   }

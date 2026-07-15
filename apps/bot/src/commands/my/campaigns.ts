@@ -1,11 +1,11 @@
+import { getCampaign, getPlayersByUser } from '@hermuz/db'
 import {
   type ChatInputCommandInteraction,
-  EmbedBuilder,
   Colors,
+  EmbedBuilder,
   MessageFlags
 } from 'discord.js'
 import { createCommandConfig } from '~/framework/command'
-import { getPlayersByUser, getCampaign } from '@hermuz/db'
 import { logger } from '~/utils/logger'
 
 export const config = createCommandConfig({

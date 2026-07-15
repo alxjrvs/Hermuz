@@ -1,11 +1,11 @@
-import { createCommandConfig } from '~/framework/command'
-import { logger } from '~/utils/logger'
+import { getAllGames } from '@hermuz/db'
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
   MessageFlags
 } from 'discord.js'
-import { getAllGames } from '@hermuz/db'
+import { createCommandConfig } from '~/framework/command'
+import { logger } from '~/utils/logger'
 export const config = createCommandConfig({
   description: 'List all games set up in this server'
 })

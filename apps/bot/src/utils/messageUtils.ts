@@ -1,6 +1,5 @@
-import { AttendanceStatus } from '../types/enums'
-import { PlayerStatus } from '../types/enums'
-import type { GameDay, Campaign } from '@hermuz/db'
+import type { Campaign, GameDay } from '@hermuz/db'
+import type { AttendanceStatus, PlayerStatus } from '../types/enums'
 
 /**
  * Generate a status message for attendance updates
@@ -63,7 +62,6 @@ export function generateAttendanceErrorMessage(
       return 'Failed to retrieve or create user record. Please try again later.'
     case 'attendance_error':
       return 'Failed to update attendance. Please try again later.'
-    case 'generic':
     default:
       return 'An error occurred while updating your attendance. Please try again later.'
   }
@@ -88,7 +86,6 @@ export function generateCampaignInterestErrorMessage(
       return 'Failed to retrieve or create user record. Please try again later.'
     case 'player_error':
       return 'Failed to update player status. Please try again later.'
-    case 'generic':
     default:
       return 'An error occurred while updating your interest. Please try again later.'
   }

@@ -1,12 +1,12 @@
+import { setSchedulingChannelId } from '@hermuz/db'
+import {
+  ChannelType,
+  type ChatInputCommandInteraction,
+  MessageFlags,
+  PermissionFlagsBits
+} from 'discord.js'
 import { createCommandConfig } from '~/framework/command'
 import { logger } from '~/utils/logger'
-import {
-  type ChatInputCommandInteraction,
-  PermissionFlagsBits,
-  ChannelType,
-  MessageFlags
-} from 'discord.js'
-import { setSchedulingChannelId } from '@hermuz/db'
 export const config = createCommandConfig({
   description: 'Set the channel for game day scheduling',
   defaultMemberPermissions: PermissionFlagsBits.Administrator,
