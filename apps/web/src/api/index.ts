@@ -203,8 +203,18 @@ export const playersApi = {
 export const settingsApi = {
   get: () => apiFetch<Settings>('/api/settings'),
   setSchedulingChannel: (channelId: string) =>
-    apiFetch<Settings>('/api/settings/scheduling-channel', {
+    apiFetch<Pick<Settings, 'schedulingChannelId'>>(
+      '/api/settings/scheduling-channel',
+      { method: 'PUT', body: { channelId } }
+    ),
+  setTimezone: (timezone: string) =>
+    apiFetch<Pick<Settings, 'timezone'>>('/api/settings/timezone', {
       method: 'PUT',
-      body: { channelId }
-    })
+      body: { timezone }
+    }),
+  setSessionLead: (days: number) =>
+    apiFetch<Pick<Settings, 'sessionOpenLeadDays'>>(
+      '/api/settings/session-lead',
+      { method: 'PUT', body: { days } }
+    )
 }

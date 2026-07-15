@@ -111,6 +111,8 @@ export interface Player {
 
 export interface Settings {
   schedulingChannelId: string | null
+  timezone: string
+  sessionOpenLeadDays: number
 }
 
 export interface TaskTemplate {

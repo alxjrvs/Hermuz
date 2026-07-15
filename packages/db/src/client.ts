@@ -12,6 +12,17 @@ import * as schema from './schema'
  */
 const databasePath = process.env.DATABASE_PATH ?? './hermuz.db'
 
+// Durability guard: on Render the container filesystem is ephemeral, so a
+// relative/default DB path is wiped on every deploy. A production run must point
+// DATABASE_PATH at a mounted persistent disk (e.g. /var/data/hermuz.db).
+if (!process.env.DATABASE_PATH && process.env.NODE_ENV === 'production') {
+  console.warn(
+    `WARN: DATABASE_PATH is unset; using "${databasePath}". On an ephemeral ` +
+      'filesystem (e.g. Render without a mounted disk) the database will be ' +
+      'LOST on every deploy. Set DATABASE_PATH to a persistent disk path.'
+  )
+}
+
 export const sqlite = new Database(databasePath, { create: true })
 
 // WAL: concurrent readers alongside the single writer. Plus FK enforcement and a

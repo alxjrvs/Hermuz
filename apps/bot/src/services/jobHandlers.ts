@@ -4,6 +4,7 @@ import { logger } from '~/utils/logger'
 import { registerJobHandler } from './jobRegistry'
 import { enqueueJob } from './schedulerService'
 import { materializeSessions } from './sessionService'
+import { openDueSessions } from './sessionAutomation'
 
 /**
  * Central registration point for scheduled-job handlers. Imported for its side
@@ -21,7 +22,7 @@ const REFRESH_INTERVAL_MS = 24 * 60 * 60_000
  * materialized, then re-enqueue itself. This is the scheduler's heartbeat — as
  * long as one HORIZON_REFRESH exists, the loop always has future work.
  */
-registerJobHandler(HORIZON_REFRESH, async (_client: Client, _job: Job) => {
+registerJobHandler(HORIZON_REFRESH, async (client: Client, _job: Job) => {
   const campaigns = await getAllCampaigns()
   let created = 0
   for (const c of campaigns) {
@@ -30,6 +31,8 @@ registerJobHandler(HORIZON_REFRESH, async (_client: Client, _job: Job) => {
     created += sessions.length
   }
   if (created > 0) logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
+  // Open (announce) any sessions now within the lead window.
+  await openDueSessions(client)
   await enqueueJob(
     HORIZON_REFRESH,
     new Date(Date.now() + REFRESH_INTERVAL_MS).toISOString()
