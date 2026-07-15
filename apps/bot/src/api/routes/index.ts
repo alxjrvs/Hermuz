@@ -8,6 +8,7 @@ import { gamesRoutes } from './games'
 import { meRoutes } from './me'
 import { playersRoutes } from './players'
 import { settingsRoutes } from './settings'
+import { surveysRoutes } from './surveys'
 import { usersRoutes } from './users'
 
 /**
@@ -28,6 +29,7 @@ export function createApiApp(client: Client): Hono {
   app.route('/attendances', attendancesRoutes(client))
   app.route('/players', playersRoutes(client))
   app.route('/settings', settingsRoutes(client))
+  app.route('/surveys', surveysRoutes(client))
 
   return app
 }

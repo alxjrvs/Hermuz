@@ -12,6 +12,7 @@ import { Games } from './pages/Games'
 import { Login } from './pages/Login'
 import { Overview } from './pages/Overview'
 import { Settings } from './pages/Settings'
+import { Surveys } from './pages/Surveys'
 
 export function App() {
   return (
@@ -31,6 +32,7 @@ export function App() {
         <Route path="/games" element={<Games />} />
         <Route path="/game-days" element={<GameDays />} />
         <Route path="/game-days/:id" element={<GameDayDetail />} />
+        <Route path="/surveys" element={<Surveys />} />
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
         <Route path="/attendance" element={<Attendance />} />

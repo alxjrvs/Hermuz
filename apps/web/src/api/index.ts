@@ -18,6 +18,7 @@ import type {
   PlayerStatus,
   ResolvedUser,
   Settings,
+  Survey,
   TaskTemplate,
   User
 } from '../types'
@@ -216,4 +217,27 @@ export const settingsApi = {
       '/api/settings/session-lead',
       { method: 'PUT', body: { days } }
     )
+}
+
+export const surveysApi = {
+  list: () => apiFetch<Survey[]>('/api/surveys'),
+  get: (id: string) => apiFetch<Survey>(`/api/surveys/${id}`),
+  create: (input: {
+    gameId: string
+    title?: string | null
+    description?: string | null
+    dateTimes: string[]
+  }) => apiFetch<Survey>('/api/surveys', { method: 'POST', body: input }),
+  respond: (id: string, availableDateIds: string[]) =>
+    apiFetch<Survey>(`/api/surveys/${id}/me`, {
+      method: 'PUT',
+      body: { availableDateIds }
+    }),
+  canonize: (id: string, surveyDateId: string) =>
+    apiFetch<GameDay>(`/api/surveys/${id}/canonize`, {
+      method: 'POST',
+      body: { surveyDateId }
+    }),
+  cancel: (id: string) =>
+    apiFetch<Survey>(`/api/surveys/${id}/cancel`, { method: 'POST' })
 }

@@ -33,6 +33,13 @@ export const MEAL_STATUS = ['OPEN', 'CLOSED'] as const
 /** Durable scheduler-job lifecycle (see `jobs`). */
 export const JOB_STATUS = ['PENDING', 'DONE', 'FAILED', 'CANCELLED'] as const
 
+/**
+ * A game-day availability survey's lifecycle: OPEN while collecting responses,
+ * CANONIZED once an admin promotes one date into a real game day, CANCELLED if
+ * abandoned.
+ */
+export const SURVEY_STATUS = ['OPEN', 'CANONIZED', 'CANCELLED'] as const
+
 /** New UUID text primary key (replaces Postgres `gen_random_uuid()`). */
 const uuidPk = () =>
   text('id')
@@ -270,3 +277,60 @@ export const SETTING_KEYS = {
   /** Days before a session the scheduler auto-opens/announces it. */
   sessionOpenLeadDays: 'session_open_lead_days'
 } as const
+
+/**
+ * `surveys` — a "survey a new game day" poll. Proposes up to 10 candidate dates
+ * for a specific game and collects per-user, per-date availability
+ * (`survey_responses`). An admin canonizes one date, which promotes it into a
+ * real `game_day` seeded with the available players; `canonizedGameDayId` points
+ * at that game day. `channelId`/`messageId` locate the live Discord announcement
+ * the bot edits after each response.
+ */
+export const surveys = sqliteTable('surveys', {
+  id: uuidPk(),
+  gameId: text('game_id')
+    .notNull()
+    .references(() => games.id),
+  title: text('title'),
+  description: text('description'),
+  status: text('status', { enum: SURVEY_STATUS }).notNull().default('OPEN'),
+  channelId: text('channel_id'),
+  messageId: text('message_id'),
+  createdByUserId: text('created_by_user_id').references(() => users.discordId),
+  /** The winning candidate + the game day it became, set on canonize. */
+  canonizedSurveyDateId: text('canonized_survey_date_id'),
+  canonizedGameDayId: text('canonized_game_day_id').references(
+    () => gameDays.id
+  ),
+  createdAt: isoTimestamp('created_at'),
+  updatedAt: isoTimestamp('updated_at')
+})
+
+/** `survey_dates` — one candidate date/time for a survey (up to 10 per survey). */
+export const surveyDates = sqliteTable('survey_dates', {
+  id: uuidPk(),
+  surveyId: text('survey_id')
+    .notNull()
+    .references(() => surveys.id),
+  /** Candidate date/time (ISO). */
+  dateTime: text('date_time').notNull(),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: isoTimestamp('created_at')
+})
+
+/** `survey_responses` — one user's availability for one candidate date (0/1). */
+export const surveyResponses = sqliteTable('survey_responses', {
+  id: uuidPk(),
+  surveyId: text('survey_id')
+    .notNull()
+    .references(() => surveys.id),
+  surveyDateId: text('survey_date_id')
+    .notNull()
+    .references(() => surveyDates.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.discordId),
+  /** 0/1 boolean — is this user available on this date. */
+  available: integer('available').notNull().default(0),
+  respondedAt: isoTimestamp('responded_at')
+})

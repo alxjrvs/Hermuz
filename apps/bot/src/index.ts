@@ -13,6 +13,7 @@ import { config } from '~/config'
 import { attendanceButtonHandler } from '~/handlers/attendanceButtonHandler'
 import { campaignInterestButtonHandler } from '~/handlers/campaignInterestButtonHandler'
 import { mealButtonHandler } from '~/handlers/mealButtonHandler'
+import { surveySelectHandler } from '~/handlers/surveySelectHandler'
 import { routeModalSubmit } from '~/interactions/modalRouter'
 import { registerCommands } from '~/register'
 import { ensureHeartbeatJob } from '~/services/jobHandlers'
@@ -22,11 +23,16 @@ import {
   registerButtonHandler
 } from '~/utils/buttonRegistry'
 import { logger } from '~/utils/logger'
+import {
+  dispatchSelectInteraction,
+  registerSelectHandler
+} from '~/utils/selectRegistry'
 
-// Register button handlers once at module load.
+// Register button + select handlers once at module load.
 registerButtonHandler(attendanceButtonHandler)
 registerButtonHandler(campaignInterestButtonHandler)
 registerButtonHandler(mealButtonHandler)
+registerSelectHandler(surveySelectHandler)
 
 async function main(): Promise<void> {
   // Migrations run before anything opens the gateway or serves the API.
@@ -87,6 +93,9 @@ async function main(): Promise<void> {
       } else if (interaction.isButton()) {
         const handled = await dispatchButtonInteraction(interaction)
         if (!handled) logger.warn(`Unhandled button: ${interaction.customId}`)
+      } else if (interaction.isStringSelectMenu()) {
+        const handled = await dispatchSelectInteraction(interaction)
+        if (!handled) logger.warn(`Unhandled select: ${interaction.customId}`)
       } else if (interaction.isModalSubmit()) {
         await routeModalSubmit(interaction)
       }
