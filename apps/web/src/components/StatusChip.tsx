@@ -1,4 +1,9 @@
-import type { AttendanceStatus, GameDayStatus, PlayerStatus } from '../types'
+import type {
+  AttendanceStatus,
+  GameDayStatus,
+  PlayerStatus,
+  SchedulingKind
+} from '../types'
 
 type ChipTone = 'good' | 'warn' | 'danger' | 'muted' | 'accent'
 
@@ -38,4 +43,13 @@ const PLAYER_TONE: Record<PlayerStatus, ChipTone> = {
 
 export function PlayerStatusChip({ status }: { status: PlayerStatus }) {
   return <Chip tone={PLAYER_TONE[status] ?? 'muted'} label={status} />
+}
+
+const SCHEDULING_TONE: Record<SchedulingKind, ChipTone> = {
+  SCHEDULED: 'accent',
+  REPEATING: 'good'
+}
+
+export function SchedulingKindChip({ kind }: { kind: SchedulingKind }) {
+  return <Chip tone={SCHEDULING_TONE[kind] ?? 'muted'} label={kind} />
 }

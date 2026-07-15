@@ -27,13 +27,29 @@ export function gamesRoutes(client: Client): Hono {
   })
 
   app.post('/', requireAdmin, async (c) => {
-    const body = await readJson<CreateGameInput>(c)
+    const body = await readJson<
+      CreateGameInput &
+        Partial<Pick<NewGame, 'defaultSchedulingKind' | 'maxSessions'>>
+    >(c)
     if (!body?.name || !body?.shortName) {
       return c.json({ error: 'name and shortName are required' }, 400)
     }
     try {
       const guild = await resolveGuild(client)
-      return sendResult(c, await createGameWithRole(guild, body))
+      const result = await createGameWithRole(guild, body)
+      if (!result.ok) return sendResult(c, result)
+
+      // The create service doesn't set scheduling fields; apply them if given.
+      const patch: Partial<NewGame> = {}
+      if (body.defaultSchedulingKind !== undefined) {
+        patch.defaultSchedulingKind = body.defaultSchedulingKind
+      }
+      if (body.maxSessions !== undefined) patch.maxSessions = body.maxSessions
+      if (Object.keys(patch).length > 0) {
+        const patched = await updateGame(result.data.id, patch)
+        if (patched) return c.json(patched)
+      }
+      return c.json(result.data)
     } catch (err) {
       logger.error('POST /games failed:', err)
       return c.json({ error: 'internal error' }, 500)

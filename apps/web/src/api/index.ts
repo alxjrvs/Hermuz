@@ -51,6 +51,8 @@ export const campaignsApi = {
   list: () => apiFetch<Campaign[]>('/api/campaigns'),
   get: (id: string) => apiFetch<Campaign>(`/api/campaigns/${id}`),
   players: (id: string) => apiFetch<Player[]>(`/api/campaigns/${id}/players`),
+  sessions: (id: string) =>
+    apiFetch<GameDay[]>(`/api/campaigns/${id}/sessions`),
   create: (body: CampaignInput) =>
     apiFetch<Campaign>('/api/campaigns', { method: 'POST', body }),
   update: (id: string, body: Partial<CampaignInput>) =>
@@ -58,7 +60,18 @@ export const campaignsApi = {
   remove: (id: string) =>
     apiFetch<void>(`/api/campaigns/${id}`, { method: 'DELETE' }),
   announce: (id: string) =>
-    apiFetch<Campaign>(`/api/campaigns/${id}/announce`, { method: 'POST' })
+    apiFetch<Campaign>(`/api/campaigns/${id}/announce`, { method: 'POST' }),
+  generate: (id: string) =>
+    apiFetch<GameDay[]>(`/api/campaigns/${id}/generate`, { method: 'POST' }),
+  scheduleNext: (id: string, dateTime?: string) =>
+    apiFetch<GameDay>(`/api/campaigns/${id}/schedule-next`, {
+      method: 'POST',
+      body: dateTime ? { dateTime } : {}
+    }),
+  cancelSession: (id: string, gameDayId: string) =>
+    apiFetch<GameDay>(`/api/campaigns/${id}/sessions/${gameDayId}/cancel`, {
+      method: 'POST'
+    })
 }
 
 export const attendancesApi = {

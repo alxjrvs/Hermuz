@@ -14,6 +14,13 @@ export const ATTENDANCE_STATUS = [
   'NOT_AVAILABLE'
 ] as const
 
+/**
+ * How a game/campaign is scheduled:
+ * - SCHEDULED: independent one-off instances (each session scheduled on its own).
+ * - REPEATING: a regular cadence that auto-generates a recurring series of sessions.
+ */
+export const SCHEDULING_KIND = ['SCHEDULED', 'REPEATING'] as const
+
 /** New UUID text primary key (replaces Postgres `gen_random_uuid()`). */
 const uuidPk = () =>
   text('id')
@@ -42,7 +49,15 @@ export const games = sqliteTable('games', {
   description: text('description'),
   discordRoleId: text('discord_role_id'),
   minPlayers: integer('min_players'),
-  maxPlayers: integer('max_players')
+  maxPlayers: integer('max_players'),
+  /** Default scheduling kind new campaigns of this game inherit. */
+  defaultSchedulingKind: text('default_scheduling_kind', {
+    enum: SCHEDULING_KIND
+  })
+    .notNull()
+    .default('SCHEDULED'),
+  /** Default cap on a campaign's sessions (null = uncapped). Campaigns may override. */
+  maxSessions: integer('max_sessions')
 })
 
 /** `game_days` — a scheduled play session for a game. */
@@ -59,6 +74,10 @@ export const gameDays = sqliteTable('game_days', {
   discordCategoryId: text('discord_category_id'),
   discordEventId: text('discord_event_id'),
   announcementMessageId: text('announcement_message_id'),
+  /** When set, this game day is a session of the given campaign. */
+  campaignId: text('campaign_id').references(() => campaigns.id),
+  /** 1-based ordinal within its campaign (null for standalone game days). */
+  sessionNumber: integer('session_number'),
   createdAt: isoTimestamp('created_at'),
   updatedAt: isoTimestamp('updated_at')
 })
@@ -73,6 +92,16 @@ export const campaigns = sqliteTable('campaigns', {
   gameId: text('game_id').references(() => games.id),
   gameName: text('game_name'),
   announcementMessageId: text('announcement_message_id'),
+  /** Inherited from the game at create, overridable. */
+  schedulingKind: text('scheduling_kind', { enum: SCHEDULING_KIND })
+    .notNull()
+    .default('SCHEDULED'),
+  /** Cap on total sessions (null = uncapped). Inherited from the game, overridable. */
+  maxSessions: integer('max_sessions'),
+  /** Recurrence for REPEATING campaigns: weekday (0=Sun … 6=Sat), local HH:MM, week interval. */
+  recurrenceWeekday: integer('recurrence_weekday'),
+  recurrenceTime: text('recurrence_time'),
+  recurrenceIntervalWeeks: integer('recurrence_interval_weeks'),
   createdAt: isoTimestamp('created_at')
 })
 
