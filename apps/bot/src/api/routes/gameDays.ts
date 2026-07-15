@@ -22,6 +22,7 @@ import { announceGameDay } from '~/services/announceService'
 import {
   type CreateGameDayInput,
   cancelGameDayWithDiscord,
+  closeGameDayWithDiscord,
   createGameDayWithDiscord
 } from '~/services/gameDayService'
 import {
@@ -93,6 +94,18 @@ export function gameDaysRoutes(client: Client): Hono {
       )
     } catch (err) {
       logger.error('POST /game-days/:id/cancel failed:', err)
+      return c.json({ error: 'internal error' }, 500)
+    }
+  })
+
+  app.post('/:id/close', requireAdmin, async (c) => {
+    try {
+      return sendResult(
+        c,
+        await closeGameDayWithDiscord(client, c.req.param('id'))
+      )
+    } catch (err) {
+      logger.error('POST /game-days/:id/close failed:', err)
       return c.json({ error: 'internal error' }, 500)
     }
   })

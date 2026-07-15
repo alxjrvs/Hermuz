@@ -123,6 +123,24 @@ export function GameDays() {
                           >
                             Edit
                           </button>
+                          {gd.status === 'SCHEDULING' && (
+                            <DiscordAction tip="Locks RSVPs; keeps channels & event">
+                              <button
+                                className="btn sm"
+                                disabled={busyId === gd.id}
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `Close "${gd.title}"? It will stop taking RSVPs.`
+                                    )
+                                  )
+                                    act(gd.id, () => gameDaysApi.close(gd.id))
+                                }}
+                              >
+                                Close
+                              </button>
+                            </DiscordAction>
+                          )}
                           <DiscordAction tip="Deletes Discord channels + event">
                             <button
                               className="btn sm danger"
