@@ -1,14 +1,17 @@
 import {
   cancelGameDay as cancelGameDayRepo,
+  closeGameDay as closeGameDayRepo,
   createAttendance,
   createGameDayDraft,
   type GameDay,
   getGame,
   getGameDay,
+  getGameDayAttendances,
   getOrCreateUser,
   updateGameDay
 } from '@hermuz/db'
 import {
+  type Client,
   type Guild,
   GuildScheduledEventEntityType,
   GuildScheduledEventPrivacyLevel
@@ -18,8 +21,10 @@ import {
   deleteGameDayChannels
 } from '~/utils/channelUtils'
 import { EventError, safelyDeleteEvent } from '~/utils/eventUtils'
+import { createGameDayMessageEmbed } from '~/utils/gameDayMessageUtils'
 import { createGameDayRole } from '~/utils/gameDayUtils'
 import { logger } from '~/utils/logger'
+import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { fail, ok, type ServiceResult } from './result'
 import { materializeTasksFromTemplates, renderChecklist } from './taskService'
 
@@ -212,4 +217,81 @@ export async function cancelGameDayWithDiscord(
   }
 
   return ok(cancelled)
+}
+
+/**
+ * Close a game day: flip its status to CLOSED (finalized, no more RSVPs) and
+ * refresh its announcement so the embed reads "closed" and the RSVP buttons are
+ * removed. Unlike cancelling, this keeps the channels and scheduled event — the
+ * game day is still happening, its roster is just locked. Idempotent, and
+ * refuses to close a cancelled game day.
+ */
+export async function closeGameDayWithDiscord(
+  client: Client,
+  id: string
+): Promise<ServiceResult<GameDay>> {
+  const gameDay = await getGameDay(id)
+  if (!gameDay) {
+    return fail('Game day not found.', 404)
+  }
+  if (gameDay.status === 'CANCELLED') {
+    return fail('Cannot close a cancelled game day.', 400)
+  }
+  if (gameDay.status === 'CLOSED') {
+    return ok(gameDay)
+  }
+
+  const closed = await closeGameDayRepo(id)
+  if (!closed) {
+    return fail('Failed to close the game day.', 500)
+  }
+
+  await refreshClosedAnnouncement(client, closed)
+
+  return ok(closed)
+}
+
+/**
+ * Re-render a closed game day's announcement message: rebuild the embed (now the
+ * "closed" card, since status is CLOSED) and drop the RSVP buttons. Best-effort —
+ * a missing scheduling channel or announcement message never fails the close.
+ * Prefers the stored `announcementMessageId`, falling back to a footer scan for
+ * older announcements that predate that column.
+ */
+async function refreshClosedAnnouncement(
+  client: Client,
+  gameDay: GameDay
+): Promise<void> {
+  try {
+    const channel = await getSchedulingChannel(client)
+    if (!channel) return
+
+    let message = gameDay.announcementMessageId
+      ? await channel.messages
+          .fetch(gameDay.announcementMessageId)
+          .catch(() => null)
+      : null
+
+    if (!message) {
+      const recent = await channel.messages.fetch({ limit: 100 })
+      message =
+        recent.find((m) =>
+          m.embeds.some((embed) =>
+            embed.footer?.text?.includes(`Game Day ID: ${gameDay.id}`)
+          )
+        ) ?? null
+    }
+    if (!message) return
+
+    const game = gameDay.gameId ? await getGame(gameDay.gameId) : null
+    const attendances = await getGameDayAttendances(gameDay.id)
+    const embed = createGameDayMessageEmbed(gameDay, attendances, game)
+
+    await message.edit({ embeds: [embed], components: [] })
+  } catch (err) {
+    logger.error(
+      `Error refreshing announcement for closed game day ${gameDay.id}:`,
+      err
+    )
+  }
 }

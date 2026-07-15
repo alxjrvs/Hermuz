@@ -21,6 +21,7 @@ import * as consoleLink from './console'
 import * as gameSetup from './game/setup'
 import * as gameDayAnnounce from './game_day/announce'
 import * as gameDayCancel from './game_day/cancel'
+import * as gameDayClose from './game_day/close'
 import * as gameDayList from './game_day/list'
 import * as gameDaySchedule from './game_day/schedule'
 import * as games from './games'
@@ -74,6 +75,7 @@ const groups: Record<string, CommandGroup> = {
     subcommands: {
       schedule: leaf(gameDaySchedule),
       announce: leaf(gameDayAnnounce),
+      close: leaf(gameDayClose, true),
       cancel: leaf(gameDayCancel, true),
       list: leaf(gameDayList)
     }

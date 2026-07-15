@@ -71,6 +71,8 @@ export const gameDaysApi = {
     apiFetch<GameDay>(`/api/game-days/${id}/announce`, { method: 'POST' }),
   cancel: (id: string) =>
     apiFetch<GameDay>(`/api/game-days/${id}/cancel`, { method: 'POST' }),
+  close: (id: string) =>
+    apiFetch<GameDay>(`/api/game-days/${id}/close`, { method: 'POST' }),
   tasks: (id: string) => apiFetch<GameDayTask[]>(`/api/game-days/${id}/tasks`),
   addTask: (id: string, label: string, description?: string | null) =>
     apiFetch<GameDayTask>(`/api/game-days/${id}/tasks`, {

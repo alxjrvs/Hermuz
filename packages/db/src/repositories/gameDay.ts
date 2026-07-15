@@ -178,7 +178,8 @@ export const updateGameDay = async (
   }
 }
 
-export const publishGameDay = async (id: string): Promise<GameDay | null> => {
+/** Close a game day: lock it in as CLOSED (finalized, no more RSVPs). */
+export const closeGameDay = async (id: string): Promise<GameDay | null> => {
   return updateGameDay(id, { status: 'CLOSED' })
 }
 
