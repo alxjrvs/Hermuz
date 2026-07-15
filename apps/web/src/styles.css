@@ -114,6 +114,7 @@ h3 {
 }
 .brand .accent {
   color: var(--accent);
+  margin-left: -0.06em;
 }
 .brand .orrery {
   flex: 0 0 auto;
