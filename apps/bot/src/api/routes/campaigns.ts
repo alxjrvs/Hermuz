@@ -53,6 +53,7 @@ export function campaignsRoutes(client: Client): Hono {
             | 'recurrenceWeekday'
             | 'recurrenceTime'
             | 'recurrenceIntervalWeeks'
+            | 'locationType'
           >
         >
     >(c)
@@ -68,8 +69,11 @@ export function campaignsRoutes(client: Client): Hono {
       // doesn't set these, so apply them as a follow-up update.
       let schedulingKind = body.schedulingKind
       let maxSessions = body.maxSessions
+      let locationType = body.locationType
       if (
-        (schedulingKind === undefined || maxSessions === undefined) &&
+        (schedulingKind === undefined ||
+          maxSessions === undefined ||
+          locationType === undefined) &&
         body.gameId
       ) {
         const game = await getGame(body.gameId)
@@ -78,12 +82,16 @@ export function campaignsRoutes(client: Client): Hono {
             schedulingKind = game.defaultSchedulingKind
           }
           if (maxSessions === undefined) maxSessions = game.maxSessions
+          if (locationType === undefined) {
+            locationType = game.defaultLocationType
+          }
         }
       }
 
       const patch: Partial<NewCampaign> = {}
       if (schedulingKind !== undefined) patch.schedulingKind = schedulingKind
       if (maxSessions !== undefined) patch.maxSessions = maxSessions
+      if (locationType !== undefined) patch.locationType = locationType
       if (body.recurrenceAnchor !== undefined) {
         patch.recurrenceAnchor = body.recurrenceAnchor
       }

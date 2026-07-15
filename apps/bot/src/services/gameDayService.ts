@@ -32,6 +32,8 @@ export interface CreateGameDayInput {
   hostUsername?: string | null
   /** Optional associated game (id). */
   gameId?: string | null
+  /** VIRTUAL/IN_PERSON; when omitted, inherits the game's default. */
+  locationType?: 'VIRTUAL' | 'IN_PERSON' | null
 }
 
 /**
@@ -63,9 +65,13 @@ export async function createGameDayWithDiscord(
   }
 
   let gameId: string | undefined
+  let gameDefaultLocationType: 'VIRTUAL' | 'IN_PERSON' | null = null
   if (input.gameId) {
     const game = await getGame(input.gameId)
-    if (game) gameId = game.id
+    if (game) {
+      gameId = game.id
+      gameDefaultLocationType = game.defaultLocationType
+    }
   }
 
   const gameDayRole = await createGameDayRole(guild, input.title, dateTime)
@@ -78,6 +84,7 @@ export async function createGameDayWithDiscord(
     description: input.description ?? null,
     dateTime: dateTime.toISOString(),
     location: input.location ?? null,
+    locationType: input.locationType ?? gameDefaultLocationType,
     hostUserId: input.hostUserId,
     gameId,
     discordRoleId: gameDayRole.id

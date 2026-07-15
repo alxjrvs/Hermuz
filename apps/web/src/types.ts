@@ -8,6 +8,8 @@ export interface User {
 
 export type SchedulingKind = 'SCHEDULED' | 'REPEATING'
 
+export type LocationType = 'VIRTUAL' | 'IN_PERSON'
+
 export interface Game {
   id: string
   name: string
@@ -18,6 +20,7 @@ export interface Game {
   maxPlayers: number | null
   defaultSchedulingKind: SchedulingKind
   maxSessions: number | null
+  defaultLocationType: LocationType
 }
 
 export type GameInput = Omit<Game, 'id'>
@@ -31,6 +34,7 @@ export interface GameDay {
   description: string | null
   location: string | null
   status: GameDayStatus
+  locationType: LocationType | null
   gameId: string | null
   hostUserId: string | null
   discordRoleId: string | null
@@ -43,6 +47,7 @@ export interface GameDayInput {
   dateTime: string
   description?: string | null
   location?: string | null
+  locationType?: LocationType | null
   gameId?: string | null
 }
 
@@ -65,6 +70,7 @@ export interface Campaign {
   gameName: string | null
   schedulingKind: SchedulingKind
   maxSessions: number | null
+  locationType: LocationType | null
   recurrenceAnchor: string | null // ISO datetime of the first session (series start)
   recurrenceWeekday: number | null // 0=Sun..6=Sat (legacy fallback)
   recurrenceTime: string | null // 'HH:MM' (legacy fallback)
@@ -78,6 +84,7 @@ export interface CampaignInput {
   gameId?: string | null
   schedulingKind?: SchedulingKind
   maxSessions?: number | null
+  locationType?: LocationType | null
   recurrenceAnchor?: string | null
   recurrenceWeekday?: number | null
   recurrenceTime?: string | null

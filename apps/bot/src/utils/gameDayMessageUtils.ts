@@ -1,5 +1,6 @@
 import { EmbedBuilder, Colors } from 'discord.js'
 import type { GameDay, Game, Attendance } from '@hermuz/db'
+import { locationTypeLabel, locationFieldName } from './locationUtils'
 /** Human-readable date/time for a game day's ISO timestamp. */
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -45,6 +46,8 @@ export function createGameDayMessageEmbed(
       inline: false
     })
   }
+  const effectiveLocationType =
+    gameDay.locationType ?? game?.defaultLocationType ?? 'IN_PERSON'
   embed.addFields(
     {
       name: 'Date & Time',
@@ -52,11 +55,16 @@ export function createGameDayMessageEmbed(
       inline: false
     },
     {
-      name: 'Location',
+      name: 'Type',
+      value: locationTypeLabel(effectiveLocationType),
+      inline: true
+    },
+    {
+      name: locationFieldName(effectiveLocationType),
       value: gameDay.location
         ? `${gameDay.location}${gameDay.hostUserId ? ` (Host: <@${gameDay.hostUserId}>)` : ''}`
-        : 'No location specified',
-      inline: false
+        : 'Not specified',
+      inline: true
     }
   )
   embed.addFields(...createGameDayAttendanceEmbed(attendances))

@@ -3,11 +3,13 @@ import { gamesApi } from '../api'
 import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
+import { LocationTypeChip } from '../components/StatusChip'
 import { useAuth } from '../context/AuthContext'
 import { toMessage, useAsync } from '../lib/useAsync'
-import type { Game, GameInput, SchedulingKind } from '../types'
+import type { Game, GameInput, LocationType, SchedulingKind } from '../types'
 
 const SCHEDULING_KINDS: SchedulingKind[] = ['SCHEDULED', 'REPEATING']
+const LOCATION_TYPES: LocationType[] = ['IN_PERSON', 'VIRTUAL']
 
 const EMPTY_FORM: GameInput = {
   name: '',
@@ -17,7 +19,8 @@ const EMPTY_FORM: GameInput = {
   minPlayers: null,
   maxPlayers: null,
   defaultSchedulingKind: 'SCHEDULED',
-  maxSessions: null
+  maxSessions: null,
+  defaultLocationType: 'IN_PERSON'
 }
 
 export function Games() {
@@ -71,6 +74,7 @@ export function Games() {
                   <th>Name</th>
                   <th>Short</th>
                   <th>Players</th>
+                  <th>Default type</th>
                   <th>Description</th>
                   {isAdmin && <th />}
                 </tr>
@@ -82,6 +86,9 @@ export function Games() {
                     <td className="tnum">{g.shortName}</td>
                     <td className="tnum">
                       {g.minPlayers ?? '—'}–{g.maxPlayers ?? '—'}
+                    </td>
+                    <td>
+                      <LocationTypeChip type={g.defaultLocationType} />
                     </td>
                     <td className="cell-sub">
                       {g.description || <span className="muted">—</span>}
@@ -154,7 +161,8 @@ function GameForm({ title, initial, onClose, onSubmit }: GameFormProps) {
     minPlayers: initial.minPlayers ?? null,
     maxPlayers: initial.maxPlayers ?? null,
     defaultSchedulingKind: initial.defaultSchedulingKind ?? 'SCHEDULED',
-    maxSessions: initial.maxSessions ?? null
+    maxSessions: initial.maxSessions ?? null,
+    defaultLocationType: initial.defaultLocationType ?? 'IN_PERSON'
   })
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -287,6 +295,26 @@ function GameForm({ title, initial, onClose, onSubmit }: GameFormProps) {
             }
           />
         </div>
+      </div>
+      <div className="field">
+        <label htmlFor="g-loctype">Default location type</label>
+        <select
+          id="g-loctype"
+          className="select"
+          value={form.defaultLocationType}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              defaultLocationType: e.target.value as LocationType
+            })
+          }
+        >
+          {LOCATION_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t === 'VIRTUAL' ? 'Virtual' : 'In Person'}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="field">
         <label htmlFor="g-role">Discord role ID</label>

@@ -7,6 +7,7 @@ import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { SessionCalendar } from '../components/SessionCalendar'
 import {
   GameDayStatusChip,
+  LocationTypeChip,
   PlayerStatusChip,
   SchedulingKindChip
 } from '../components/StatusChip'
@@ -136,6 +137,7 @@ export function CampaignDetail() {
       </div>
 
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        <LocationTypeChip type={c.locationType} />
         <SchedulingKindChip kind={c.schedulingKind} />
         {summary && <span className="muted">{summary}</span>}
         <span className="muted">

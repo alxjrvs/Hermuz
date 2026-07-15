@@ -3,7 +3,7 @@ import { gameDaysApi } from '../api'
 import { AttendanceTable } from '../components/AttendanceTable'
 import { Kpi } from '../components/Kpi'
 import { ErrorBanner, Loading, Panel } from '../components/Panel'
-import { GameDayStatusChip } from '../components/StatusChip'
+import { GameDayStatusChip, LocationTypeChip } from '../components/StatusChip'
 import { formatDateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
@@ -28,6 +28,7 @@ export function GameDayDetail() {
           <p>{formatDateTime(gd.data.dateTime)}</p>
         </div>
         <div className="row">
+          <LocationTypeChip type={gd.data.locationType} />
           <GameDayStatusChip status={gd.data.status} />
           <Link className="btn" to="/game-days">
             Back

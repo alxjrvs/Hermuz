@@ -29,7 +29,12 @@ export function gamesRoutes(client: Client): Hono {
   app.post('/', requireAdmin, async (c) => {
     const body = await readJson<
       CreateGameInput &
-        Partial<Pick<NewGame, 'defaultSchedulingKind' | 'maxSessions'>>
+        Partial<
+          Pick<
+            NewGame,
+            'defaultSchedulingKind' | 'maxSessions' | 'defaultLocationType'
+          >
+        >
     >(c)
     if (!body?.name || !body?.shortName) {
       return c.json({ error: 'name and shortName are required' }, 400)
@@ -45,6 +50,9 @@ export function gamesRoutes(client: Client): Hono {
         patch.defaultSchedulingKind = body.defaultSchedulingKind
       }
       if (body.maxSessions !== undefined) patch.maxSessions = body.maxSessions
+      if (body.defaultLocationType !== undefined) {
+        patch.defaultLocationType = body.defaultLocationType
+      }
       if (Object.keys(patch).length > 0) {
         const patched = await updateGame(result.data.id, patch)
         if (patched) return c.json(patched)

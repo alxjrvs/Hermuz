@@ -90,6 +90,7 @@ export async function materializeSessions(
       gameId: campaign.gameId,
       campaignId: campaign.id,
       sessionNumber: n,
+      locationType: campaign.locationType,
       discordRoleId: campaign.discordRoleId
     })
     if (gd) created.push(gd)
@@ -139,6 +140,7 @@ export async function scheduleNextSession(
     gameId: campaign.gameId,
     campaignId: campaign.id,
     sessionNumber: nextNum,
+    locationType: campaign.locationType,
     discordRoleId: campaign.discordRoleId
   })
 }
