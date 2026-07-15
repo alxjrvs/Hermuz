@@ -1,31 +1,38 @@
 /* ============================================================
-   Hermuz "Command Deck" — utilitarian data-dense admin theme.
-   Dark theme is primary. Tokens defined as CSS custom properties.
+   Hermuz — clean, minimal, dark. One accent (iris) on a near-black
+   ground; hairline structure; Geist type. The orrery survives only as
+   the logo mark. Embed colors in apps/bot mirror these tokens so bot
+   and web read as one system.
    ============================================================ */
 
 :root {
-  --bg: #0f1520;
-  --panel: #151d2b;
-  --sidebar: #0b111a;
-  --ink: #e6ecf5;
-  --muted: #8291a8;
-  --line: #222e42;
+  --bg: #0a0b0d;
+  --panel: #14161b;
+  --sidebar: #0c0d10;
+  --ink: #e8e9ed;
+  --muted: #969aa4;
+  --line: #1e212a;
 
-  --accent: #3ba1ff;
-  --accent-ink: #04101f;
-  --good: #37d39a;
-  --warn: #f5b544;
-  --danger: #f2555a;
+  --accent: #7f7cf6; /* iris — interactive + collecting RSVPs */
+  --accent-hover: #9a97ff;
+  --accent-ink: #0a0b0d;
+  --good: #4fc9a0; /* full / confirmed */
+  --warn: #e0b155; /* amber */
+  --danger: #df5d68; /* cancelled */
 
   --radius: 9px;
   --radius-sm: 6px;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
 
+  --font-display:
+    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
   --font-sans:
-    ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
   --font-mono:
-    ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Menlo, Consolas,
-    monospace;
+    'Geist Mono', ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono',
+    Menlo, Consolas, monospace;
 
   --sidebar-w: 200px;
 
@@ -64,6 +71,7 @@ h1,
 h2,
 h3 {
   margin: 0;
+  font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -95,12 +103,20 @@ h3 {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
   padding: 4px 8px;
 }
 .brand .accent {
+  color: var(--accent);
+}
+.brand .orrery {
+  flex: 0 0 auto;
   color: var(--accent);
 }
 
@@ -126,7 +142,7 @@ h3 {
   text-decoration: none;
 }
 .nav-link.active {
-  background: rgba(59, 161, 255, 0.12);
+  background: rgba(127, 124, 246, 0.12);
   color: var(--accent);
 }
 .nav-icon {
@@ -167,7 +183,7 @@ h3 {
   border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
-  background: rgba(15, 21, 32, 0.85);
+  background: rgba(10, 11, 13, 0.85);
   backdrop-filter: blur(8px);
   z-index: 5;
 }
@@ -348,18 +364,18 @@ table.data td.tnum {
 }
 .chip.good {
   color: var(--good);
-  background: rgba(55, 211, 154, 0.1);
-  border-color: rgba(55, 211, 154, 0.25);
+  background: rgba(79, 201, 160, 0.1);
+  border-color: rgba(79, 201, 160, 0.25);
 }
 .chip.warn {
   color: var(--warn);
-  background: rgba(245, 181, 68, 0.1);
-  border-color: rgba(245, 181, 68, 0.25);
+  background: rgba(224, 177, 85, 0.1);
+  border-color: rgba(224, 177, 85, 0.25);
 }
 .chip.danger {
   color: var(--danger);
-  background: rgba(242, 85, 90, 0.1);
-  border-color: rgba(242, 85, 90, 0.25);
+  background: rgba(223, 93, 104, 0.1);
+  border-color: rgba(223, 93, 104, 0.25);
 }
 .chip.muted {
   color: var(--muted);
@@ -368,8 +384,8 @@ table.data td.tnum {
 }
 .chip.accent {
   color: var(--accent);
-  background: rgba(59, 161, 255, 0.1);
-  border-color: rgba(59, 161, 255, 0.25);
+  background: rgba(127, 124, 246, 0.1);
+  border-color: rgba(127, 124, 246, 0.25);
 }
 
 /* ---------- Buttons ---------- */
@@ -394,7 +410,7 @@ table.data td.tnum {
 }
 .btn:hover {
   background: rgba(255, 255, 255, 0.07);
-  border-color: #2d3c56;
+  border-color: #2a2e38;
 }
 .btn:focus-visible {
   outline: 2px solid var(--accent);
@@ -410,15 +426,15 @@ table.data td.tnum {
   color: var(--accent-ink);
 }
 .btn.primary:hover {
-  background: #5cb2ff;
-  border-color: #5cb2ff;
+  background: #efc877;
+  border-color: #efc877;
 }
 .btn.danger {
   color: var(--danger);
-  border-color: rgba(242, 85, 90, 0.4);
+  border-color: rgba(223, 93, 104, 0.4);
 }
 .btn.danger:hover {
-  background: rgba(242, 85, 90, 0.12);
+  background: rgba(223, 93, 104, 0.12);
 }
 .btn.sm {
   padding: 4px 9px;
@@ -468,7 +484,7 @@ table.data td.tnum {
 .textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 161, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(127, 124, 246, 0.15);
 }
 .field-row {
   display: grid;
@@ -529,18 +545,18 @@ table.data td.tnum {
 }
 .banner.error {
   color: var(--danger);
-  background: rgba(242, 85, 90, 0.1);
-  border-color: rgba(242, 85, 90, 0.3);
+  background: rgba(223, 93, 104, 0.1);
+  border-color: rgba(223, 93, 104, 0.3);
 }
 .banner.warn {
   color: var(--warn);
-  background: rgba(245, 181, 68, 0.1);
-  border-color: rgba(245, 181, 68, 0.3);
+  background: rgba(224, 177, 85, 0.1);
+  border-color: rgba(224, 177, 85, 0.3);
 }
 .banner.info {
   color: var(--accent);
-  background: rgba(59, 161, 255, 0.1);
-  border-color: rgba(59, 161, 255, 0.3);
+  background: rgba(127, 124, 246, 0.1);
+  border-color: rgba(127, 124, 246, 0.3);
 }
 
 .empty,

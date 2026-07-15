@@ -3,10 +3,10 @@ import { logger } from '~/utils/logger'
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
-  Colors,
   MessageFlags
 } from 'discord.js'
 import { getUpcomingGameDaysByStatus, getGame } from '@hermuz/db'
+import { BRAND, BRAND_AUTHOR } from '~/utils/brand'
 export const config = createCommandConfig({
   description: 'List all scheduled or scheduling game days in the future'
 })
@@ -20,8 +20,9 @@ export default async (interaction: ChatInputCommandInteraction) => {
       )
     }
     const embed = new EmbedBuilder()
+      .setAuthor(BRAND_AUTHOR)
       .setTitle('Upcoming Game Days')
-      .setColor(Colors.Blue)
+      .setColor(BRAND.accent)
       .setDescription('Here are all the upcoming game days:')
       .setTimestamp()
     for (const gameDay of gameDays) {

@@ -1,5 +1,6 @@
-import { EmbedBuilder, Colors } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import type { GameDay, Game, Attendance } from '@hermuz/db'
+import { BRAND, BRAND_AUTHOR } from './brand'
 /** Human-readable date/time for a game day's ISO timestamp. */
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -18,13 +19,16 @@ export function createGameDayMessageEmbed(
 ): EmbedBuilder {
   let color: number
   if (gameDay.status === 'CANCELLED') {
-    color = Colors.Red
+    color = BRAND.danger
   } else if (gameDay.status === 'SCHEDULING') {
-    color = Colors.Yellow
+    color = BRAND.accent
   } else {
-    color = Colors.Green
+    color = BRAND.good
   }
-  const embed = new EmbedBuilder().setTitle(gameDay.title).setColor(color)
+  const embed = new EmbedBuilder()
+    .setAuthor(BRAND_AUTHOR)
+    .setTitle(gameDay.title)
+    .setColor(color)
   if (gameDay.status === 'CANCELLED') {
     embed.setDescription('This game day has been cancelled.')
     return embed

@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { OrreryMark } from './OrreryMark'
 
 interface NavItem {
   to: string
@@ -57,6 +58,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
+          <OrreryMark size={22} />
           Herm<span className="accent">uz</span>
         </div>
         <nav className="nav">

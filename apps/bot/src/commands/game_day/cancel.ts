@@ -4,10 +4,10 @@ import {
   type ChatInputCommandInteraction,
   MessageFlags,
   PermissionFlagsBits,
-  Colors,
   EmbedBuilder
 } from 'discord.js'
 import { getGameDayByRoleId, updateGameDay } from '@hermuz/db'
+import { BRAND, BRAND_AUTHOR } from '~/utils/brand'
 import { getSchedulingChannel } from '~/utils/schedulingChannel'
 import { deleteGameDayChannels } from '../../utils/channelUtils'
 import {
@@ -72,9 +72,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
       })
       if (announcementMessage) {
         const cancelledEmbed = new EmbedBuilder()
+          .setAuthor(BRAND_AUTHOR)
           .setTitle(`${gameDay.title} - CANCELLED`)
           .setDescription('This game day has been cancelled.')
-          .setColor(Colors.Red)
+          .setColor(BRAND.danger)
           .setFooter({ text: `Game Day ID: ${gameDay.id}` })
           .setTimestamp()
         await announcementMessage.edit({

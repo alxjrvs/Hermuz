@@ -1,14 +1,16 @@
-import { EmbedBuilder, Colors } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import type { Campaign, Player } from '@hermuz/db'
 import { formatRegularGameTime, getCampaignDisplayName } from './campaignUtils'
+import { BRAND, BRAND_AUTHOR } from './brand'
 export function createCampaignMessageEmbed(
   campaign: Campaign,
   players?: Player[]
 ): EmbedBuilder {
   const embed = new EmbedBuilder()
+    .setAuthor(BRAND_AUTHOR)
     .setTitle(getCampaignDisplayName(campaign))
     .setDescription(campaign.description || 'No description provided')
-    .setColor(Colors.Blue)
+    .setColor(BRAND.accent)
     .addFields({
       name: 'Regular Game Time',
       value: formatRegularGameTime(campaign.regularGameTime),
