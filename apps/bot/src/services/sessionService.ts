@@ -2,7 +2,8 @@ import {
   getCampaign,
   getGameDaysByCampaign,
   createGameDay,
-  type GameDay
+  type GameDay,
+  type Campaign
 } from '@hermuz/db'
 
 /** Sessions to keep materialized for a repeating campaign with no explicit cap. */
@@ -38,6 +39,26 @@ function sessionDate(
 }
 
 /**
+ * The series base date (first session). Prefers the explicit `recurrenceAnchor`
+ * (the source of truth — may be in the past), falling back to the legacy
+ * weekday/time anchored at the campaign's creation. Returns null if unconfigured.
+ */
+function recurrenceBase(campaign: Campaign): Date | null {
+  if (campaign.recurrenceAnchor) {
+    const d = new Date(campaign.recurrenceAnchor)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  if (campaign.recurrenceWeekday != null && campaign.recurrenceTime) {
+    return firstSessionDate(
+      campaign.recurrenceWeekday,
+      campaign.recurrenceTime,
+      new Date(campaign.createdAt ?? new Date().toISOString())
+    )
+  }
+  return null
+}
+
+/**
  * Ensure a REPEATING campaign has its upcoming session series materialized as
  * `game_days` (calendar entries only — no Discord role/channel/event is created).
  * Idempotent: only fills in session numbers that don't already exist, up to the
@@ -49,18 +70,14 @@ export async function materializeSessions(
 ): Promise<GameDay[]> {
   const campaign = await getCampaign(campaignId)
   if (!campaign || campaign.schedulingKind !== 'REPEATING') return []
-  if (campaign.recurrenceWeekday == null || !campaign.recurrenceTime) return []
+  const base = recurrenceBase(campaign)
+  if (!base) return []
 
   const interval = campaign.recurrenceIntervalWeeks ?? 1
   const target = campaign.maxSessions ?? DEFAULT_HORIZON
   const existing = await getGameDaysByCampaign(campaignId)
   const existingNumbers = new Set(
     existing.map((g) => g.sessionNumber).filter((n): n is number => n != null)
-  )
-  const base = firstSessionDate(
-    campaign.recurrenceWeekday,
-    campaign.recurrenceTime,
-    new Date(campaign.createdAt ?? new Date().toISOString())
   )
 
   const created: GameDay[] = []
@@ -100,16 +117,9 @@ export async function scheduleNextSession(
 
   let when = dateTime
   if (!when) {
-    if (
-      campaign.schedulingKind === 'REPEATING' &&
-      campaign.recurrenceWeekday != null &&
-      campaign.recurrenceTime
-    ) {
-      const base = firstSessionDate(
-        campaign.recurrenceWeekday,
-        campaign.recurrenceTime,
-        new Date(campaign.createdAt ?? new Date().toISOString())
-      )
+    const base =
+      campaign.schedulingKind === 'REPEATING' ? recurrenceBase(campaign) : null
+    if (base) {
       when = sessionDate(
         base,
         nextNum,

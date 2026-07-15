@@ -18,12 +18,20 @@ import type { Campaign, Player, PlayerStatus } from '../types'
 const PLAYER_STATUSES: PlayerStatus[] = ['INTERESTED', 'CONFIRMED']
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// Human recurrence summary, e.g. "Every Tue 19:00, weekly".
+// Human recurrence summary, e.g. "Mondays 19:00 UTC, every 2 weeks".
 function recurrenceSummary(c: Campaign): string | null {
   if (c.schedulingKind !== 'REPEATING') return null
-  const day = c.recurrenceWeekday != null ? WEEKDAYS[c.recurrenceWeekday] : null
   const iv = c.recurrenceIntervalWeeks ?? 1
   const cadence = iv === 1 ? 'weekly' : `every ${iv} weeks`
+  if (c.recurrenceAnchor) {
+    const d = new Date(c.recurrenceAnchor)
+    if (!Number.isNaN(d.getTime())) {
+      const day = WEEKDAYS[d.getUTCDay()]
+      const time = d.toISOString().slice(11, 16)
+      return `${day}s ${time} UTC, ${cadence}`
+    }
+  }
+  const day = c.recurrenceWeekday != null ? WEEKDAYS[c.recurrenceWeekday] : null
   const head = [day, c.recurrenceTime].filter(Boolean).join(' ')
   return head ? `Every ${head}, ${cadence}` : `Repeats ${cadence}`
 }

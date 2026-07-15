@@ -1,0 +1,1 @@
+ALTER TABLE `campaigns` ADD `recurrence_anchor` text;

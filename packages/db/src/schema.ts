@@ -98,7 +98,15 @@ export const campaigns = sqliteTable('campaigns', {
     .default('SCHEDULED'),
   /** Cap on total sessions (null = uncapped). Inherited from the game, overridable. */
   maxSessions: integer('max_sessions'),
-  /** Recurrence for REPEATING campaigns: weekday (0=Sun … 6=Sat), local HH:MM, week interval. */
+  /**
+   * Recurrence for REPEATING campaigns. `recurrenceAnchor` is the FIRST session's
+   * date/time (ISO) — the series start, which may be in the past — and is the
+   * source of truth for the cadence; session N = anchor + (N-1)·intervalWeeks.
+   * This is what lets "started this past Monday, every other week" be expressed
+   * (the weekday/time pair could only anchor to the next occurrence). The legacy
+   * `recurrenceWeekday`/`recurrenceTime` remain as a fallback when no anchor is set.
+   */
+  recurrenceAnchor: text('recurrence_anchor'),
   recurrenceWeekday: integer('recurrence_weekday'),
   recurrenceTime: text('recurrence_time'),
   recurrenceIntervalWeeks: integer('recurrence_interval_weeks'),
