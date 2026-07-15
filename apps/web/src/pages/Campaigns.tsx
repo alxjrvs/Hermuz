@@ -5,11 +5,11 @@ import { DiscordAction, DiscordLegend } from '../components/DiscordAction'
 import { Modal } from '../components/Modal'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { useAuth } from '../context/AuthContext'
+import { toDateTimeLocal, fromDateTimeLocal } from '../lib/format'
 import { toMessage, useAsync } from '../lib/useAsync'
 import type { Campaign, CampaignInput, Game, SchedulingKind } from '../types'
 
 const SCHEDULING_KINDS: SchedulingKind[] = ['SCHEDULED', 'REPEATING']
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export function Campaigns() {
   const { isAdmin } = useAuth()
@@ -183,8 +183,7 @@ function CampaignForm({
     gameId: initial?.gameId ?? '',
     schedulingKind: initial?.schedulingKind ?? ('SCHEDULED' as SchedulingKind),
     maxSessions: initial?.maxSessions ?? null,
-    recurrenceWeekday: initial?.recurrenceWeekday ?? null,
-    recurrenceTime: initial?.recurrenceTime ?? '',
+    recurrenceAnchor: (initial?.recurrenceAnchor ?? null) as string | null,
     recurrenceIntervalWeeks: (initial?.recurrenceIntervalWeeks ?? 1) as
       | number
       | null
@@ -219,8 +218,9 @@ function CampaignForm({
         gameId: form.gameId || null,
         schedulingKind: form.schedulingKind,
         maxSessions: form.maxSessions,
-        recurrenceWeekday: repeating ? form.recurrenceWeekday : null,
-        recurrenceTime: repeating ? form.recurrenceTime || null : null,
+        recurrenceAnchor: repeating ? form.recurrenceAnchor : null,
+        recurrenceWeekday: null,
+        recurrenceTime: null,
         recurrenceIntervalWeeks: repeating
           ? (form.recurrenceIntervalWeeks ?? 1)
           : null
@@ -337,40 +337,21 @@ function CampaignForm({
         </div>
       </div>
       {repeating && (
-        <div
-          className="field-row"
-          style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
-        >
+        <div className="field-row" style={{ gridTemplateColumns: '2fr 1fr' }}>
           <div className="field">
-            <label htmlFor="c-weekday">Weekday</label>
-            <select
-              id="c-weekday"
-              className="select"
-              value={form.recurrenceWeekday ?? ''}
+            <label htmlFor="c-anchor">First session (series start)</label>
+            <input
+              id="c-anchor"
+              className="input"
+              type="datetime-local"
+              value={toDateTimeLocal(form.recurrenceAnchor)}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  recurrenceWeekday: numOrNull(e.target.value)
+                  recurrenceAnchor: e.target.value
+                    ? fromDateTimeLocal(e.target.value)
+                    : null
                 })
-              }
-            >
-              <option value="">— Any —</option>
-              {WEEKDAYS.map((w, i) => (
-                <option key={w} value={i}>
-                  {w}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="c-rectime">Time</label>
-            <input
-              id="c-rectime"
-              className="input"
-              type="time"
-              value={form.recurrenceTime}
-              onChange={(e) =>
-                setForm({ ...form, recurrenceTime: e.target.value })
               }
             />
           </div>

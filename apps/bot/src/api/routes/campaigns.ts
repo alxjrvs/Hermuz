@@ -49,6 +49,7 @@ export function campaignsRoutes(client: Client): Hono {
             NewCampaign,
             | 'schedulingKind'
             | 'maxSessions'
+            | 'recurrenceAnchor'
             | 'recurrenceWeekday'
             | 'recurrenceTime'
             | 'recurrenceIntervalWeeks'
@@ -83,6 +84,9 @@ export function campaignsRoutes(client: Client): Hono {
       const patch: Partial<NewCampaign> = {}
       if (schedulingKind !== undefined) patch.schedulingKind = schedulingKind
       if (maxSessions !== undefined) patch.maxSessions = maxSessions
+      if (body.recurrenceAnchor !== undefined) {
+        patch.recurrenceAnchor = body.recurrenceAnchor
+      }
       if (body.recurrenceWeekday !== undefined) {
         patch.recurrenceWeekday = body.recurrenceWeekday
       }
@@ -99,11 +103,8 @@ export function campaignsRoutes(client: Client): Hono {
         if (updated) campaign = updated
       }
 
-      if (
-        campaign.schedulingKind === 'REPEATING' &&
-        campaign.recurrenceWeekday != null &&
-        campaign.recurrenceTime
-      ) {
+      // materializeSessions self-guards (no-op unless recurrence is configured).
+      if (campaign.schedulingKind === 'REPEATING') {
         await materializeSessions(campaign.id)
       }
 
@@ -119,11 +120,7 @@ export function campaignsRoutes(client: Client): Hono {
     if (!body) return c.json({ error: 'invalid body' }, 400)
     const updated = await updateCampaign(c.req.param('id'), body)
     if (!updated) return c.json({ error: 'not found or update failed' }, 404)
-    if (
-      updated.schedulingKind === 'REPEATING' &&
-      updated.recurrenceWeekday != null &&
-      updated.recurrenceTime
-    ) {
+    if (updated.schedulingKind === 'REPEATING') {
       await materializeSessions(updated.id)
     }
     return c.json(updated)

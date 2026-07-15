@@ -65,8 +65,9 @@ export interface Campaign {
   gameName: string | null
   schedulingKind: SchedulingKind
   maxSessions: number | null
-  recurrenceWeekday: number | null // 0=Sun..6=Sat
-  recurrenceTime: string | null // 'HH:MM'
+  recurrenceAnchor: string | null // ISO datetime of the first session (series start)
+  recurrenceWeekday: number | null // 0=Sun..6=Sat (legacy fallback)
+  recurrenceTime: string | null // 'HH:MM' (legacy fallback)
   recurrenceIntervalWeeks: number | null
 }
 
@@ -77,6 +78,7 @@ export interface CampaignInput {
   gameId?: string | null
   schedulingKind?: SchedulingKind
   maxSessions?: number | null
+  recurrenceAnchor?: string | null
   recurrenceWeekday?: number | null
   recurrenceTime?: string | null
   recurrenceIntervalWeeks?: number | null

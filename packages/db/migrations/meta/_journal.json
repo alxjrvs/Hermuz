@@ -22,6 +22,13 @@
       "when": 1784096495282,
       "tag": "0002_broken_jackal",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784113516802,
+      "tag": "0003_bumpy_fenris",
+      "breakpoints": true
     }
   ]
 }
