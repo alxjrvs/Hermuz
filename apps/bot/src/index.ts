@@ -18,6 +18,8 @@ import { attendanceButtonHandler } from '~/handlers/attendanceButtonHandler'
 import { campaignInterestButtonHandler } from '~/handlers/campaignInterestButtonHandler'
 import { routeModalSubmit } from '~/interactions/modalRouter'
 import { startApiServer } from '~/api/server'
+import { startScheduler } from '~/services/schedulerService'
+import { ensureHeartbeatJob } from '~/services/jobHandlers'
 
 // Register button handlers once at module load.
 registerButtonHandler(attendanceButtonHandler)
@@ -86,6 +88,10 @@ async function main(): Promise<void> {
 
   // Same process serves the JSON API (shares the one SQLite connection).
   startApiServer(client)
+
+  // Background job loop (reminders, meal nudges, auto-opening sessions).
+  await ensureHeartbeatJob()
+  startScheduler(client)
 
   await client.login(config.discordToken)
 }
