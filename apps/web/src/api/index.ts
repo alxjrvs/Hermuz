@@ -13,12 +13,22 @@ import type {
   Player,
   PlayerStatus,
   AttendanceStatus,
+  ResolvedUser,
   Settings,
   User
 } from '../types'
 
 export const meApi = {
   get: () => apiFetch<User>('/api/me')
+}
+
+export const usersApi = {
+  resolve: (ids: string[]) =>
+    ids.length === 0
+      ? Promise.resolve([] as ResolvedUser[])
+      : apiFetch<ResolvedUser[]>(
+          `/api/users?ids=${encodeURIComponent(ids.join(','))}`
+        )
 }
 
 export const gamesApi = {
@@ -84,7 +94,13 @@ export const attendancesApi = {
     apiFetch<Attendance>(
       `/api/attendances/game-day/${gameDayId}/user/${userId}`,
       { method: 'PUT', body: { status } }
-    )
+    ),
+  // Self-service: the logged-in member sets their own RSVP.
+  setMine: (gameDayId: string, status: AttendanceStatus) =>
+    apiFetch<Attendance>(`/api/attendances/game-day/${gameDayId}/me`, {
+      method: 'PUT',
+      body: { status }
+    })
 }
 
 export const playersApi = {
@@ -93,7 +109,26 @@ export const playersApi = {
     body: { status?: PlayerStatus; characterName?: string | null }
   ) => apiFetch<Player>(`/api/players/${id}`, { method: 'PATCH', body }),
   remove: (id: string) =>
-    apiFetch<void>(`/api/players/${id}`, { method: 'DELETE' })
+    apiFetch<void>(`/api/players/${id}`, { method: 'DELETE' }),
+  // Self-service: the logged-in member manages their own membership.
+  joinMine: (campaignId: string) =>
+    apiFetch<Player>(`/api/players/campaign/${campaignId}/me`, {
+      method: 'PUT'
+    }),
+  leaveMine: (campaignId: string) =>
+    apiFetch<void>(`/api/players/campaign/${campaignId}/me`, {
+      method: 'DELETE'
+    }),
+  setMyStatus: (campaignId: string, status: PlayerStatus) =>
+    apiFetch<Player>(`/api/players/campaign/${campaignId}/me/status`, {
+      method: 'PUT',
+      body: { status }
+    }),
+  setMyCharacter: (campaignId: string, characterName: string) =>
+    apiFetch<Player>(`/api/players/campaign/${campaignId}/me/character`, {
+      method: 'PUT',
+      body: { characterName }
+    })
 }
 
 export const settingsApi = {

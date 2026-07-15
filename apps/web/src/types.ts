@@ -6,6 +6,14 @@ export interface User {
   isAdmin: boolean
 }
 
+/** A Discord identity resolved via GET /api/users (for names + avatars). */
+export interface ResolvedUser {
+  id: string
+  username: string
+  displayName: string
+  avatarUrl: string | null
+}
+
 export type SchedulingKind = 'SCHEDULED' | 'REPEATING'
 
 export type LocationType = 'VIRTUAL' | 'IN_PERSON'

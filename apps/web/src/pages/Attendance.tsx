@@ -99,6 +99,7 @@ export function Attendance() {
           </div>
         ) : (
           <AttendanceTable
+            gameDayId={selectedId}
             attendances={rows}
             onChanged={() => loadAttendances(selectedId)}
           />

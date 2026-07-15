@@ -11,9 +11,11 @@ import {
   PlayerStatusChip,
   SchedulingKindChip
 } from '../components/StatusChip'
+import { UserName } from '../components/UserName'
 import { useAuth } from '../context/AuthContext'
 import { formatDateTime, isUpcoming } from '../lib/format'
 import { toMessage, useAsync } from '../lib/useAsync'
+import { useUserNames } from '../lib/useUserNames'
 import type { Campaign, Player, PlayerStatus } from '../types'
 
 const PLAYER_STATUSES: PlayerStatus[] = ['INTERESTED', 'CONFIRMED']
@@ -39,13 +41,16 @@ function recurrenceSummary(c: Campaign): string | null {
 
 export function CampaignDetail() {
   const { id = '' } = useParams()
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
   const campaign = useAsync(() => campaignsApi.get(id), [id])
   const players = useAsync(() => campaignsApi.players(id), [id])
   const sessions = useAsync(() => campaignsApi.sessions(id), [id])
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionBusy, setActionBusy] = useState(false)
   const [actionErr, setActionErr] = useState<string | null>(null)
+  const [selfBusy, setSelfBusy] = useState(false)
+  const [charDraft, setCharDraft] = useState('')
+  const names = useUserNames((players.data ?? []).map((p) => p.userId))
 
   if (campaign.loading) return <Loading label="Loading campaign…" />
   if (campaign.error) return <ErrorBanner message={campaign.error} />
@@ -62,6 +67,19 @@ export function CampaignDetail() {
   const cap = c.maxSessions
   const repeating = c.schedulingKind === 'REPEATING'
   const summary = recurrenceSummary(c)
+  const me = rows.find((p) => p.userId === user?.id) ?? null
+
+  const selfAction = async (fn: () => Promise<unknown>) => {
+    setSelfBusy(true)
+    try {
+      await fn()
+      players.reload()
+    } catch (err) {
+      window.alert(toMessage(err))
+    } finally {
+      setSelfBusy(false)
+    }
+  }
 
   const setStatus = async (p: Player, status: PlayerStatus) => {
     if (status === p.status) return
@@ -157,6 +175,79 @@ export function CampaignDetail() {
         </Panel>
       )}
 
+      <Panel title="Your membership" padded>
+        {me ? (
+          <div className="stack" style={{ gap: 12 }}>
+            <div className="row" style={{ gap: 10, alignItems: 'center' }}>
+              <PlayerStatusChip status={me.status} />
+              {me.characterName && (
+                <span className="muted">as {me.characterName}</span>
+              )}
+            </div>
+            <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+              {me.status !== 'CONFIRMED' && (
+                <button
+                  className="btn sm primary"
+                  disabled={selfBusy}
+                  onClick={() =>
+                    selfAction(() => playersApi.setMyStatus(id, 'CONFIRMED'))
+                  }
+                >
+                  Confirm my spot
+                </button>
+              )}
+              {me.status === 'CONFIRMED' && (
+                <button
+                  className="btn sm"
+                  disabled={selfBusy}
+                  onClick={() =>
+                    selfAction(() => playersApi.setMyStatus(id, 'INTERESTED'))
+                  }
+                >
+                  Set back to interested
+                </button>
+              )}
+              <button
+                className="btn sm danger"
+                disabled={selfBusy}
+                onClick={() => selfAction(() => playersApi.leaveMine(id))}
+              >
+                Leave campaign
+              </button>
+            </div>
+            <div className="row" style={{ gap: 8 }}>
+              <input
+                className="input"
+                style={{ maxWidth: 240 }}
+                placeholder={me.characterName ?? 'Character name'}
+                value={charDraft}
+                onChange={(e) => setCharDraft(e.target.value)}
+              />
+              <button
+                className="btn sm"
+                disabled={selfBusy || !charDraft.trim()}
+                onClick={() =>
+                  selfAction(async () => {
+                    await playersApi.setMyCharacter(id, charDraft.trim())
+                    setCharDraft('')
+                  })
+                }
+              >
+                Set character
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            className="btn primary"
+            disabled={selfBusy}
+            onClick={() => selfAction(() => playersApi.joinMine(id))}
+          >
+            Join this campaign
+          </button>
+        )}
+      </Panel>
+
       {isAdmin && <DiscordLegend />}
       {actionErr && <div className="banner warn">{actionErr}</div>}
 
@@ -183,7 +274,9 @@ export function CampaignDetail() {
               <tbody>
                 {rows.map((p) => (
                   <tr key={p.id}>
-                    <td className="tnum">{p.userId}</td>
+                    <td>
+                      <UserName id={p.userId} user={names.get(p.userId)} />
+                    </td>
                     <td>
                       {p.characterName || <span className="muted">—</span>}
                     </td>

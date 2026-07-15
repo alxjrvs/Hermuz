@@ -69,7 +69,11 @@ export function GameDayDetail() {
             <ErrorBanner message={attendances.error} />
           </div>
         ) : (
-          <AttendanceTable attendances={rows} onChanged={attendances.reload} />
+          <AttendanceTable
+            gameDayId={gd.data.id}
+            attendances={rows}
+            onChanged={attendances.reload}
+          />
         )}
       </Panel>
     </>
