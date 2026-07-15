@@ -22,7 +22,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     const embed = new EmbedBuilder()
       .setAuthor(BRAND_AUTHOR)
       .setTitle('Upcoming Game Days')
-      .setColor(BRAND.brass)
+      .setColor(BRAND.accent)
       .setDescription('Here are all the upcoming game days:')
       .setTimestamp()
     for (const gameDay of gameDays) {

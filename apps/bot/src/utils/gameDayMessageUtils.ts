@@ -21,9 +21,9 @@ export function createGameDayMessageEmbed(
   if (gameDay.status === 'CANCELLED') {
     color = BRAND.danger
   } else if (gameDay.status === 'SCHEDULING') {
-    color = BRAND.brass
+    color = BRAND.accent
   } else {
-    color = BRAND.verdigris
+    color = BRAND.good
   }
   const embed = new EmbedBuilder()
     .setAuthor(BRAND_AUTHOR)

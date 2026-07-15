@@ -1,24 +1,22 @@
 import { EmbedBuilder, type EmbedAuthorOptions } from 'discord.js'
 
 /**
- * Hermuz "Ephemeris" brand tokens for Discord embeds.
+ * Hermuz brand tokens for Discord embeds.
  *
  * Colors mirror the web theme in apps/web/src/styles.css so the bot and the
- * observation deck read as one system: brass for interactive / "turning"
- * (scheduling), verdigris for "held" (open / confirmed / locked), warm red for
- * "dark" (cancelled).
+ * web app read as one system: iris for interactive / "collecting RSVPs", a
+ * mint green for a full or confirmed session, a muted red for cancelled.
  */
 export const BRAND = {
-  brass: 0xd8a64a,
-  gilt: 0xefc877,
-  verdigris: 0x57a896,
-  danger: 0xe8595e,
-  void: 0x0b1020
+  accent: 0x7f7cf6, // iris
+  accentBright: 0x9a97ff,
+  good: 0x4fc9a0,
+  danger: 0xdf5d68
 } as const
 
 /** Byline stamped on every Hermuz embed. */
 export const BRAND_AUTHOR: EmbedAuthorOptions = {
-  name: 'Hermuz · Keeper of the Orrery'
+  name: 'Hermuz · Monitor of the Orrery'
 }
 
 /** A fresh embed pre-stamped with the Hermuz byline. */

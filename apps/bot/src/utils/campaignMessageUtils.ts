@@ -10,7 +10,7 @@ export function createCampaignMessageEmbed(
     .setAuthor(BRAND_AUTHOR)
     .setTitle(getCampaignDisplayName(campaign))
     .setDescription(campaign.description || 'No description provided')
-    .setColor(BRAND.brass)
+    .setColor(BRAND.accent)
     .addFields({
       name: 'Regular Game Time',
       value: formatRegularGameTime(campaign.regularGameTime),

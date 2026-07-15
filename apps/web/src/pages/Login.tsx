@@ -36,9 +36,7 @@ export function Login() {
           <OrreryMark size={30} />
           Herm<span className="accent">uz</span>
         </div>
-        <p>
-          The Orrery of Worlds — games, game days, and campaigns, kept in orbit.
-        </p>
+        <p>Scheduling for the group&apos;s games, game days, and campaigns.</p>
         {errorMessage && (
           <div className="banner error" style={{ marginBottom: 16 }}>
             {errorMessage}

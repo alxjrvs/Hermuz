@@ -22,7 +22,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     const embed = new EmbedBuilder()
       .setAuthor(BRAND_AUTHOR)
       .setTitle('Games in this Server')
-      .setColor(BRAND.brass)
+      .setColor(BRAND.accent)
       .setDescription(
         'Here are all the games that have been set up in this server:'
       )

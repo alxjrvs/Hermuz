@@ -3,8 +3,9 @@ interface OrreryMarkProps {
 }
 
 /**
- * The Hermuz signature: a small orrery — brass rings around a gilt sun, with a
- * verdigris world that turns on its ring. Decorative, so hidden from a11y tree.
+ * The Hermuz logo mark: a minimal orrery — a single ring with a world at
+ * center and one on the ring. Static and single-color; decorative, so hidden
+ * from the a11y tree.
  */
 export function OrreryMark({ size = 22 }: OrreryMarkProps) {
   return (
@@ -12,37 +13,21 @@ export function OrreryMark({ size = 22 }: OrreryMarkProps) {
       className="orrery"
       width={size}
       height={size}
-      viewBox="0 0 40 40"
+      viewBox="0 0 32 32"
       fill="none"
       aria-hidden="true"
     >
       <ellipse
-        cx="20"
-        cy="20"
-        rx="18"
-        ry="7"
+        cx="16"
+        cy="16"
+        rx="13"
+        ry="5.5"
         stroke="currentColor"
         strokeWidth="1.4"
+        opacity="0.55"
       />
-      <ellipse
-        className="ring-b"
-        cx="20"
-        cy="20"
-        rx="7"
-        ry="18"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <g className="spin">
-        <circle
-          cx="38"
-          cy="20"
-          r="2.4"
-          className="ring-b"
-          fill="currentColor"
-        />
-      </g>
-      <circle cx="20" cy="20" r="3.4" fill="currentColor" />
+      <circle cx="16" cy="16" r="2.6" fill="currentColor" />
+      <circle cx="29" cy="16" r="1.8" fill="currentColor" />
     </svg>
   )
 }
