@@ -6,6 +6,7 @@ import {
   MessageFlags
 } from 'discord.js'
 import { getAllGames } from '@hermuz/db'
+import { BRAND, BRAND_AUTHOR } from '~/utils/brand'
 export const config = createCommandConfig({
   description: 'List all games set up in this server'
 })
@@ -19,8 +20,9 @@ export default async (interaction: ChatInputCommandInteraction) => {
       )
     }
     const embed = new EmbedBuilder()
+      .setAuthor(BRAND_AUTHOR)
       .setTitle('Games in this Server')
-      .setColor('#0099ff')
+      .setColor(BRAND.brass)
       .setDescription(
         'Here are all the games that have been set up in this server:'
       )

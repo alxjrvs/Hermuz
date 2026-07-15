@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { API_ORIGIN } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { OrreryMark } from '../components/OrreryMark'
 
 const ERROR_MESSAGES: Record<string, string> = {
   not_a_member:
@@ -32,9 +33,12 @@ export function Login() {
     <div className="login-wrap">
       <div className="login-card">
         <div className="brand">
+          <OrreryMark size={30} />
           Herm<span className="accent">uz</span>
         </div>
-        <p>Command deck for games, game days, and campaigns.</p>
+        <p>
+          The Orrery of Worlds — games, game days, and campaigns, kept in orbit.
+        </p>
         {errorMessage && (
           <div className="banner error" style={{ marginBottom: 16 }}>
             {errorMessage}

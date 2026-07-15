@@ -1,4 +1,5 @@
 import {
+  ActivityType,
   Client,
   Events,
   GatewayIntentBits,
@@ -46,7 +47,9 @@ async function main(): Promise<void> {
 
   client.once(Events.ClientReady, async (readyClient) => {
     logger.info(`Logged in as ${readyClient.user.tag}`)
-    readyClient.user.setActivity('board game night')
+    readyClient.user.setActivity('the Orrery of Worlds', {
+      type: ActivityType.Watching
+    })
     try {
       await registerCommands()
     } catch (err) {
