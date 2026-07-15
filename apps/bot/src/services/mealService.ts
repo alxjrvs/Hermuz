@@ -216,10 +216,14 @@ registerJobHandler(MEAL_NUDGE, async (client, job) => {
     )
   }
 
-  // Reschedule the next nudge if still open and before due.
-  await enqueueJob(
-    MEAL_NUDGE,
-    new Date(Date.now() + NUDGE_INTERVAL_MS).toISOString(),
-    { mealId }
-  )
+  // Reschedule only while there's still someone to nudge AND a due date to stop
+  // the chain (a meal with no dueAt gets a single nudge, never a perpetual one;
+  // once everyone has responded the chain ends).
+  if (pending.length > 0 && meal.dueAt) {
+    await enqueueJob(
+      MEAL_NUDGE,
+      new Date(Date.now() + NUDGE_INTERVAL_MS).toISOString(),
+      { mealId }
+    )
+  }
 })

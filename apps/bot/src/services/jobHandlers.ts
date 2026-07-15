@@ -23,21 +23,29 @@ const REFRESH_INTERVAL_MS = 24 * 60 * 60_000
  * long as one HORIZON_REFRESH exists, the loop always has future work.
  */
 registerJobHandler(HORIZON_REFRESH, async (client: Client, _job: Job) => {
-  const campaigns = await getAllCampaigns()
-  let created = 0
-  for (const c of campaigns) {
-    if (c.schedulingKind !== 'REPEATING') continue
-    const sessions = await materializeSessions(c.id)
-    created += sessions.length
+  // The heartbeat must survive a failed run: catch here (so the scheduler
+  // doesn't retry-and-duplicate the chain) and always re-enqueue in `finally`.
+  // A transient failure just skips one day's maintenance, not the whole loop.
+  try {
+    const campaigns = await getAllCampaigns()
+    let created = 0
+    for (const c of campaigns) {
+      if (c.schedulingKind !== 'REPEATING') continue
+      const sessions = await materializeSessions(c.id)
+      created += sessions.length
+    }
+    if (created > 0)
+      logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
+    // Open (announce) any sessions now within the lead window.
+    await openDueSessions(client)
+  } catch (err) {
+    logger.error('HORIZON_REFRESH work failed; heartbeat continues:', err)
+  } finally {
+    await enqueueJob(
+      HORIZON_REFRESH,
+      new Date(Date.now() + REFRESH_INTERVAL_MS).toISOString()
+    )
   }
-  if (created > 0)
-    logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
-  // Open (announce) any sessions now within the lead window.
-  await openDueSessions(client)
-  await enqueueJob(
-    HORIZON_REFRESH,
-    new Date(Date.now() + REFRESH_INTERVAL_MS).toISOString()
-  )
 })
 
 /**
