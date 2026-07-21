@@ -43,6 +43,13 @@
       "when": 1784154047490,
       "tag": "0005_wise_unicorn",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784677556623,
+      "tag": "0006_complete_nightcrawler",
+      "breakpoints": true
     }
   ]
 }

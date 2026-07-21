@@ -1,0 +1,1 @@
+ALTER TABLE `campaigns` ADD `discord_channel_id` text;

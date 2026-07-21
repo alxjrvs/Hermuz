@@ -139,12 +139,15 @@ async function api<T = unknown>(
   return json as T
 }
 
-async function discord<T = unknown>(path: string): Promise<T> {
+async function discord<T = unknown>(path: string, method = 'GET'): Promise<T> {
   const token = (await renderEnv()).DISCORD_TOKEN
   const res = await fetch(`${DISCORD}${path}`, {
+    method,
     headers: { Authorization: `Bot ${token}` }
   })
   if (!res.ok) throw new Error(`discord ${res.status} ${path}`)
+  // DELETE returns 204 No Content.
+  if (res.status === 204) return undefined as T
   return (await res.json()) as T
 }
 
@@ -301,13 +304,34 @@ async function cmdCampaign(id: string, rest: string[]) {
   } else if (sub === 'announce') {
     await api(`/api/campaigns/${id}/announce`, { method: 'POST' })
     console.log('announced to the scheduling channel')
+  } else if (sub === 'channel') {
+    const channelId = pos[1]
+    if (!channelId) throw new Error('usage: campaign <id> channel <channelId>')
+    await api(`/api/campaigns/${id}`, {
+      method: 'PATCH',
+      body: { discordChannelId: channelId }
+    })
+    console.log(`campaign channel → ${channelId}`)
+  } else if (sub === 'reset') {
+    // Reset a session back to CLOSED and clear its announcement, so the
+    // scheduler re-announces it (e.g. after moving it off scheduling-global).
+    const sessions = await api<any[]>(`/api/campaigns/${id}/sessions`)
+    const target = sessions.find((s) => s.sessionNumber === Number(pos[1]))
+    if (!target) throw new Error(`no session #${pos[1]}`)
+    await api(`/api/game-days/${target.id}`, {
+      method: 'PATCH',
+      body: { status: 'CLOSED', announcementMessageId: null }
+    })
+    console.log(`reset session #${pos[1]} → CLOSED (announcement cleared)`)
   } else throw new Error(`unknown campaign subcommand: ${sub}`)
 }
 
 async function cmdSessions(id: string) {
   const s = await api<any[]>(`/api/campaigns/${id}/sessions`)
   for (const x of s)
-    console.log(`  #${x.sessionNumber ?? '?'} ${fmt(x.dateTime)} ${x.status}`)
+    console.log(
+      `  #${x.sessionNumber ?? '?'} ${fmt(x.dateTime)} ${x.status} msg=${x.announcementMessageId ?? '-'}`
+    )
 }
 
 async function cmdDeploy(flags: Record<string, string>) {
@@ -348,7 +372,8 @@ async function cmdLogs(n: number) {
   for (const l of data.logs.reverse()) console.log(l.message)
 }
 
-async function cmdDiscord(what: string) {
+async function cmdDiscord(pos: string[]) {
+  const what = pos[0]
   const guild = (await renderEnv()).GUILD_ID
   if (what === 'roles') {
     const roles = await discord<any[]>(`/guilds/${guild}/roles`)
@@ -356,7 +381,14 @@ async function cmdDiscord(what: string) {
   } else if (what === 'channels') {
     const chans = await discord<any[]>(`/guilds/${guild}/channels`)
     for (const c of chans) console.log(`type=${c.type}  ${c.id}  #${c.name}`)
-  } else throw new Error('discord <roles|channels>')
+  } else if (what === 'delete-message') {
+    const channelId = pos[1]
+    const messageId = pos[2]
+    if (!channelId || !messageId)
+      throw new Error('discord delete-message <channelId> <messageId>')
+    await discord(`/channels/${channelId}/messages/${messageId}`, 'DELETE')
+    console.log(`deleted message ${messageId} from channel ${channelId}`)
+  } else throw new Error('discord <roles|channels|delete-message>')
 }
 
 // ---- main ---------------------------------------------------------------
@@ -378,12 +410,12 @@ async function main() {
     case 'logs':
       return cmdLogs(pos[0] ? Number(pos[0]) : 40)
     case 'discord':
-      return cmdDiscord(pos[0])
+      return cmdDiscord(pos)
     case 'whoami':
       return console.log(await api('/api/me'))
     default:
       console.log(
-        'hermuz <games|campaigns|campaign <id> [schedule|generate|cancel <n>|announce]|sessions <id>|deploy [--wait]|logs [n]|discord <roles|channels>|whoami>'
+        'hermuz <games|campaigns|campaign <id> [schedule|generate|cancel <n>|reset <n>|channel <channelId>|announce]|sessions <id>|deploy [--wait]|logs [n]|discord <roles|channels|delete-message <channelId> <messageId>>|whoami>'
       )
   }
 }

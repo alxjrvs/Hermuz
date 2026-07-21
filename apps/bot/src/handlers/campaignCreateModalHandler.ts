@@ -1,4 +1,4 @@
-import { createCampaign, getGameByRoleId } from '@hermuz/db'
+import { createCampaign, getGameByRoleId, updateCampaign } from '@hermuz/db'
 import {
   MessageFlags,
   type ModalSubmitInteraction,
@@ -68,6 +68,11 @@ export async function handleCampaignCreateModalSubmit(
           'Campaign created, but failed to create channels. Please check bot permissions.'
       })
     }
+    // Persist the campaign's general channel so REPEATING campaigns know where
+    // to post their day-of game reminders.
+    await updateCampaign(campaign.id, {
+      discordChannelId: channels.generalChannel.id
+    })
     return interaction.editReply({
       content: `Campaign "${title}" has been created successfully! A private category with channels has been created for members with the ${role} role.`
     })

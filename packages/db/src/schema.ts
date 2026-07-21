@@ -115,6 +115,12 @@ export const campaigns = sqliteTable('campaigns', {
   description: text('description'),
   regularGameTime: text('regular_game_time').notNull(),
   discordRoleId: text('discord_role_id').notNull(),
+  /**
+   * The campaign's own text channel (e.g. its `general`). REPEATING campaigns
+   * post their day-of game reminder here instead of the global scheduling
+   * channel; null means no channel is wired yet (day-of reminders are skipped).
+   */
+  discordChannelId: text('discord_channel_id'),
   gameId: text('game_id').references(() => games.id),
   gameName: text('game_name'),
   announcementMessageId: text('announcement_message_id'),

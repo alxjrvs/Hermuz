@@ -1,4 +1,9 @@
-import { type Campaign, createCampaign, getGame } from '@hermuz/db'
+import {
+  type Campaign,
+  createCampaign,
+  getGame,
+  updateCampaign
+} from '@hermuz/db'
 import { type Guild, PermissionFlagsBits } from 'discord.js'
 import { generateCampaignRoleName } from '~/utils/campaignUtils'
 import { createCampaignChannels } from '~/utils/channelUtils'
@@ -66,6 +71,12 @@ export async function createCampaignWithDiscord(
   )
   if (!channels) {
     logger.warn(`Campaign ${campaign.id} created but channel creation failed.`)
+  } else {
+    // Persist the general channel so REPEATING campaigns post day-of reminders there.
+    const updated = await updateCampaign(campaign.id, {
+      discordChannelId: channels.generalChannel.id
+    })
+    if (updated) return ok(updated)
   }
 
   return ok(campaign)
