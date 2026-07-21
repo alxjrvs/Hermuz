@@ -12,7 +12,7 @@ import { config } from '~/config'
 import { createGameDayMessageEmbed } from '~/utils/gameDayMessageUtils'
 import { logger } from '~/utils/logger'
 import { handleGameDayRoleAssignment } from '~/utils/roleUtils'
-import { getSchedulingChannel } from '~/utils/schedulingChannel'
+import { getAnnouncementChannel } from '~/utils/schedulingChannel'
 import { fail, ok, type ServiceResult } from './result'
 
 /**
@@ -57,7 +57,7 @@ export async function refreshGameDayAnnouncement(
   try {
     const gameDay = await getGameDay(gameDayId)
     if (!gameDay?.announcementMessageId) return
-    const channel = await getSchedulingChannel(client)
+    const channel = await getAnnouncementChannel(client, gameDay)
     if (!channel) return
     const message = await channel.messages.fetch(gameDay.announcementMessageId)
     if (!message) return
