@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { gamesApi, surveysApi } from '../api'
+import { type DateSlot, MultiDatePicker } from '../components/MultiDatePicker'
 import { Empty, ErrorBanner, Loading, Panel } from '../components/Panel'
 import { UserName } from '../components/UserName'
 import { useAuth } from '../context/AuthContext'
@@ -114,21 +115,14 @@ function CreateSurvey({
 }) {
   const [gameId, setGameId] = useState('')
   const [title, setTitle] = useState('')
-  const [dates, setDates] = useState<string[]>(['', ''])
-
-  const setDate = (i: number, v: string) =>
-    setDates((d) => d.map((x, idx) => (idx === i ? v : x)))
-  const addDate = () =>
-    setDates((d) => (d.length >= MAX_DATES ? d : [...d, '']))
-  const removeDate = (i: number) =>
-    setDates((d) => d.filter((_, idx) => idx !== i))
+  const [slots, setSlots] = useState<DateSlot[]>([])
 
   const submit = () => {
-    const dateTimes = dates
-      .filter((v) => v.trim())
-      .map((v) => fromDateTimeLocal(v))
+    const dateTimes = slots
+      .filter((s) => s.date && s.time)
+      .map((s) => fromDateTimeLocal(`${s.date}T${s.time}`))
     if (!gameId) return window.alert('Pick a game.')
-    if (dateTimes.length === 0) return window.alert('Add at least one date.')
+    if (dateTimes.length === 0) return window.alert('Pick at least one date.')
     onCreate({ gameId, title: title.trim() || null, dateTimes })
   }
 
@@ -162,34 +156,10 @@ function CreateSurvey({
           />
         </div>
         <div className="field">
-          <label htmlFor="sv-dates">Candidate dates (up to {MAX_DATES})</label>
-          <div className="stack" style={{ gap: 8 }}>
-            {dates.map((d, i) => (
-              <div key={i} className="row" style={{ gap: 8 }}>
-                <input
-                  id={i === 0 ? 'sv-dates' : undefined}
-                  className="input"
-                  type="datetime-local"
-                  style={{ maxWidth: 260 }}
-                  value={d}
-                  onChange={(e) => setDate(i, e.target.value)}
-                />
-                {dates.length > 1 && (
-                  <button
-                    className="btn sm ghost"
-                    onClick={() => removeDate(i)}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-            {dates.length < MAX_DATES && (
-              <button className="btn sm ghost" onClick={addDate}>
-                + Add date
-              </button>
-            )}
-          </div>
+          <span className="field-label">
+            Candidate dates (up to {MAX_DATES})
+          </span>
+          <MultiDatePicker slots={slots} onChange={setSlots} max={MAX_DATES} />
         </div>
         <div className="row">
           <button className="btn primary" disabled={busy} onClick={submit}>

@@ -864,3 +864,61 @@ table.data td.tnum {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
 }
+
+/* ---- Multi-date picker (survey create) ---- */
+.field .field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.cal.compact .cal-grid {
+  gap: 4px;
+}
+.cal.compact .cal-cell {
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font: inherit;
+  color: var(--ink);
+  text-align: center;
+}
+.cal-cell.pickable {
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.cal-cell.pickable:hover:not(.disabled) {
+  border-color: var(--accent);
+}
+.cal-cell.picked {
+  border-color: var(--accent);
+  background: rgba(127, 124, 246, 0.14);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.cal-cell.picked .cal-daynum {
+  color: var(--accent);
+  font-weight: 700;
+}
+.cal-cell.disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.datepick-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.datepick-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.datepick-slot .d {
+  min-width: 150px;
+  font-size: 13px;
+}
