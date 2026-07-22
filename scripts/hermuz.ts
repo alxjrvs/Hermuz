@@ -21,11 +21,16 @@
  *       --max <n>                        session cap (optional)
  *   campaign <id> generate             materialize / extend the session series
  *   campaign <id> cancel <sessionNo>   cancel one session
+ *   campaign <id> reset <sessionNo>    reset a session to CLOSED + clear its announcement
+ *   campaign <id> channel <channelId>  set the campaign's own channel (repeating day-of reminders)
  *   campaign <id> announce             (re)post the campaign to the scheduling channel
  *   sessions <id>                      list a campaign's sessions
  *   deploy [--wait]                    trigger a Render deploy (of main), optionally poll to live
  *   logs [n]                           last n runtime log lines (default 40)
  *   discord roles|channels             list the guild's roles / channels (find ids)
+ *   discord delete-message <ch> <msg>  delete a bot message from a channel
+ *   settings                           show live settings (scheduling channel, tz, lead days)
+ *   refresh                            run scheduler maintenance now (materialize + open + day-of reminders)
  *   whoami                             verify auth (mint token, GET /api/me shape)
  */
 
@@ -411,11 +416,20 @@ async function main() {
       return cmdLogs(pos[0] ? Number(pos[0]) : 40)
     case 'discord':
       return cmdDiscord(pos)
+    case 'settings':
+      return console.log(JSON.stringify(await api('/api/settings'), null, 2))
+    case 'refresh': {
+      await api('/api/maintenance/refresh', { method: 'POST' })
+      console.log(
+        'maintenance refresh ran (materialize + open + day-of reminders)'
+      )
+      return
+    }
     case 'whoami':
       return console.log(await api('/api/me'))
     default:
       console.log(
-        'hermuz <games|campaigns|campaign <id> [schedule|generate|cancel <n>|reset <n>|channel <channelId>|announce]|sessions <id>|deploy [--wait]|logs [n]|discord <roles|channels|delete-message <channelId> <messageId>>|whoami>'
+        'hermuz <games|campaigns|campaign <id> [schedule|generate|cancel <n>|reset <n>|channel <channelId>|announce]|sessions <id>|deploy [--wait]|logs [n]|discord <roles|channels|delete-message <channelId> <messageId>>|settings|refresh|whoami>'
       )
   }
 }
