@@ -5,6 +5,7 @@ import { attendancesRoutes } from './attendances'
 import { campaignsRoutes } from './campaigns'
 import { gameDaysRoutes } from './gameDays'
 import { gamesRoutes } from './games'
+import { maintenanceRoutes } from './maintenance'
 import { meRoutes } from './me'
 import { playersRoutes } from './players'
 import { settingsRoutes } from './settings'
@@ -30,6 +31,7 @@ export function createApiApp(client: Client): Hono {
   app.route('/players', playersRoutes(client))
   app.route('/settings', settingsRoutes(client))
   app.route('/surveys', surveysRoutes(client))
+  app.route('/maintenance', maintenanceRoutes(client))
 
   return app
 }

@@ -98,29 +98,39 @@ registerJobHandler(GAMEDAY_ANNOUNCE, async (client: Client, job: Job) => {
 })
 
 /**
- * Daily maintenance: keep every REPEATING campaign's session series
- * materialized, then re-enqueue itself. This is the scheduler's heartbeat — as
- * long as one HORIZON_REFRESH exists, the loop always has future work.
+ * The maintenance pass itself: materialize every REPEATING campaign's series,
+ * auto-open SCHEDULED-campaign sessions within the lead window, and ensure every
+ * upcoming REPEATING session has its 8am-ET day-of reminder scheduled. Runs on
+ * the daily HORIZON_REFRESH and can be triggered on demand (POST
+ * /api/maintenance/refresh) after changing a campaign's channel or a session.
+ */
+export async function runHorizonMaintenance(client: Client): Promise<void> {
+  const campaigns = await getAllCampaigns()
+  let created = 0
+  for (const c of campaigns) {
+    if (c.schedulingKind !== 'REPEATING') continue
+    const sessions = await materializeSessions(c.id)
+    created += sessions.length
+  }
+  if (created > 0)
+    logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
+  // Open (announce) any SCHEDULED-campaign sessions within the lead window.
+  await openDueSessions(client)
+  // Ensure every REPEATING session has an 8am-ET day-of reminder scheduled.
+  const reminders = await scheduleRepeatingAnnouncements()
+  if (reminders > 0) logger.info(`Scheduled ${reminders} day-of reminder(s)`)
+}
+
+/**
+ * Daily maintenance heartbeat: run the maintenance pass, then re-enqueue itself.
+ * As long as one HORIZON_REFRESH exists, the scheduler always has future work.
  */
 registerJobHandler(HORIZON_REFRESH, async (client: Client, _job: Job) => {
   // The heartbeat must survive a failed run: catch here (so the scheduler
   // doesn't retry-and-duplicate the chain) and always re-enqueue in `finally`.
   // A transient failure just skips one day's maintenance, not the whole loop.
   try {
-    const campaigns = await getAllCampaigns()
-    let created = 0
-    for (const c of campaigns) {
-      if (c.schedulingKind !== 'REPEATING') continue
-      const sessions = await materializeSessions(c.id)
-      created += sessions.length
-    }
-    if (created > 0)
-      logger.info(`HORIZON_REFRESH materialized ${created} session(s)`)
-    // Open (announce) any SCHEDULED-campaign sessions within the lead window.
-    await openDueSessions(client)
-    // Ensure every REPEATING session has an 8am-ET day-of reminder scheduled.
-    const reminders = await scheduleRepeatingAnnouncements()
-    if (reminders > 0) logger.info(`Scheduled ${reminders} day-of reminder(s)`)
+    await runHorizonMaintenance(client)
   } catch (err) {
     logger.error('HORIZON_REFRESH work failed; heartbeat continues:', err)
   } finally {
