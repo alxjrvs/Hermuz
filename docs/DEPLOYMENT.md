@@ -131,5 +131,5 @@ every push.
 | `API_ORIGIN` | the Render service URL | Render |
 | `WEB_ORIGIN` | `https://hermuz.netlify.app` | Render |
 | `DATABASE_PATH` | `/var/data/hermuz.db` | Render (blueprint) |
-| `BUN_VERSION` | `1.3.14` | Render (blueprint) |
+| `BUN_VERSION` | `1.4.0` | Render (blueprint) |
 | `VITE_API_ORIGIN` | the Render service URL | Netlify (already set) |
